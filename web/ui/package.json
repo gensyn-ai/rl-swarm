@@ -1,0 +1,28 @@
+{
+  "name": "swarm-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.0.7",
+    "d3": "^7.9.0",
+    "solid-js": "^1.9.4",
+    "tailwindcss": "^4.0.7"
+  },
+  "devDependencies": {
+    "@solidjs/testing-library": "^0.8.10",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@types/d3": "^7.4.3",
+    "jsdom": "^26.0.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.1.0",
+    "vite-plugin-solid": "^2.11.0",
+    "vitest": "^3.0.6"
+  }
+}

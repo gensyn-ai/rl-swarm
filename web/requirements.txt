@@ -1,0 +1,5 @@
+aiofiles
+fastapi[standard]
+uvicorn
+pytest
+hivemind @ git+https://github.com/learning-at-home/hivemind@10f82ee9e080c4fdbc95f2f26971a7afd55f43fa
