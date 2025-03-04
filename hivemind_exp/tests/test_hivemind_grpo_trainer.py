@@ -7,14 +7,14 @@ import hivemind
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import GRPOConfig
 
-from hivemind_exp.gsm8k.stage_merger import *
-from hivemind_exp.tests.fake_data import *
+from hivemind_exp.tests.fake_data import CK, QUESTION, RSK, SAMPLES
 from hivemind_exp.trainer.hivemind_grpo_trainer import (
     HivemindGRPOTrainer,
     get_dht_value,
 )
 from hivemind_exp.utils import SingleStageData, StageData
-from hivemind_exp.dht_utils import *
+from hivemind_exp.dht_utils import HivemindNode, leaderboard_key, outputs_key, rewards_key
+from concurrent.futures import ThreadPoolExecutor
 
 
 def dummy_reward_func(node: HivemindNode, prompts, completions, **kwargs) -> list[int]:
@@ -43,7 +43,7 @@ def get_model_config(tmp_path, max_steps):
 
 
 def create_dht_and_trainer(tmp_path, node, stage_data, max_steps=1, initial_peers=[]):
-    dht = hivemind.DHT(start=True, initial_peers=initial_peers)
+    dht = hivemind.DHT(start=True, initial_peers=initial_peers, cache_nearest=2)
     model, config = get_model_config(tmp_path, max_steps=max_steps)
     tokenizer = AutoTokenizer.from_pretrained(TEST_MODEL_NAME)
     trainer = HivemindGRPOTrainer(
@@ -128,8 +128,7 @@ def test_single_node_multi_stage(tmp_path):
 
 # These will actually check DHT outputs / rewards / leaderboard.
 
-from concurrent.futures import ThreadPoolExecutor
-
+# TODO: Fix flakiness for below tests.
 
 def test_multi_node_single_stage(tmp_path):
     max_rounds = 1
@@ -175,7 +174,7 @@ def test_multi_node_single_stage(tmp_path):
         assert outputs
         assert outputs[QUESTION][1] == {"question": QUESTION}
 
-        rewards = get_dht_value(dht1, key=rewards_key(r, s), latest=True)
+        rewards = get_dht_value(dht0, key=rewards_key(r, s), latest=True)
         assert rewards
         assert len(rewards) == 2
         assert math.isclose(rewards[CK], 2.0 * max_steps)
@@ -253,17 +252,17 @@ def test_multi_node_multi_stage(tmp_path):
     }
 
     for r, s in itertools.product(range(1), range(3)):
-        outputs = get_dht_value(dht0, key=outputs_key(node0.uuid, r, s), latest=True)
+        outputs = get_dht_value(dht0, key=outputs_key(node0.uuid, r, s), latest=False)
         assert outputs
         assert outputs[QUESTION][1] == {"question": QUESTION}
 
-        rewards = get_dht_value(dht1, key=rewards_key(r, s), latest=True)
+        rewards = get_dht_value(dht0, key=rewards_key(r, s), latest=False)
         assert rewards
         assert len(rewards) == 2
         assert math.isclose(rewards[CK], 2.0 * max_steps)
         assert math.isclose(rewards[node1.uuid], max_steps)
 
-        leaderboard = get_dht_value(dht0, key=leaderboard_key(r, s), latest=True)
+        leaderboard = get_dht_value(dht0, key=leaderboard_key(r, s), latest=False)
         assert leaderboard
         assert len(leaderboard) == 2
         assert leaderboard[0][0] == CK

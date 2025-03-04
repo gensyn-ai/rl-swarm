@@ -241,9 +241,7 @@ def fill_unknown_answers_opinions(values):
         for field in val:
             if field in FILLED_FIELDS:
                 diff_keys = agent_set - val[field].keys()
-                for (
-                    agent
-                ) in (
+                for agent in (
                     diff_keys
                 ):  # Fill with default values. TODO: Decide if this is a good choice.
                     val[field].update({agent: "No answer received..."})

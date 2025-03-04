@@ -1,4 +1,3 @@
-import json
 from typing import Any
 
 
@@ -10,9 +9,8 @@ def merge_stage1_question(outputs: dict[str, dict[str, Any]]):
         merged["question"] = o["question"]
         merged["answer"] = o["answer"]
         merged["agent_answers"].update(o["agent_answers"])
-    for agent in (
-        outputs.keys()
-    ):  # Fill with default values. TODO: Decide if this is a good choice.
+    # Fill with default values. TODO: Decide if this is a good choice.
+    for agent in outputs:
         if agent not in merged["agent_answers"]:
             merged["agent_answers"].update({agent: "No answer received..."})
     return merged
@@ -33,9 +31,8 @@ def merge_stage2_question(outputs: dict[str, dict[str, Any]]):
                 merged[col] = o[col]
         if "agent_opinion" in o:
             merged["agent_opinion"].update(o["agent_opinion"])
-    for agent in (
-        outputs.keys()
-    ):  # Fill with default values. TODO: Decide if this is a good choice.
+    # Fill with default values. TODO: Decide if this is a good choice.
+    for agent in outputs:
         if agent not in merged["agent_opinion"]:
             merged["agent_opinion"].update({agent: "No feedback received..."})
     return merged

@@ -1,24 +1,42 @@
-from functools import partial
+from enum import Enum
 import itertools
-from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import time
 
 import hivemind
+import pytest
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import GRPOConfig
+from hivemind.dht import DHT
+from hivemind.utils import get_dht_time
 
 from datasets import Dataset
 
-from hivemind_exp.dht_utils import *
-from hivemind_exp.gsm8k.stage_merger import *
-from hivemind_exp.gsm8k.stage_utils import gsm8k_stage_data
-from hivemind_exp.tests.fake_data import *
+from hivemind_exp.gsm8k.stage_utils import (
+    HivemindNode,
+    merge_stage1_question,
+    merge_stage2_question,
+    get_stage2_samples,
+    get_stage3_samples,
+    gsm8k_stage_data,
+    merged_prev_stage_datasets,
+    rewards_key,
+)
+from hivemind_exp.tests.fake_data import (
+    CK,
+    QUESTION,
+    RSK,
+    SAMPLES,
+    STAGE_2_OUTPUTS,
+    STAGE_2_MERGED,
+    samples_with_uuid,
+)
 from hivemind_exp.trainer.hivemind_grpo_trainer import (
     HivemindGRPOTrainer,
     get_dht_value,
 )
+from hivemind_exp.dht_utils import outputs_key
 from hivemind_exp.utils import SingleStageData
 
 TEST_MODEL_NAME = "trl-internal-testing/tiny-Qwen2ForCausalLM-2.5"
@@ -55,7 +73,7 @@ def check_dataset(prefix: str, min_count: int, dataset: Dataset):
 
 
 def create_dht_and_trainer(tmp_path, node, min_peers=1, initial_peers=[]):
-    dht = hivemind.DHT(start=True, initial_peers=initial_peers)
+    dht = hivemind.DHT(start=True, initial_peers=initial_peers, cache_nearest=min_peers)
     model, config = get_model_config(tmp_path)
     tokenizer = AutoTokenizer.from_pretrained(TEST_MODEL_NAME)
 
@@ -84,6 +102,119 @@ def create_dht_and_trainer(tmp_path, node, min_peers=1, initial_peers=[]):
         stage_data=stage_data,
     )
     return dht, trainer
+
+
+def store_dummy_rewards(dht: DHT, uuids, r, s):
+    for uuid in uuids:
+        dht.store(
+            key=rewards_key(r, s),
+            subkey=uuid,
+            value=[99],
+            expiration_time=get_dht_time() + 60,
+        )
+
+
+class StorageMode(Enum):
+    DHT = 1
+    NODE = 2
+    BOTH = 3
+
+
+def store_stage_outputs(
+    dht: DHT, node: HivemindNode, r, s, value: dict, storage_mode=StorageMode.BOTH
+):
+    if storage_mode in (StorageMode.DHT, StorageMode.BOTH):
+        dht.store(
+            key=outputs_key(node.uuid, r, s),
+            subkey=QUESTION,
+            value=(0, value),
+            expiration_time=get_dht_time() + 120,
+        )
+    if storage_mode in (StorageMode.NODE, StorageMode.BOTH):
+        node.put_stage_outputs(r, s, QUESTION, (0, value))
+
+
+STAGE_2_SAMPLES = [
+    STAGE_2_OUTPUTS[CK],
+    STAGE_2_OUTPUTS["0"],
+]
+
+STAGE_2_MERGED_OPINIONS = STAGE_2_MERGED["agent_opinion"]
+
+
+@pytest.mark.parametrize(
+    "merge_fn,sample_fn,stage,samples,group_field,get_expected_fn",
+    [
+        (
+            merge_stage1_question,
+            get_stage2_samples,
+            0,
+            SAMPLES,
+            "agent_answers",
+            lambda: ("The meaning of life is to sleep.", "The meaning of life is 42."),
+        ),
+        (
+            merge_stage2_question,
+            get_stage3_samples,
+            1,
+            STAGE_2_SAMPLES,
+            "agent_opinion",
+            lambda: (STAGE_2_MERGED_OPINIONS["0"], STAGE_2_MERGED_OPINIONS[CK]),
+        ),
+    ],
+)
+def test_merged_prev_stage_datasets(
+    merge_fn, sample_fn, stage, samples, group_field, get_expected_fn
+):
+    dht = hivemind.DHT(start=True)
+    coord = HivemindNode.coordinator("test")
+    node = HivemindNode("test")
+
+    def merge_coord():
+        return merged_prev_stage_datasets(dht, coord, 0, stage + 1, merge_fn, sample_fn)
+
+    def merge_node():
+        return merged_prev_stage_datasets(dht, node, 0, stage + 1, merge_fn, sample_fn)
+
+    ## Nothing stored!
+    with pytest.raises(Exception):
+        _ = merge_coord()
+
+    # Training loop saves to both.
+    coord_samples = samples_with_uuid(CK, samples, group_field)
+    store_stage_outputs(dht, coord, 0, stage, coord_samples[0], StorageMode.DHT)
+    store_stage_outputs(
+        dht, coord, 0, stage, coord_samples[1], StorageMode.NODE
+    )  # Takes precedence.
+
+    node_samples = samples_with_uuid(node.uuid, samples, group_field)
+    store_stage_outputs(
+        dht, node, 0, stage, node_samples[0], StorageMode.NODE
+    )  # Local only.
+
+    ## Rewards not visible on DHT!
+    coord_expected, node_expected = get_expected_fn()
+    cf, nf = merge_coord()[0][0], merge_node()[0][0]
+
+    # Local.
+    assert cf[f"{group_field}_{CK}"] == coord_expected
+    assert f"{group_field}_{node.uuid}" not in cf
+
+    # Local.
+    assert f"{group_field}_{CK}" not in nf
+    assert nf[f"{group_field}_{node.uuid}"] == node_expected
+
+    ## Check merged outputs with visible rewards!
+    store_dummy_rewards(dht, [coord.uuid, node.uuid], 0, stage)
+    cf, nf = merge_coord()[0][0], merge_node()[0][0]
+
+    # Local.
+    assert cf[f"{group_field}_{CK}"] == coord_expected
+    assert f"{group_field}_{node.uuid}" not in cf
+
+    # Local + DHT.
+    assert nf[f"{group_field}_{CK}"] == node_expected
+    assert nf[f"{group_field}_{node.uuid}"] == node_expected
 
 
 def test_gsm8k_stage_data(tmp_path):

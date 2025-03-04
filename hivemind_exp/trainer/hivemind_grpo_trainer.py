@@ -2,13 +2,19 @@ import logging
 import time
 from typing import Any
 
-import torch.fx
 from hivemind.dht import DHT
 from hivemind.utils import get_dht_time
 from trl import GRPOConfig, GRPOTrainer
 
 from hivemind_exp.utils import HivemindNode, StageData
-from hivemind_exp.dht_utils import *
+from hivemind_exp.dht_utils import (
+    ROUND_STAGE_NUMBER_KEY,
+    get_dht_value,
+    get_round_and_stage,
+    leaderboard_key,
+    node_outputs_key,
+    rewards_key,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -37,28 +43,35 @@ class HivemindGRPOTrainer:
             curr_rewards: dict[str, Any] | None = get_dht_value(
                 self.dht, key=rewards_key(r, s), latest=True
             )
-            assert curr_rewards
-            # Sorted list of (node_uuid, reward) pairs.
-            leaderboard = list(
-                sorted(curr_rewards.items(), key=lambda t: (t[1], t[0]), reverse=True)
-            )
-            self.dht.store(
-                key=leaderboard_key(r, s),
-                value=leaderboard,
-                expiration_time=get_dht_time() + self.node.out_expiration,
-            )
+            if curr_rewards:
+                # Sorted list of (node_uuid, reward) pairs.
+                leaderboard = list(
+                    sorted(curr_rewards.items(), key=lambda t: (t[1], t[0]), reverse=True)
+                )
+                self.dht.store(
+                    key=leaderboard_key(r, s),
+                    value=leaderboard,
+                    expiration_time=get_dht_time() + self.node.out_expiration,
+                )
+            else:
+                logger.info(f"[{self.node.uuid}] Can't retrieve round {r} stage {s - 1} rewards")
 
         def compute_loss(self, model, inputs, *args, **kwargs):
             loss = super().compute_loss(model, inputs, *args, **kwargs)
             # Reward function must save node.outputs + node.rewards!
             # This is only here to publish to the DHT at the right time.
             question = self.node.outputs["question"]
+            value = (time.time(), self.node.outputs)
             self.dht.store(
                 key=node_outputs_key(self.node),
                 subkey=question,
-                value=(time.time(), self.node.outputs),
+                value=value,
                 expiration_time=get_dht_time() + self.node.out_expiration,
             )
+            self.node.put_stage_outputs(
+                self.node.round_num, self.node.stage_num, question, value
+            )
+
             # Just the latest.
             self.stage_rewards += sum(self.node.rewards)
             self.dht.store(
@@ -120,9 +133,8 @@ class HivemindGRPOTrainer:
         self.node.round_num = round_num
         for i, stage in enumerate(self.stage_data.stages[start_stage:]):
             stage_num = start_stage + i
-
-            logger.info(f"{tag} Training round: {round_num} stage: {stage_num}")
             self.node.stage_num = stage_num
+
             if is_coordinator:
                 self.dht.store(
                     key=ROUND_STAGE_NUMBER_KEY,
@@ -143,6 +155,9 @@ class HivemindGRPOTrainer:
                 self.node, self.dht, self.tokenizer, **kwargs
             )
             self.train_and_save(trainer, train_dataset)
+            logger.info(f"{tag} Finished training round: {round_num} stage: {stage_num}")
+
+        self.node.clear_stage_cache()
 
     def train_and_save(self, trainer, train_dataset):
         tag = self._log_tag()

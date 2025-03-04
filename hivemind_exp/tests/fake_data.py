@@ -1,3 +1,4 @@
+from copy import deepcopy
 from hivemind_exp.utils import COORDINATOR_KEY
 from hivemind_exp.dht_utils import ROUND_STAGE_NUMBER_KEY
 
@@ -14,6 +15,9 @@ SAMPLES = [
             {"content": "You are a pirate.", "role": "system"},
             {"content": QUESTION, "role": "user"},
         ],
+        "agent_answers": {
+            CK: "The meaning of life is 42.",
+        },
     },
     {
         "question": QUESTION,
@@ -22,8 +26,30 @@ SAMPLES = [
             {"content": "You are a cat.", "role": "system"},
             {"content": QUESTION, "role": "user"},
         ],
-    }
+        "agent_answers": {
+            "0": "The meaning of life is to sleep.",
+        },
+    },
 ]
+
+
+def samples_with_uuid(new_uuid, orig_samples=SAMPLES, field="agent_answers"):
+    orig_uuids = (CK, "0", "1", "2")
+
+    def replace(orig, value):
+        if field in value:
+            answers = value[field]
+            if orig != new_uuid and orig in answers:
+                answers[new_uuid] = answers[orig]
+                del answers[orig]
+
+    samples = deepcopy(orig_samples)
+    for sample in samples:
+        for orig in orig_uuids:
+            replace(orig, sample)
+
+    return samples
+
 
 STAGE_1_OUTPUTS = {
     CK: {
