@@ -34,7 +34,7 @@ If you encounter issues with the coordinator peer, try this backup peer node:
 DEFAULT_PEER_MULTI_ADDRS="/dns/rl-swarm.gensyn.ai/tcp/38331/p2p/QmQ2gEXoPJg6iMBSUFWGzAabS2VhnzuS782Y637hGjfsRJ" # gensyn coordinator node
 ```
 
-(Experimental) fix to increase memory on macbook:
+(Experimental) fix to increase memory on MacBook:
 
 ```
 export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0
