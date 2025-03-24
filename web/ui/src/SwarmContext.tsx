@@ -1,5 +1,6 @@
 import { createContext, createResource, createSignal, useContext, onMount, onCleanup, ParentProps } from "solid-js"
-import { LeaderboardResponse, getLeaderboard, getGossip, GossipResponse, getRoundAndStage } from "./swarm.api"
+import { LeaderboardResponse, GossipResponse } from "./swarm.api"
+import api from "./swarm.api"
 
 interface SwarmContextType {
 	// Gossip info
@@ -40,7 +41,7 @@ export function SwarmProvider(props: ParentProps) {
 	const [participantsById, setParticipantsById] = createSignal<Record<string, { id: string; score: number; values: { x: number; y: number }[]; index: number }> | null>(null)
 
 	const [_roundAndStage, { refetch: refetchRoundAndStage }] = createResource(async () => {
-		const data = await getRoundAndStage()
+		const data = await api.getRoundAndStage()
 		if (!data) {
 			return undefined
 		}
@@ -110,9 +111,9 @@ export function SwarmProvider(props: ParentProps) {
 	})
 
 	// Polling timers
-	let leaderboardTimer: number | undefined = undefined
-	let gossipTimer: number | undefined = undefined
-	let roundAndStageTimer: number | undefined = undefined
+	let leaderboardTimer: ReturnType<typeof setTimeout> | undefined = undefined
+	let gossipTimer: ReturnType<typeof setTimeout> | undefined = undefined
+	let roundAndStageTimer: ReturnType<typeof setTimeout> | undefined = undefined
 
 	// Polling functions
 	const pollGossip = async () => {
@@ -182,7 +183,7 @@ export function SwarmProvider(props: ParentProps) {
 
 async function fetchLeaderboardData(): Promise<LeaderboardResponse | undefined> {
 	try {
-		return await getLeaderboard()
+		return await api.getLeaderboard()
 	} catch (e) {
 		console.error("fetchLeaderboardData failed", e)
 		return undefined
@@ -191,7 +192,7 @@ async function fetchLeaderboardData(): Promise<LeaderboardResponse | undefined> 
 
 async function fetchGossipData(since: number): Promise<GossipResponse | undefined> {
 	try {
-		return await getGossip({ since })
+		return await api.getGossip({ since })
 	} catch (e) {
 		console.error("fetchGossipData failed", e)
 		return undefined

@@ -37,7 +37,7 @@ RUN npm install
 
 COPY web/ui ./
 
-RUN npm run build
+RUN npm run build:local
 
 FROM server AS final
 

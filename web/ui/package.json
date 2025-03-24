@@ -7,7 +7,8 @@
 		"dev": "vite",
 		"lint": "eslint src --ext .ts,.tsx",
 		"format": "prettier --write src/**",
-		"build": "npm run format && npm run lint&& tsc -b && vite build",
+		"build:local": "npm run format && npm run lint&& tsc -b && vite build --mode example",
+		"build:testnet": "npm run format && npm run lint&& tsc -b && vite build --mode testnet",
 		"preview": "vite preview",
 		"test": "vitest"
 	},
@@ -16,6 +17,7 @@
 		"d3": "^7.9.0",
 		"solid-js": "^1.9.4",
 		"tailwindcss": "^4.0.7",
+		"viem": "^2.23.14",
 		"zod": "^3.24.2"
 	},
 	"devDependencies": {

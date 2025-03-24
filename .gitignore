@@ -8,3 +8,6 @@ temp-data/
 
 swarm.pem
 runs/
+.DS_Store
+
+node_modules/

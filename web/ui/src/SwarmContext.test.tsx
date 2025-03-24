@@ -1,13 +1,15 @@
 import { render } from "@solidjs/testing-library"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { SwarmProvider, useSwarm, mergeLeaderboardData } from "./SwarmContext"
-import * as swarmApi from "./swarm.api"
+import api, { LeaderboardResponse } from "./swarm.api"
 
 // Mock the API calls
 vi.mock("./swarm.api", () => ({
-	getLeaderboard: vi.fn(),
-	getGossip: vi.fn(),
-	getRoundAndStage: vi.fn(),
+	default: {
+		getGossip: vi.fn(),
+		getLeaderboard: vi.fn(),
+		getRoundAndStage: vi.fn(),
+	},
 }))
 
 describe("SwarmProvider", () => {
@@ -40,15 +42,15 @@ describe("SwarmProvider", () => {
 	})
 
 	it("should update leaderboard and participantsById when data is fetched", async () => {
-		vi.mocked(swarmApi.getLeaderboard).mockResolvedValue({
+		vi.mocked(api.getLeaderboard).mockResolvedValue({
 			leaders: [
 				{ id: "node1", score: 1.0, values: [] },
 				{ id: "node2", score: 0.5, values: [] },
 			],
 			total: 2,
 		})
-		vi.mocked(swarmApi.getGossip).mockResolvedValue({ messages: [] })
-		vi.mocked(swarmApi.getRoundAndStage).mockResolvedValue({ round: 1, stage: 1 })
+		vi.mocked(api.getGossip).mockResolvedValue({ messages: [] })
+		vi.mocked(api.getRoundAndStage).mockResolvedValue({ round: 1, stage: 1 })
 
 		// TestComponent displays the data we want to test so we can validate that the data is correct.
 		const TestComponent = () => {
@@ -94,12 +96,12 @@ describe("SwarmProvider", () => {
 	})
 
 	it("should poll for updates", async () => {
-		vi.mocked(swarmApi.getLeaderboard).mockResolvedValue({
+		vi.mocked(api.getLeaderboard).mockResolvedValue({
 			leaders: [{ id: "node1", score: 1.0, values: [] }],
 			total: 1,
 		})
-		vi.mocked(swarmApi.getGossip).mockResolvedValue({ messages: [] })
-		vi.mocked(swarmApi.getRoundAndStage).mockResolvedValue({ round: 1, stage: 1 })
+		vi.mocked(api.getGossip).mockResolvedValue({ messages: [] })
+		vi.mocked(api.getRoundAndStage).mockResolvedValue({ round: 1, stage: 1 })
 
 		render(() => (
 			<SwarmProvider>
@@ -108,31 +110,31 @@ describe("SwarmProvider", () => {
 		))
 
 		// Initial calls
-		expect(swarmApi.getLeaderboard).toHaveBeenCalledTimes(1)
-		expect(swarmApi.getGossip).toHaveBeenCalledTimes(1)
-		expect(swarmApi.getRoundAndStage).toHaveBeenCalledTimes(1)
+		expect(api.getLeaderboard).toHaveBeenCalledTimes(1)
+		expect(api.getGossip).toHaveBeenCalledTimes(1)
+		expect(api.getRoundAndStage).toHaveBeenCalledTimes(1)
 
 		// Advance time to trigger polls
 		await vi.advanceTimersByTimeAsync(10_000)
 
 		// Wait for and verify additional calls
-		expect(swarmApi.getLeaderboard).toHaveBeenCalledTimes(2)
-		expect(swarmApi.getGossip).toHaveBeenCalledTimes(2)
-		expect(swarmApi.getRoundAndStage).toHaveBeenCalledTimes(2)
+		expect(api.getLeaderboard).toHaveBeenCalledTimes(2)
+		expect(api.getGossip).toHaveBeenCalledTimes(2)
+		expect(api.getRoundAndStage).toHaveBeenCalledTimes(2)
 	})
 
 	it("should update gossip messages", async () => {
-		vi.mocked(swarmApi.getGossip).mockResolvedValue({
+		vi.mocked(api.getGossip).mockResolvedValue({
 			messages: [
 				{ id: "msg1", message: "test1", node: "node1" },
 				{ id: "msg2", message: "test2", node: "node2" },
 			],
 		})
-		vi.mocked(swarmApi.getLeaderboard).mockResolvedValue({
+		vi.mocked(api.getLeaderboard).mockResolvedValue({
 			leaders: [],
 			total: 0,
 		})
-		vi.mocked(swarmApi.getRoundAndStage).mockResolvedValue({ round: 1, stage: 1 })
+		vi.mocked(api.getRoundAndStage).mockResolvedValue({ round: 1, stage: 1 })
 
 		const TestComponent = () => {
 			const ctx = useSwarm()
@@ -162,7 +164,7 @@ describe("SwarmProvider", () => {
 	})
 
 	it("should merge leaderboard messages", async () => {
-		vi.mocked(swarmApi.getLeaderboard)
+		vi.mocked(api.getLeaderboard)
 			.mockResolvedValueOnce({
 				leaders: [
 					{ id: "nodea", values: [{ x: 0, y: 1 }], score: 1 },
@@ -178,8 +180,8 @@ describe("SwarmProvider", () => {
 				],
 				total: 3,
 			})
-		vi.mocked(swarmApi.getGossip).mockResolvedValue({ messages: [] })
-		vi.mocked(swarmApi.getRoundAndStage).mockResolvedValue({ round: 1, stage: 1 })
+		vi.mocked(api.getGossip).mockResolvedValue({ messages: [] })
+		vi.mocked(api.getRoundAndStage).mockResolvedValue({ round: 1, stage: 1 })
 
 		const TestComponent = () => {
 			const ctx = useSwarm()
@@ -250,15 +252,15 @@ describe("SwarmProvider", () => {
 		const nodeaValues = await findByTestId("nodea-values")
 		expect(nodeaValues.textContent).toBe("(0, 1) (10, 2)")
 
-		expect(swarmApi.getLeaderboard).toHaveBeenCalledTimes(2)
+		expect(api.getLeaderboard).toHaveBeenCalledTimes(2)
 	})
 
 	describe("mergeLeaderboardData", () => {
 		type TestConfig = {
 			xVal: number
-			response?: swarmApi.LeaderboardResponse
-			accumulator?: swarmApi.LeaderboardResponse
-			wantOut: swarmApi.LeaderboardResponse
+			response?: LeaderboardResponse
+			accumulator?: LeaderboardResponse
+			wantOut: LeaderboardResponse
 		}
 
 		it.each([

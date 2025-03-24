@@ -2,12 +2,14 @@ import { render, waitFor, fireEvent } from "@solidjs/testing-library"
 import Swarm from "./Swarm"
 import { SwarmProvider } from "./SwarmContext"
 import { vi, afterEach, beforeEach, describe, expect, it } from "vitest"
-import * as swarmApi from "./swarm.api"
+import api from "./swarm.api"
 
 vi.mock("./swarm.api", () => ({
-	getGossip: vi.fn(),
-	getLeaderboard: vi.fn(),
-	getRoundAndStage: vi.fn(),
+	default: {
+		getGossip: vi.fn(),
+		getLeaderboard: vi.fn(),
+		getRoundAndStage: vi.fn(),
+	},
 }))
 
 describe("Swarm", () => {
@@ -37,8 +39,8 @@ describe("Swarm", () => {
 			],
 		}
 
-		const getLeaderboardSpy = vi.spyOn(swarmApi, "getLeaderboard")
-		const getGossipSpy = vi.spyOn(swarmApi, "getGossip")
+		const getLeaderboardSpy = vi.spyOn(api, "getLeaderboard")
+		const getGossipSpy = vi.spyOn(api, "getGossip")
 
 		getGossipSpy.mockResolvedValueOnce(firstRes).mockResolvedValueOnce(secondRes)
 		getLeaderboardSpy.mockResolvedValue({
@@ -76,9 +78,9 @@ describe("Swarm", () => {
 	})
 
 	it("should show modal when no leaders are present", async () => {
-		const getLeaderboardSpy = vi.spyOn(swarmApi, "getLeaderboard")
-		const getGossipSpy = vi.spyOn(swarmApi, "getGossip")
-		const getRoundAndStageSpy = vi.spyOn(swarmApi, "getRoundAndStage")
+		const getLeaderboardSpy = vi.spyOn(api, "getLeaderboard")
+		const getGossipSpy = vi.spyOn(api, "getGossip")
+		const getRoundAndStageSpy = vi.spyOn(api, "getRoundAndStage")
 
 		// Mock all API calls to resolve immediately
 		getGossipSpy.mockResolvedValue({ messages: [] })
@@ -104,9 +106,9 @@ describe("Swarm", () => {
 	})
 
 	it("should handle search functionality", async () => {
-		const getLeaderboardSpy = vi.spyOn(swarmApi, "getLeaderboard")
-		const getGossipSpy = vi.spyOn(swarmApi, "getGossip")
-		const getRoundAndStageSpy = vi.spyOn(swarmApi, "getRoundAndStage")
+		const getLeaderboardSpy = vi.spyOn(api, "getLeaderboard")
+		const getGossipSpy = vi.spyOn(api, "getGossip")
+		const getRoundAndStageSpy = vi.spyOn(api, "getRoundAndStage")
 
 		getGossipSpy.mockResolvedValue({ messages: [] })
 		getLeaderboardSpy.mockResolvedValue({
@@ -146,9 +148,9 @@ describe("Swarm", () => {
 	})
 
 	it("should display round and stage information", async () => {
-		const getLeaderboardSpy = vi.spyOn(swarmApi, "getLeaderboard")
-		const getGossipSpy = vi.spyOn(swarmApi, "getGossip")
-		const getRoundAndStageSpy = vi.spyOn(swarmApi, "getRoundAndStage")
+		const getLeaderboardSpy = vi.spyOn(api, "getLeaderboard")
+		const getGossipSpy = vi.spyOn(api, "getGossip")
+		const getRoundAndStageSpy = vi.spyOn(api, "getRoundAndStage")
 
 		getGossipSpy.mockResolvedValue({ messages: [] })
 		getLeaderboardSpy.mockResolvedValue({
@@ -170,9 +172,9 @@ describe("Swarm", () => {
 	})
 
 	it("should handle gossip message updates", async () => {
-		const getLeaderboardSpy = vi.spyOn(swarmApi, "getLeaderboard")
-		const getGossipSpy = vi.spyOn(swarmApi, "getGossip")
-		const getRoundAndStageSpy = vi.spyOn(swarmApi, "getRoundAndStage")
+		const getLeaderboardSpy = vi.spyOn(api, "getLeaderboard")
+		const getGossipSpy = vi.spyOn(api, "getGossip")
+		const getRoundAndStageSpy = vi.spyOn(api, "getRoundAndStage")
 
 		getLeaderboardSpy.mockResolvedValue({
 			leaders: [{ id: "node1", values: [{ x: 0, y: 1 }], score: 1 }],
