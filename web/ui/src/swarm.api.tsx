@@ -2,6 +2,24 @@ import { z } from "zod"
 import { createPublicClient, http } from "viem"
 import { Chain } from "viem"
 
+// sepoliaChain is used for testnet deployment.
+const sepoliaChain: Chain = {
+	id: 11155111,
+	name: "Sepolia",
+	nativeCurrency: {
+		decimals: 18,
+		name: "Sepolia Ether",
+		symbol: "ETH",
+	},
+	rpcUrls: {
+		default: { http: ["https://rpc.sepolia.org"] },
+	},
+	blockExplorers: {
+		default: { name: "Etherscan", url: "https://sepolia.etherscan.io" },
+	},
+	testnet: true,
+}
+
 // anvilChain is used for local development.
 const anvilChain: Chain = {
 	id: 31337,
@@ -57,11 +75,19 @@ class SwarmContract {
 	client: ReturnType<typeof createPublicClient>
 	address: `0x${string}`
 
-	constructor(providerUrl: string, address: string) {
+	constructor(providerUrl: string, address: string, environment: "local" | "testnet" | "mainnet") {
+		let chain: Chain = anvilChain
+		switch (environment) {
+			case "testnet":
+				chain = sepoliaChain
+				break
+		}
+
 		this.client = createPublicClient({
-			chain: anvilChain,
+			chain: chain,
 			transport: http(providerUrl),
 		})
+
 		this.address = address as `0x${string}`
 	}
 
@@ -104,7 +130,8 @@ class SwarmContract {
 
 type SwarmApiConfig = {
 	providerUrl: string
-	address: string
+	contractAddress: string
+	environment: "local" | "testnet" | "mainnet"
 }
 
 interface ISwarmApi {
@@ -117,7 +144,7 @@ class SwarmApi implements ISwarmApi {
 	private swarmContract: SwarmContract
 
 	constructor(options: SwarmApiConfig) {
-		this.swarmContract = new SwarmContract(options.providerUrl, options.address)
+		this.swarmContract = new SwarmContract(options.providerUrl, options.contractAddress, options.environment)
 	}
 
 	public async getRoundAndStage(): Promise<RoundAndStageResponse> {
@@ -206,7 +233,8 @@ class SwarmApi implements ISwarmApi {
 
 const api = new SwarmApi({
 	providerUrl: import.meta.env.VITE_PROVIDER_URL,
-	address: import.meta.env.VITE_CONTRACT_ADDRESS,
+	contractAddress: import.meta.env.VITE_CONTRACT_ADDRESS,
+	environment: import.meta.env.VITE_ENVIRONMENT,
 })
 
 export default api

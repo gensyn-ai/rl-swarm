@@ -8,5 +8,6 @@
 	"arrowParens": "always",
 	"trailingComma": "all",
 	"printWidth": 9999,
-	"endOfLine": "lf"
+	"endOfLine": "lf",
+	"indentStyle": "tab"
 } 
