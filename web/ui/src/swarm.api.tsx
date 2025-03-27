@@ -91,6 +91,25 @@ class SwarmContract {
 		this.address = address as `0x${string}`
 	}
 
+	public async getLeaderboard() {
+		const leaderboard = await this.client.readContract({
+			address: this.address,
+			abi: [
+				{
+					inputs: [{ type: "uint256" }, { type: "uint256" }],
+					name: "leaderboard",
+					outputs: [{ type: "address[]" }],
+					stateMutability: "view",
+					type: "function",
+				},
+			],
+			functionName: "leaderboard",
+			args: [0n, 99n], // Smart contract only supports 100 leaders at a time.
+		})
+
+		return leaderboard
+	}
+
 	public async getRoundAndStage(): Promise<RoundAndStageResponse> {
 		const [round, stage] = await Promise.all([
 			this.client.readContract({
@@ -158,6 +177,10 @@ class SwarmApi implements ISwarmApi {
 
 	public async getLeaderboard(): Promise<LeaderboardResponse> {
 		try {
+			// TODO: Update this to use the new leaderboard API.
+			const leaderboard = await this.swarmContract.getLeaderboard()
+			console.log(">>> leaderboard", leaderboard)
+
 			const res = await fetch(`/api/leaderboard`)
 			if (!res.ok) {
 				throw new Error(`Failed to fetch leaderboard: ${res.statusText}`)

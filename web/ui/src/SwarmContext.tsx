@@ -9,6 +9,8 @@ interface SwarmContextType {
 	// Leaderboard info
 	leaders: () => LeaderboardResponse | null | undefined
 	participantsById: () => Record<string, { id: string; score: number; values: { x: number; y: number }[]; index: number }> | null
+	leadersLoading: () => boolean
+	leadersError: () => Error | null
 
 	// State
 	currentRound: () => number
@@ -40,6 +42,7 @@ export function SwarmProvider(props: ParentProps) {
 	const [leaders, setLeaders] = createSignal<LeaderboardResponse | null | undefined>(null)
 	const [participantsById, setParticipantsById] = createSignal<Record<string, { id: string; score: number; values: { x: number; y: number }[]; index: number }> | null>(null)
 
+	// @ts-expect-warning - Intentionally unused variable
 	const [_roundAndStage, { refetch: refetchRoundAndStage }] = createResource(async () => {
 		const data = await api.getRoundAndStage()
 		if (!data) {
@@ -53,6 +56,7 @@ export function SwarmProvider(props: ParentProps) {
 	})
 
 	// Resources for data fetching
+	// @ts-expect-warning - Intentionally unused variable
 	const [_leaderboardData, { refetch: refetchLeaderboard }] = createResource(async () => {
 		const data = await fetchLeaderboardData()
 		if (!data || data.leaders.length === 0) {
@@ -84,6 +88,7 @@ export function SwarmProvider(props: ParentProps) {
 		return next
 	})
 
+	// @ts-expect-warning - Intentionally unused variable
 	const [_gossipData, { refetch: refetchGossip }] = createResource(async () => {
 		const data = await fetchGossipData(currentRound())
 		if (!data) {
@@ -176,6 +181,8 @@ export function SwarmProvider(props: ParentProps) {
 		leaders,
 		participantsById,
 		pollCount,
+		leadersLoading: () => _leaderboardData.loading,
+		leadersError: () => _leaderboardData.error,
 	}
 
 	return <SwarmContext.Provider value={value}>{props.children}</SwarmContext.Provider>
