@@ -16,6 +16,12 @@ import time
 
 from hivemind_exp.dht_utils import *
 
+# Import peer discovery module
+try:
+    from hivemind_exp.peer_discovery import PeerDiscovery
+except ImportError:
+    PeerDiscovery = None
+
 # UI is served from the filesystem
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIST_DIR = os.path.join(BASE_DIR, "ui", "dist")
@@ -25,6 +31,9 @@ DIST_DIR = os.path.join(BASE_DIR, "ui", "dist")
 dht: hivemind.DHT | None = None
 
 dht_cache: Cache
+
+# Global peer discovery instance
+peer_discovery_instance = None
 
 index_html = None
 
@@ -114,6 +123,84 @@ def get_gossip(since_round: int = Query(0)):
     return dict(gs)
 
 
+@app.get("/api/peers")
+def get_peers():
+    """
+    Get information about discovered peers
+
+    Returns:
+        JSON with peer information
+    """
+    global dht
+    global peer_discovery_instance
+
+    # Initialize peer discovery if needed
+    if dht and not peer_discovery_instance:
+        try:
+            if PeerDiscovery:
+                peer_discovery_instance = PeerDiscovery(dht)
+                peer_discovery_instance.start()
+                logger.info("Peer discovery started")
+        except Exception as e:
+            logger.error(f"Failed to start peer discovery: {e}")
+
+    # Get peers
+    peers = []
+
+    # First, add peers from peer discovery if available
+    if peer_discovery_instance:
+        discovered = peer_discovery_instance.get_peers()
+        peers.extend([{
+            "multiaddr": peer,
+            "source": "discovery",
+            "connected": _is_peer_connected(peer)
+        } for peer in discovered])
+
+    # Add directly connected peers from DHT
+    if dht:
+        try:
+            visible_maddrs = dht.get_visible_maddrs()
+            for maddr in visible_maddrs:
+                if not any(p["multiaddr"] == maddr for p in peers):
+                    peers.append({
+                        "multiaddr": maddr,
+                        "source": "connected",
+                        "connected": True
+                    })
+        except Exception as e:
+            logger.warning(f"Failed to get connected peers: {e}")
+
+    # Add myself
+    my_addr = dht.get_visible_maddrs()[0] if dht and dht.get_visible_maddrs() else None
+    if my_addr:
+        peers.append({
+            "multiaddr": my_addr,
+            "source": "self",
+            "connected": True
+        })
+
+    # Format the response
+    return {
+        "peers": peers,
+        "discovery_active": peer_discovery_instance is not None,
+        "total_count": len(peers),
+        "connected_count": sum(1 for p in peers if p["connected"])
+    }
+
+
+def _is_peer_connected(multiaddr):
+    """Check if a peer is connected"""
+    global dht
+    if not dht:
+        return False
+
+    try:
+        visible_maddrs = dht.get_visible_maddrs()
+        return multiaddr in visible_maddrs
+    except:
+        return False
+
+
 if os.getenv("API_ENV") != "dev":
     app.mount(
         "/assets",
@@ -188,6 +275,7 @@ def populate_cache():
 def main(args):
     global dht
     global dht_cache
+    global peer_discovery_instance
 
     # Allows either an environment variable for peering or fallback to command line args.
     initial_peers_env = os.getenv("INITIAL_PEERS", "")
@@ -199,6 +287,15 @@ def main(args):
     logger.info(f"initializing DHT with peers {initial_peers_list}")
     dht = hivemind.DHT(start=True, initial_peers=initial_peers_list)
     dht_cache = Cache(dht, multiprocessing.Manager(), logger)
+
+    # Initialize peer discovery
+    try:
+        if PeerDiscovery:
+            peer_discovery_instance = PeerDiscovery(dht)
+            peer_discovery_instance.start()
+            logger.info("Peer discovery started")
+    except Exception as e:
+        logger.error(f"Failed to start peer discovery: {e}")
 
     thread = Thread(target=populate_cache)
     thread.daemon = True

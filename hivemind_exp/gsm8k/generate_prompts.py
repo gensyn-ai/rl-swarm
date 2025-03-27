@@ -214,7 +214,7 @@ def get_gsm8k_questions_with_stage1and2_answers(data) -> Dataset:
 def get_stage1_samples():
     # Load dataset from Hugging Face Hub
     dataset_id = "openai/gsm8k"
-    train_dataset = load_dataset(dataset_id, "main")["train"]
+    train_dataset = load_dataset("gsm8k", "main")["train"]
     test_dataset = load_dataset(dataset_id, "main")["test"]
     # #TODO: Add ability to select a random subset of num_samples samples if desired
     # if num_samples != -1:
