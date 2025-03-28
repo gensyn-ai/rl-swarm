@@ -18,6 +18,7 @@ from hivemind_exp.dht_utils import (
     rewards_key,
 )
 from hivemind_exp.utils import HivemindNode, StageData
+from hivemind_exp.name_utils import get_name_from_uuid, search_uuid_for_name
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +111,7 @@ class HivemindGRPOTrainer:
         self.stage_data = stage_data
 
         self.config = config
+        self.config.output_dir += f"-{get_name_from_uuid(self.node.uuid)}" #Adding animal name to save path
         self.model = model
         self.tokenizer = tokenizer
         if tokenizer.pad_token is None:
