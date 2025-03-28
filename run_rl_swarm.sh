@@ -43,5 +43,18 @@ else
 fi
 
 echo ">> Done!"
+
+echo ""
+echo ""
+while true; do
+    read -p "Would you like to push models you train in the RL swarm to the Hugging Face Hub? [y/N] " yn
+    case $yn in
+        [Yy]* ) read -p "Enter your Hugging Face access token: " HUGGINGFACE_ACCESS_TOKEN && break;;
+        [Nn]* ) HUGGINGFACE_ACCESS_TOKEN="None" && break;;
+        * ) echo ">>> Please answer yes or no.";;
+    esac
+done
+echo ""
+echo ""
 echo "Good luck in the swarm!"
-python -m hivemind_exp.gsm8k.train_single_gpu --identity_path "$IDENTITY_PATH" --public_maddr "$PUB_MULTI_ADDRS" --initial_peer "$PEER_MULTI_ADDRS" --host_maddr "$HOST_MULTI_ADDRS" --config "$CONFIG_PATH"
+python -m hivemind_exp.gsm8k.train_single_gpu --hf_token "$HUGGINGFACE_ACCESS_TOKEN" --identity_path "$IDENTITY_PATH" --public_maddr "$PUB_MULTI_ADDRS" --initial_peer "$PEER_MULTI_ADDRS" --host_maddr "$HOST_MULTI_ADDRS" --config "$CONFIG_PATH"

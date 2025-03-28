@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from datetime import datetime
 import logging
@@ -5,6 +6,7 @@ import hivemind
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from trl import GRPOConfig, ModelConfig, TrlParser
+from huggingface_hub import login
 
 from hivemind_exp.gsm8k.generate_prompts import *
 from hivemind_exp.gsm8k.stage_merger import *
@@ -19,6 +21,9 @@ from hivemind_exp.gsm8k.stage_utils import gsm8k_stage_data
 ########################
 @dataclass
 class ScriptArguments:
+    #Hugging Face Hub
+    hf_token: str | None = None
+
     # Hivemind arguments
     initial_peer: str | None = None
     public_maddr: str | None = None
@@ -157,6 +162,13 @@ def grpo_function(
 def main():
     parser = TrlParser((ModelConfig, ScriptArguments, GRPOConfig))
     model_args, script_args, training_args = parser.parse_args_and_config()
+
+    # Log into hf hub if specified in configs and needed info is provided
+    if (script_args.hf_token not in [None, "None"]):
+        training_args.push_to_hub_token = script_args.hf_token
+        login(token=training_args.push_to_hub_token, add_to_git_credential=True)
+    else:
+        training_args.push_to_hub_token = None
 
     # Run the main training loop
     grpo_function(model_args, script_args, training_args)

@@ -1,3 +1,4 @@
+import os
 import gc
 import logging
 import time
@@ -206,8 +207,15 @@ class HivemindGRPOTrainer:
         # Save everything else on main process
         if trainer.accelerator.is_main_process:
             trainer.create_model_card(
-                {"tags": ["rl", "grpo", "tutorial", "philschmid"]}
+                {"tags": ["rl", "grpo", "gensyn", "swarm"]}
             )
+        # Push to HF hub if desired
+        if (self.config.push_to_hub_token != None): #TODO: Come back and add additional logic checking if they've provided access token+HF username
+            logger.info("Pushing model to Hugging Face Hub...")
+            try:
+                trainer.push_to_hub()
+            except:
+                logger.info("Failed to push model to the Hugging Face Hub. When you conclude training please try manually pushing it yourself using the instructions here: https://huggingface.co/docs/hub/en/models-uploading")
 
     def coordinator_train(self):
         tag = self._log_tag()
