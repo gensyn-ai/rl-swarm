@@ -6,7 +6,7 @@ This package provides an API and UI for displaying gossip messages and metrics a
 
 From the rl_swarm directory, use docker-compose to spin up containers for the webserver and OpenTelemetry.
 ```
-docker-compose build
+docker-compose build --no-cache
 ```
 
 ```
@@ -26,3 +26,6 @@ To only run the webserver, you can use the file Dockerfile.webserver from the ro
 ```
 docker build -t swarmui -f Dockerfile.webserver .
 ```
+
+## Smart contract
+The UI is set up to receive information from a smart contract. For development, it is assumed a smart contract is running locally using anvil.

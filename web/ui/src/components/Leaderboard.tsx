@@ -5,7 +5,7 @@ import SectionHeader from "./SectionHeader"
 import { createResource, createSignal, Show } from "solid-js"
 
 export default function Leaderboard() {
-	const { leaders, leadersLoading, leadersError } = useSwarm()
+	const { leaders, leadersLoading, leadersError, nodesConnected } = useSwarm()
 
 	// Search state: input is the raw text from the <input>, but query is what is searched for.
 	// This only exists in two signals so that we search on submit, not on each keystroke.
@@ -58,7 +58,7 @@ export default function Leaderboard() {
 			{/* Stats */}
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
 				<div class="border border-2 border-dotted p-2">
-					Nodes Connected: 12345
+					Nodes Connected: {nodesConnected()}
 				</div>
 				<div class="border border-2 border-dotted p-2">
 					Total Models Trained: 67890

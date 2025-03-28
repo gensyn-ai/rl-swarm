@@ -11,6 +11,7 @@ interface SwarmContextType {
 	participantsById: () => Record<string, { id: string; score: number; values: { x: number; y: number }[]; index: number }> | null
 	leadersLoading: () => boolean
 	leadersError: () => Error | null
+	nodesConnected:() => number
 
 	// State
 	currentRound: () => number
@@ -41,6 +42,7 @@ export function SwarmProvider(props: ParentProps) {
 	const [pollCount, setPollCount] = createSignal(0)
 	const [leaders, setLeaders] = createSignal<LeaderboardResponse | null | undefined>(null)
 	const [participantsById, setParticipantsById] = createSignal<Record<string, { id: string; score: number; values: { x: number; y: number }[]; index: number }> | null>(null)
+	const [nodesConnected, setNodesConnected] = createSignal(0)
 
 	// @ts-expect-warning - Intentionally unused variable
 	const [_roundAndStage, { refetch: refetchRoundAndStage }] = createResource(async () => {
@@ -84,6 +86,7 @@ export function SwarmProvider(props: ParentProps) {
 		setLeaders(nextLeaders)
 		setParticipantsById(participantsById)
 		setPollCount((prev) => prev + 1)
+		setNodesConnected(next?.total ?? 0)
 
 		return next
 	})
@@ -183,6 +186,7 @@ export function SwarmProvider(props: ParentProps) {
 		pollCount,
 		leadersLoading: () => _leaderboardData.loading,
 		leadersError: () => _leaderboardData.error,
+		nodesConnected,
 	}
 
 	return <SwarmContext.Provider value={value}>{props.children}</SwarmContext.Provider>

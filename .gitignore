@@ -11,3 +11,4 @@ runs/
 .DS_Store
 
 node_modules/
+web/ui/dist/

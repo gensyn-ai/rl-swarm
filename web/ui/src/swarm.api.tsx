@@ -71,6 +71,13 @@ export type RoundAndStageResponse = {
 	stage: number
 }
 
+export type VoterLeaderboardResponse = {
+	leaders: Array<{
+		id: string
+		score: number
+	}>
+}
+
 class SwarmContract {
 	client: ReturnType<typeof createPublicClient>
 	address: `0x${string}`
@@ -91,23 +98,56 @@ class SwarmContract {
 		this.address = address as `0x${string}`
 	}
 
-	public async getLeaderboard() {
-		const leaderboard = await this.client.readContract({
+	public async getLeaderboard(): Promise<VoterLeaderboardResponse> {
+		const [voters, voteCounts] = await this.client.readContract({
 			address: this.address,
 			abi: [
 				{
 					inputs: [{ type: "uint256" }, { type: "uint256" }],
-					name: "leaderboard",
-					outputs: [{ type: "address[]" }],
+					name: "voterLeaderboard",
+					outputs: [
+						{ type: "address[]" },
+						{ type: "uint256[]" }
+					],
 					stateMutability: "view",
 					type: "function",
 				},
 			],
-			functionName: "leaderboard",
-			args: [0n, 99n], // Smart contract only supports 100 leaders at a time.
+			functionName: "voterLeaderboard",
+			args: [0n, 100n], // Smart contract only supports 100 leaders at a time.
 		})
 
-		return leaderboard
+		return {
+			leaders: voters.map((voter, index) => ({
+				id: voter,
+				score: Number(voteCounts[index]),
+			})),
+		}
+	}
+
+	/**
+	 * Get the peer IDs for a list of EOAs.
+	 * 
+	 * @param eoas - The list of EOAs to get the peer IDs for.
+	 * @returns The peer IDs for the EOAs.
+	 */
+	public async getPeerIds(eoas: readonly `0x${string}`[]): Promise<readonly string[]> {
+		const peerIds = await this.client.readContract({
+			address: this.address,
+			abi: [
+				{
+					inputs: [{ type: "address[]" }],
+					name: "getPeerId",
+					outputs: [{ type: "string[]" }],
+					stateMutability: "view",
+					type: "function",
+				},
+			],
+			functionName: "getPeerId",
+			args: [eoas],
+		})
+
+		return peerIds
 	}
 
 	public async getRoundAndStage(): Promise<RoundAndStageResponse> {
@@ -177,9 +217,13 @@ class SwarmApi implements ISwarmApi {
 
 	public async getLeaderboard(): Promise<LeaderboardResponse> {
 		try {
-			// TODO: Update this to use the new leaderboard API.
-			const leaderboard = await this.swarmContract.getLeaderboard()
-			console.log(">>> leaderboard", leaderboard)
+			const voterLeaderboard = await this.swarmContract.getLeaderboard()
+			const peerIds = await this.swarmContract.getPeerIds(voterLeaderboard.leaders.map((leader) => leader.id as `0x${string}`))
+
+			// TODO: Use the voterLeaderboard, peerIds, and DHT leaderboard data to create a new leaderboard.
+			// TODO: Cache the peerIDs and only request them when they aren't in the cache.
+			console.log(`>>> voterLeaderboard: ${JSON.stringify(voterLeaderboard)}`)
+			console.log(`>>> peerIds: ${peerIds}`)
 
 			const res = await fetch(`/api/leaderboard`)
 			if (!res.ok) {
