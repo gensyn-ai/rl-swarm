@@ -3,6 +3,7 @@ import LoadingSpinner from "./LoadingSpinner"
 import ErrorMessage from "./ErrorMessage"
 import SectionHeader from "./SectionHeader"
 import { createResource, createSignal, Show } from "solid-js"
+import swarmApi from "../swarm.api"
 
 export default function Leaderboard() {
 	const { leaders, leadersLoading, leadersError, nodesConnected, uniqueVoters, uniqueVotersLoading } = useSwarm()
@@ -21,6 +22,11 @@ export default function Leaderboard() {
 		// The row will be highlighted.
 		const found = leaders()?.leaders.find((leader) => leader.id === query) !== undefined
 		if (found) {
+			return
+		}
+
+		const leader = await swarmApi.getPeerInfoFromName(query)
+		if (!leader) {
 			return
 		}
 

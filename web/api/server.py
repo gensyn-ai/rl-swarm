@@ -13,6 +13,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from hivemind_exp.dht_utils import *
+from hivemind_exp.name_utils import *
 
 import global_dht
 
@@ -101,6 +102,21 @@ def get_round_and_stage():
 def get_leaderboard():
     leaderboard = global_dht.dht_cache.get_leaderboard()
     return dict(leaderboard)
+
+
+@app.get("/api/name-to-id")
+def get_id_from_name(name: str = Query("")):
+	global dht_cache
+	assert dht_cache
+
+	leaderboard = dht_cache.get_leaderboard()
+	leader_ids = [leader["id"] for leader in leaderboard["leaders"]] or []
+
+	uuid = search_uuid_for_name(leader_ids, name)
+
+	return {
+		"id": uuid,
+	}
 
 
 @app.get("/api/gossip")

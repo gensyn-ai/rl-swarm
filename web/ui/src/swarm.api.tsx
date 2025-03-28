@@ -143,6 +143,27 @@ class SwarmContract {
 		}
 	}
 
+	public async getVoterCount(peerId: string): Promise<number> {
+		const eoa = await this.getEoa(peerId)
+
+		const count = await this.client.readContract({
+			address: this.address,
+			abi: [
+				{
+					inputs: [{ type: "address" }],
+					name: "getVoterVoteCount",
+					outputs: [{ type: "uint256" }],
+					stateMutability: "view",
+					type: "function",
+				},
+			],
+			functionName: "getVoterVoteCount",
+			args: [eoa],
+		})
+
+		return Number(count)
+	}
+
 	/**
 	 * Get the peer IDs for a list of EOAs.
 	 *
@@ -225,6 +246,26 @@ class SwarmContract {
 			round: Number(round),
 			stage: Number(stage),
 		}
+	}
+
+	public async getEoa(peerId: string): Promise<`0x${string}`> {
+		// function getEoa(string[] calldata peerIds) external view returns (address[] memory)
+		const eoa = await this.client.readContract({
+			address: this.address,
+			abi: [
+				{
+					inputs: [{ type: "string[]" }],
+					name: "getEoa",
+					outputs: [{ type: "address[]" }],
+					stateMutability: "view",
+					type: "function",
+				},
+			],
+			functionName: "getEoa",
+			args: [[peerId]],
+		})
+
+		return eoa[0]
 	}
 }
 
@@ -322,7 +363,7 @@ class SwarmApi implements ISwarmApi {
 					id: leader.id, // EOA
 					participation: leader.score, // Participation score
 					values: [], // Unused here
-					nickname: dhtParticipantsById.get(peerId)?.nickname || "", // Nickname from DHT
+					nickname: dhtParticipantsById.get(peerId)?.nickname || leader.id, // Nickname from DHT
 					score: dhtParticipantsById.get(peerId)?.score || 0, // Cumulative reward
 				}
 
@@ -346,6 +387,58 @@ class SwarmApi implements ISwarmApi {
 			} else {
 				throw new Error("could not get leaderboard")
 			}
+		}
+	}
+
+	public async getPeerInfoFromName(name: string): Promise<Leader | null> {
+		debugger
+		const nameToIdResponseSchema = z.object({
+			id: z.string().optional(),
+		})
+
+		try {
+			// 1) From the name, return the peer ID.
+			const res = await fetch(`/api/name-to-id?name=${name}`)
+			if (!res.ok) {
+				throw new Error(`failed to fetch rewards from id: ${res.statusText}`)
+			}
+
+			const json = await res.json()
+			const result = nameToIdResponseSchema.parse(json)
+
+			if (!result.id) {
+				console.warn(`Could not find peer with name ${name}`)
+				return null
+			}
+
+			// 2) From the peer ID, get the EOA so we can get the vote count.
+			const eoa = await this.swarmContract.getEoa(result.id)
+			const voteCount = await this.swarmContract.getVoterCount(eoa)
+
+			// 3) From the leaderboard, get the leader info and find the peer with the matching ID.
+			const leaderboard = await this.getLeaderboard()
+			const leader = leaderboard.leaders.find((leader) => leader.id === result.id)
+
+			if (leader) {
+				leader.participation = voteCount
+			}
+
+			// Ensure we return a valid Leader object
+			if (!leader) {
+				throw new Error("Could not find leader info")
+			}
+
+			return leader
+		} catch (e) {
+			if (e instanceof z.ZodError) {
+				console.warn("zod error fetching peer info from name. returning empty leader response.", e)
+				return null
+			} else if (e instanceof Error) {
+				console.error("error fetching peer info from name", e)
+				throw new Error(`could not get peer info from name: ${e.message}`)
+			} else {
+				throw new Error("could not get peer info from name")
+			}	
 		}
 	}
 
