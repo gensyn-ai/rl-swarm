@@ -1,4 +1,3 @@
-import os
 import gc
 import logging
 import time
@@ -111,7 +110,7 @@ class HivemindGRPOTrainer:
         self.stage_data = stage_data
 
         self.config = config
-        self.config.output_dir += f"-{get_name_from_uuid(self.node.uuid)}" #Adding animal name to save path
+        self.config.output_dir += f"-{get_name_from_uuid(str(self.node.uuid))}" #Adding animal name to save path
         self.model = model
         self.tokenizer = tokenizer
         if tokenizer.pad_token is None:
