@@ -11,7 +11,7 @@ vi.mock("viem", () => ({
 	http: vi.fn(),
 }))
 
-describe("getLeaderboard", () => {
+describe("getRewards", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})
@@ -36,7 +36,7 @@ describe("getLeaderboard", () => {
 			),
 		)
 
-		const result = await api.getLeaderboard()
+		const result = await api.getRewards()
 		expect(result.leaders).toHaveLength(20)
 
 		vi.stubGlobal(
@@ -58,7 +58,7 @@ describe("getLeaderboard", () => {
 			),
 		)
 
-		const resultShort = await api.getLeaderboard()
+		const resultShort = await api.getRewards()
 		expect(resultShort.leaders).toHaveLength(5)
 	})
 
@@ -74,7 +74,7 @@ describe("getLeaderboard", () => {
 			),
 		)
 
-		await expect(api.getLeaderboard()).rejects.toThrow("could not get leaderboard: Failed to fetch leaderboard: Internal Server Error")
+		await expect(api.getRewards()).rejects.toThrow("could not get rewards: Failed to fetch rewards: Internal Server Error")
 	})
 })
 

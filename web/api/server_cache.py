@@ -74,6 +74,7 @@ class Cache:
             all_entries = [
                 {
                     "id": str(t[0]),
+					"nickname": get_name_from_uuid(t[0]),
                     "score": t[1],
                     "values": [],
                 }

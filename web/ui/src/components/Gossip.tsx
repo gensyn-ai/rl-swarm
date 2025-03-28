@@ -37,7 +37,7 @@ export default function Gossip() {
 					{ctx.gossipMessages().length > 0 ? (
 						ctx.gossipMessages().map((msg) => {
 							return (
-								<li>
+								<li class="mt-4">
 									<NodeMessage id={msg.node} message={msg.message} />
 								</li>
 							)
@@ -55,6 +55,7 @@ export default function Gossip() {
 
 function NodeMessage(props: { id: string; message: string }) {
 	const reAnswer = new RegExp(/Answer:.+$/)
+
 	const match = props.message.match(reAnswer)
 
 	let mainText = props.message

@@ -2,6 +2,9 @@ import { z } from "zod"
 import { createPublicClient, http } from "viem"
 import { Chain } from "viem"
 
+// Reader warning:
+// The types in this file are a mess and need to be refactored.
+
 // sepoliaChain is used for testnet deployment.
 const sepoliaChain: Chain = {
 	id: 11155111,
@@ -38,12 +41,27 @@ const anvilChain: Chain = {
 	testnet: true,
 }
 
+const rewardsResponseSchema = z.object({
+	leaders: z.array(
+		z.object({
+			id: z.string(),
+			nickname: z.string(),
+			values: z.array(z.object({ x: z.number(), y: z.number() })),
+			score: z.number(), // Poor name but minimizing changes. This is the cumulative reward.
+		}),
+	),
+	total: z.number(),
+})
+export type RewardsResponse = z.infer<typeof rewardsResponseSchema>
+
 const leaderboardResponseSchema = z.object({
 	leaders: z.array(
 		z.object({
 			id: z.string(),
+			nickname: z.string(),
 			values: z.array(z.object({ x: z.number(), y: z.number() })),
-			score: z.number(),
+			score: z.number(), // Poor name but minimizing changes. This is the cumulative reward.
+			participation: z.number(),
 		}),
 	),
 	total: z.number(),
@@ -78,6 +96,9 @@ export type VoterLeaderboardResponse = {
 	}>
 }
 
+type Leader = LeaderboardResponse["leaders"][number]
+type Reward = RewardsResponse["leaders"][number]
+
 class SwarmContract {
 	client: ReturnType<typeof createPublicClient>
 	address: `0x${string}`
@@ -105,10 +126,7 @@ class SwarmContract {
 				{
 					inputs: [{ type: "uint256" }, { type: "uint256" }],
 					name: "voterLeaderboard",
-					outputs: [
-						{ type: "address[]" },
-						{ type: "uint256[]" }
-					],
+					outputs: [{ type: "address[]" }, { type: "uint256[]" }],
 					stateMutability: "view",
 					type: "function",
 				},
@@ -127,11 +145,11 @@ class SwarmContract {
 
 	/**
 	 * Get the peer IDs for a list of EOAs.
-	 * 
+	 *
 	 * @param eoas - The list of EOAs to get the peer IDs for.
 	 * @returns The peer IDs for the EOAs.
 	 */
-	public async getPeerIds(eoas: readonly `0x${string}`[]): Promise<readonly string[]> {
+	public async getPeerIds(eoas: readonly `0x${string}`[]): Promise<Record<`0x${string}`, string>> {
 		const peerIds = await this.client.readContract({
 			address: this.address,
 			abi: [
@@ -147,7 +165,30 @@ class SwarmContract {
 			args: [eoas],
 		})
 
-		return peerIds
+		const output: Record<`0x${string}`, string> = {}
+		eoas.forEach((eoa, index) => {
+			output[eoa] = peerIds[index]
+		})
+
+		return output
+	}
+
+	public async uniqueVoters(): Promise<number> {
+		const count = await this.client.readContract({
+			address: this.address,
+			abi: [
+				{
+					inputs: [],
+					name: "uniqueVoters",
+					outputs: [{ type: "uint256" }],
+					stateMutability: "view",
+					type: "function",
+				},
+			],
+			functionName: "uniqueVoters",
+		})
+
+		return Number(count)
 	}
 
 	public async getRoundAndStage(): Promise<RoundAndStageResponse> {
@@ -215,23 +256,24 @@ class SwarmApi implements ISwarmApi {
 		}
 	}
 
-	public async getLeaderboard(): Promise<LeaderboardResponse> {
+	public async getUniqueVotersCount(): Promise<number> {
 		try {
-			const voterLeaderboard = await this.swarmContract.getLeaderboard()
-			const peerIds = await this.swarmContract.getPeerIds(voterLeaderboard.leaders.map((leader) => leader.id as `0x${string}`))
+			return await this.swarmContract.uniqueVoters()
+		} catch (e) {
+			console.error("error fetching unique voters count", e)
+			throw new Error("could not get unique voters count")
+		}
+	}
 
-			// TODO: Use the voterLeaderboard, peerIds, and DHT leaderboard data to create a new leaderboard.
-			// TODO: Cache the peerIDs and only request them when they aren't in the cache.
-			console.log(`>>> voterLeaderboard: ${JSON.stringify(voterLeaderboard)}`)
-			console.log(`>>> peerIds: ${peerIds}`)
-
+	public async getRewards(): Promise<RewardsResponse> {
+		try {
 			const res = await fetch(`/api/leaderboard`)
 			if (!res.ok) {
-				throw new Error(`Failed to fetch leaderboard: ${res.statusText}`)
+				throw new Error(`Failed to fetch rewards: ${res.statusText}`)
 			}
 
 			const json = await res.json()
-			const result = leaderboardResponseSchema.parse(json)
+			const result = rewardsResponseSchema.parse(json)
 
 			result.leaders.forEach((leader) => {
 				leader.score = parseFloat(leader.score.toFixed(2))
@@ -242,6 +284,55 @@ class SwarmApi implements ISwarmApi {
 			})
 
 			return result
+		} catch (e) {
+			if (e instanceof z.ZodError) {
+				console.warn("zod error fetching rewards details. returning empty rewards response.", e)
+				return {
+					leaders: [],
+					total: 0,
+				}
+			} else if (e instanceof Error) {
+				console.error("error fetching rewards details", e)
+				throw new Error(`could not get rewards: ${e.message}`)
+			} else {
+				throw new Error("could not get rewards")
+			}
+		}
+	}
+
+	public async getLeaderboard(): Promise<LeaderboardResponse> {
+		try {
+			const voterLeaderboard = await this.swarmContract.getLeaderboard()
+			const peerIdsByEoa = await this.swarmContract.getPeerIds(voterLeaderboard.leaders.map((leader) => leader.id as `0x${string}`))
+
+			// TODO: Locally cache results so we don't 2x hit this API.
+			const rewards = await this.getRewards()
+
+			// Transform data just for lookup.
+			// We have to merge the source of truth (voterLeaderboard) with the DHT leaderboard data.
+			const dhtParticipantsById = new Map<string, Reward>()
+			rewards.leaders.forEach((leader) => {
+				dhtParticipantsById.set(leader.id, leader)
+			})
+
+			const data = voterLeaderboard.leaders.map((leader) => {
+				const peerId = peerIdsByEoa[leader.id as `0x${string}`]
+
+				const out: Leader = {
+					id: leader.id, // EOA
+					participation: leader.score, // Participation score
+					values: [], // Unused here
+					nickname: dhtParticipantsById.get(peerId)?.nickname || "", // Nickname from DHT
+					score: dhtParticipantsById.get(peerId)?.score || 0, // Cumulative reward
+				}
+
+				return out
+			})
+
+			return {
+				leaders: data,
+				total: rewards.total,
+			}
 		} catch (e) {
 			if (e instanceof z.ZodError) {
 				console.warn("zod error fetching leaderboard details. returning empty leaderboard response.", e)

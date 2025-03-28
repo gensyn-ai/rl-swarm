@@ -5,7 +5,7 @@ import SectionHeader from "./SectionHeader"
 import { createResource, createSignal, Show } from "solid-js"
 
 export default function Leaderboard() {
-	const { leaders, leadersLoading, leadersError, nodesConnected } = useSwarm()
+	const { leaders, leadersLoading, leadersError, nodesConnected, uniqueVoters, uniqueVotersLoading } = useSwarm()
 
 	// Search state: input is the raw text from the <input>, but query is what is searched for.
 	// This only exists in two signals so that we search on submit, not on each keystroke.
@@ -33,6 +33,8 @@ export default function Leaderboard() {
 			score: 1,
 			values: [],
 			index: 99,
+			nickname: "foobarbaz",
+			participation: 0.5,
 		}
 	})
 
@@ -58,10 +60,17 @@ export default function Leaderboard() {
 			{/* Stats */}
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
 				<div class="border border-2 border-dotted p-2">
-					Nodes Connected: {nodesConnected()}
+					{/* This value comes from the leaderboard API since it's the total number of peers (DHT). */}
+					Nodes Connected:
+					<Show when={leadersLoading() && leaders()?.leaders.length === 0} fallback={nodesConnected()}>
+						<LoadingSpinner message="..." />
+					</Show>
 				</div>
 				<div class="border border-2 border-dotted p-2">
-					Total Models Trained: 67890
+					Total Models Trained:
+					<Show when={uniqueVotersLoading() && uniqueVoters() === -1} fallback={uniqueVoters()}>
+						<LoadingSpinner message="..." />
+					</Show>
 				</div>
 			</div>
 
@@ -71,7 +80,7 @@ export default function Leaderboard() {
 
 				<div class="md:ml-2 relative">
 					<form onSubmit={searchLeaderboard} class="flex uppercase mt-2 mb-2 uppercase" inert={leaderSearchResult.loading}>
-						<input type="text" value={searchInput()} onInput={(e) => setSearchInput(e.currentTarget.value)} placeholder="ENTER YOUR NODE ADDRESS" class="border border-gensyn-brown p-2 flex-grow focus:outline-none focus:ring-0 focus:border-gensyn-green" />
+						<input type="text" value={searchInput()} onInput={(e) => setSearchInput(e.currentTarget.value)} placeholder="ENTER YOUR NODE NAME" class="border border-gensyn-brown p-2 flex-grow focus:outline-none focus:ring-0 focus:border-gensyn-green" />
 						<button type="submit" class="uppercase border-t border-b border-r border-gensyn-brown p-2 bg-[rgba(0,0,0,0.05)]">
 							Search
 						</button>
@@ -101,37 +110,39 @@ export default function Leaderboard() {
 					</tr>
 				</thead>
 				<tbody>
-					{leaders()?.leaders.slice(0, 10).map((leader, index) => (
-						<tr class={`${leader.id === leaderSearchQuery() ? "bg-gensyn-green text-white" : ""}`}>
-							{/* Rank */}
-							<td class="text-left">{index + 1}</td>
+					{leaders()
+						?.leaders.slice(0, 10)
+						.map((leader, index) => (
+							<tr class={`${leader.id === leaderSearchQuery() ? "bg-gensyn-green text-white" : ""}`}>
+								{/* Rank */}
+								<td class="text-left">{index + 1}</td>
 
-							{/* Name */}
-							<td class="text-left">
-								<span>{leader.id}</span>
-							</td>
+								{/* Name */}
+								<td class="text-left">
+									<span>{leader.nickname}</span>
+								</td>
 
-							{/* Participation */}
-							<td class="text-left">
-								<span>{leader.score}</span>
-							</td>
+								{/* Participation */}
+								<td class="text-left">
+									<span>{leader.participation}</span>
+								</td>
 
-							{/* Cumulative Reward */}
-							<td class="text-right hidden md:table-cell">
-								<span>{leader.score}</span>
-							</td>
-						</tr>
-					))}
+								{/* Cumulative Reward */}
+								<td class="text-right hidden md:table-cell">
+									<span>{leader.score}</span>
+								</td>
+							</tr>
+						))}
 				</tbody>
 				<tbody>
 					<Show when={leaderSearchResult()}>
 						<tr class={`${leaderSearchResult() && leaderSearchResult()?.id === leaderSearchQuery() ? "bg-gensyn-green text-white" : ""}`}>
 							<td class="text-left">{leaderSearchResult()?.index}</td>
 							<td class="text-left">
-								<span>{leaderSearchResult()?.id}</span>
+								<span>{leaderSearchResult()?.nickname}</span>
 							</td>
 							<td class="text-left">
-								<span>{leaderSearchResult()?.score}</span>
+								<span>{leaderSearchResult()?.participation}</span>
 							</td>
 							<td class="text-right hidden md:table-cell">
 								<span>{leaderSearchResult()?.score}</span>

@@ -1,5 +1,5 @@
 import { createContext, createResource, createSignal, useContext, onMount, onCleanup, ParentProps } from "solid-js"
-import { LeaderboardResponse, GossipResponse } from "./swarm.api"
+import { LeaderboardResponse, GossipResponse, RewardsResponse } from "./swarm.api"
 import api from "./swarm.api"
 
 interface SwarmContextType {
@@ -8,10 +8,17 @@ interface SwarmContextType {
 
 	// Leaderboard info
 	leaders: () => LeaderboardResponse | null | undefined
-	participantsById: () => Record<string, { id: string; score: number; values: { x: number; y: number }[]; index: number }> | null
 	leadersLoading: () => boolean
 	leadersError: () => Error | null
-	nodesConnected:() => number
+	nodesConnected: () => number
+	uniqueVoters: () => number
+	uniqueVotersLoading: () => boolean
+	uniqueVotersError: () => Error | null
+
+	// Rewards info
+	rewards: () => RewardsResponse | null | undefined
+	rewardsLoading: () => boolean
+	rewardsError: () => Error | null
 
 	// State
 	currentRound: () => number
@@ -41,8 +48,10 @@ export function SwarmProvider(props: ParentProps) {
 	// Leaderboard state
 	const [pollCount, setPollCount] = createSignal(0)
 	const [leaders, setLeaders] = createSignal<LeaderboardResponse | null | undefined>(null)
-	const [participantsById, setParticipantsById] = createSignal<Record<string, { id: string; score: number; values: { x: number; y: number }[]; index: number }> | null>(null)
-	const [nodesConnected, setNodesConnected] = createSignal(0)
+	const [rewards, setRewards] = createSignal<RewardsResponse | null | undefined>(null)
+
+	const [nodesConnected, setNodesConnected] = createSignal(-1)
+	const [uniqueVoters, setUniqueVoters] = createSignal(-1)
 
 	// @ts-expect-warning - Intentionally unused variable
 	const [_roundAndStage, { refetch: refetchRoundAndStage }] = createResource(async () => {
@@ -57,6 +66,16 @@ export function SwarmProvider(props: ParentProps) {
 		return data
 	})
 
+	const [_uniqueVoters, { refetch: refetchUniqueVoters }] = createResource(async () => {
+		const data = await api.getUniqueVotersCount()
+		if (!data) {
+			return undefined
+		}
+
+		setUniqueVoters(data)
+		return data
+	})
+
 	// Resources for data fetching
 	// @ts-expect-warning - Intentionally unused variable
 	const [_leaderboardData, { refetch: refetchLeaderboard }] = createResource(async () => {
@@ -66,29 +85,35 @@ export function SwarmProvider(props: ParentProps) {
 			return
 		}
 
+		setLeaders(data)
+		setNodesConnected(data.total)
+
+		return data
+	})
+
+	// @ts-expect-warning - Intentionally unused variable
+	const [_rewardsData, { refetch: refetchRewards }] = createResource(async () => {
+		const data = await fetchRewardsData()
+		if (!data || data.leaders.length === 0) {
+			setRewards(null)
+			return
+		}
+
 		// Multiply by 10 as an approximation of seconds.
 		// TODO: Use actual timestamp.
 		const xVal = pollCount() * 10
-		const next = mergeLeaderboardData(xVal, data, leaders())
+		const next = mergeLeaderboardData(xVal, data, rewards())
 
 		// Truncate to top 10 for display.
-		const nextLeaders: LeaderboardResponse = {
+		const nextRewards: RewardsResponse = {
 			leaders: next?.leaders.slice(0, 10) ?? [],
 			total: next?.total ?? 0,
 		}
 
-		// Store all participants by ID for search.
-		const participantsById: Record<string, { id: string; score: number; values: { x: number; y: number }[]; index: number }> = {}
-		next?.leaders.forEach((participant, index) => {
-			participantsById[participant.id] = { ...participant, index }
-		})
-
-		setLeaders(nextLeaders)
-		setParticipantsById(participantsById)
+		setRewards(nextRewards)
 		setPollCount((prev) => prev + 1)
-		setNodesConnected(next?.total ?? 0)
 
-		return next
+		return nextRewards
 	})
 
 	// @ts-expect-warning - Intentionally unused variable
@@ -122,6 +147,7 @@ export function SwarmProvider(props: ParentProps) {
 	let leaderboardTimer: ReturnType<typeof setTimeout> | undefined = undefined
 	let gossipTimer: ReturnType<typeof setTimeout> | undefined = undefined
 	let roundAndStageTimer: ReturnType<typeof setTimeout> | undefined = undefined
+	let rewardsTimer: ReturnType<typeof setTimeout> | undefined = undefined
 
 	// Polling functions
 	const pollGossip = async () => {
@@ -136,6 +162,7 @@ export function SwarmProvider(props: ParentProps) {
 
 	const pollLeaderboard = async () => {
 		await refetchLeaderboard()
+		await refetchUniqueVoters()
 
 		if (leaderboardTimer !== undefined) {
 			clearTimeout(leaderboardTimer)
@@ -154,6 +181,16 @@ export function SwarmProvider(props: ParentProps) {
 		roundAndStageTimer = setTimeout(pollRoundAndStage, 10_000)
 	}
 
+	const pollRewards = async () => {
+		await refetchRewards()
+
+		if (rewardsTimer !== undefined) {
+			clearTimeout(rewardsTimer)
+		}
+
+		rewardsTimer = setTimeout(pollRewards, 10_000)
+	}
+
 	// Setup and cleanup
 	onMount(() => {
 		// These already fire once immediately since the calls are created through createResource,
@@ -161,6 +198,7 @@ export function SwarmProvider(props: ParentProps) {
 		leaderboardTimer = setTimeout(pollLeaderboard, 10_000)
 		gossipTimer = setTimeout(pollGossip, 10_000)
 		roundAndStageTimer = setTimeout(pollRoundAndStage, 10_000)
+		rewardsTimer = setTimeout(pollRewards, 10_000)
 	})
 
 	onCleanup(() => {
@@ -175,18 +213,32 @@ export function SwarmProvider(props: ParentProps) {
 		if (roundAndStageTimer) {
 			clearTimeout(roundAndStageTimer)
 		}
+
+		if (rewardsTimer) {
+			clearTimeout(rewardsTimer)
+		}
 	})
 
 	const value: SwarmContextType = {
 		currentRound,
 		currentStage,
+
 		gossipMessages,
+
 		leaders,
-		participantsById,
-		pollCount,
 		leadersLoading: () => _leaderboardData.loading,
 		leadersError: () => _leaderboardData.error,
+
+		pollCount,
 		nodesConnected,
+
+		uniqueVoters,
+		uniqueVotersLoading: () => _uniqueVoters.loading,
+		uniqueVotersError: () => _uniqueVoters.error,
+
+		rewards,
+		rewardsLoading: () => _rewardsData.loading,
+		rewardsError: () => _rewardsData.error,
 	}
 
 	return <SwarmContext.Provider value={value}>{props.children}</SwarmContext.Provider>
@@ -210,6 +262,15 @@ async function fetchGossipData(since: number): Promise<GossipResponse | undefine
 	}
 }
 
+async function fetchRewardsData(): Promise<RewardsResponse | undefined> {
+	try {
+		return await api.getRewards()
+	} catch (e) {
+		console.error("fetchRewardsData failed", e)
+		return undefined
+	}
+}
+
 /**
  * mergeLeaderboardData constructs the datapoints needed by the graphing library to render a node's score change over time.
  * The backend returns a snapshot of the current cumulative reward, so the client must build the history when polling.
@@ -221,7 +282,7 @@ async function fetchGossipData(since: number): Promise<GossipResponse | undefine
  * @param accumulator accumulated leaders data, stores old values
  * @returns A new accumulator with the updated values.
  */
-export function mergeLeaderboardData(xVal: number, apiRes: LeaderboardResponse | undefined, accumulator: LeaderboardResponse | null | undefined): LeaderboardResponse | null | undefined {
+export function mergeLeaderboardData(xVal: number, apiRes: RewardsResponse | undefined, accumulator: RewardsResponse | null | undefined): RewardsResponse | null | undefined {
 	if (apiRes === undefined) {
 		return accumulator
 	}

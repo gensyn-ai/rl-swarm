@@ -1,16 +1,19 @@
 import { createMemo, createEffect, onMount } from "solid-js"
 import { useSwarm } from "../SwarmContext"
-import { LeaderboardResponse } from "../swarm.api"
+import { RewardsResponse } from "../swarm.api"
 import * as d3 from "d3"
 import SectionHeader from "./SectionHeader"
 
 export default function Rewards() {
 	const ctx = useSwarm()
+	
+	// Create a memoized value for the rewards data
+	const rewardsData = createMemo(() => ctx.rewards() ?? { leaders: [], total: 0 })
 
 	return (
 		<section class="flex flex-col gap-2">
 			<SectionHeader title="Cumulative Reward" tooltip={<RewardsTooltip />} />
-			<RewardsGraph data={ctx.leaders() ?? { leaders: [], total: 0 }} />
+			<RewardsGraph data={rewardsData()} />
 		</section>
 	)
 }
@@ -36,7 +39,7 @@ function RewardsTooltip() {
 	)
 }
 
-function RewardsGraph(props: { data: LeaderboardResponse }) {
+function RewardsGraph(props: { data: RewardsResponse }) {
 	let svgRef: SVGSVGElement | undefined
 
 	// Props aren't automatically reactive, so we need to turn the props into a signal.

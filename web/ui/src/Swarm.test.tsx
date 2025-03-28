@@ -44,7 +44,7 @@ describe("Swarm", () => {
 
 		getGossipSpy.mockResolvedValueOnce(firstRes).mockResolvedValueOnce(secondRes)
 		getLeaderboardSpy.mockResolvedValue({
-			leaders: [{ id: "not-used", values: [{ x: 0, y: 0 }], score: 0 }],
+			leaders: [{ id: "not-used", values: [{ x: 0, y: 0 }], score: 0, nickname: "nn", participation: 0 }],
 			total: 1,
 		})
 
@@ -113,8 +113,8 @@ describe("Swarm", () => {
 		getGossipSpy.mockResolvedValue({ messages: [] })
 		getLeaderboardSpy.mockResolvedValue({
 			leaders: [
-				{ id: "node1", values: [{ x: 0, y: 2 }], score: 2 },
-				{ id: "node2", values: [{ x: 0, y: 1 }], score: 1 },
+				{ id: "node1", values: [{ x: 0, y: 2 }], score: 2, nickname: "nn1", participation: 2 },
+				{ id: "node2", values: [{ x: 0, y: 1 }], score: 1, nickname: "nn2", participation: 1 },
 			],
 			total: 2,
 		})
@@ -154,7 +154,7 @@ describe("Swarm", () => {
 
 		getGossipSpy.mockResolvedValue({ messages: [] })
 		getLeaderboardSpy.mockResolvedValue({
-			leaders: [{ id: "node1", values: [{ x: 0, y: 1 }], score: 1 }],
+			leaders: [{ id: "node1", values: [{ x: 0, y: 1 }], score: 1, nickname: "nn1", participation: 1 }],
 			total: 1,
 		})
 		getRoundAndStageSpy.mockResolvedValue({ round: 5, stage: 3 })
@@ -177,7 +177,7 @@ describe("Swarm", () => {
 		const getRoundAndStageSpy = vi.spyOn(api, "getRoundAndStage")
 
 		getLeaderboardSpy.mockResolvedValue({
-			leaders: [{ id: "node1", values: [{ x: 0, y: 1 }], score: 1 }],
+			leaders: [{ id: "node1", values: [{ x: 0, y: 1 }], score: 1, nickname: "nn1", participation: 1 }],
 			total: 1,
 		})
 		getRoundAndStageSpy.mockResolvedValue({ round: 1, stage: 1 })

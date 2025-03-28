@@ -29,7 +29,7 @@ describe("SwarmProvider", () => {
 			expect(ctx.currentStage()).toBe(-1)
 			expect(ctx.gossipMessages()).toEqual([])
 			expect(ctx.leaders()).toBeNull()
-			expect(ctx.participantsById()).toBeNull()
+			expect(ctx.uniqueVoters()).toBe(-1)
 			expect(ctx.pollCount()).toBe(0)
 			return null
 		}
@@ -41,11 +41,11 @@ describe("SwarmProvider", () => {
 		))
 	})
 
-	it("should update leaderboard and participantsById when data is fetched", async () => {
+	it("should update leaderboard when data is fetched", async () => {
 		vi.mocked(api.getLeaderboard).mockResolvedValue({
 			leaders: [
-				{ id: "node1", score: 1.0, values: [] },
-				{ id: "node2", score: 0.5, values: [] },
+				{ id: "node1", score: 1.0, values: [], nickname: "nn1", participation: 1 },
+				{ id: "node2", score: 0.5, values: [], nickname: "nn2", participation: 0.5 },
 			],
 			total: 2,
 		})
@@ -58,15 +58,6 @@ describe("SwarmProvider", () => {
 			return (
 				<div>
 					<div data-testid="leader-count">{ctx.leaders()?.leaders.length}</div>
-					<div data-testid="participant-count">{ctx.participantsById() ? Object.keys(ctx.participantsById()!).length : 0}</div>
-					<div data-testid="participant-data">
-						{ctx.participantsById() ? (
-							<>
-								<div data-testid="node1-score">{ctx.participantsById()!["node1"].score}</div>
-								<div data-testid="node2-score">{ctx.participantsById()!["node2"].score}</div>
-							</>
-						) : null}
-					</div>
 				</div>
 			)
 		}
@@ -83,21 +74,11 @@ describe("SwarmProvider", () => {
 		// Initial state
 		const leaderCount = await findByTestId("leader-count")
 		expect(leaderCount.textContent).toBe("2")
-
-		// Verify participantsById is populated
-		const participantCount = await findByTestId("participant-count")
-		expect(participantCount.textContent).toBe("2")
-
-		// Verify participant data structure through DOM
-		const node1Score = await findByTestId("node1-score")
-		const node2Score = await findByTestId("node2-score")
-		expect(node1Score.textContent).toBe("1")
-		expect(node2Score.textContent).toBe("0.5")
 	})
 
 	it("should poll for updates", async () => {
 		vi.mocked(api.getLeaderboard).mockResolvedValue({
-			leaders: [{ id: "node1", score: 1.0, values: [] }],
+			leaders: [{ id: "node1", score: 1.0, values: [], nickname: "nn1", participation: 1 }],
 			total: 1,
 		})
 		vi.mocked(api.getGossip).mockResolvedValue({ messages: [] })
@@ -167,16 +148,16 @@ describe("SwarmProvider", () => {
 		vi.mocked(api.getLeaderboard)
 			.mockResolvedValueOnce({
 				leaders: [
-					{ id: "nodea", values: [{ x: 0, y: 1 }], score: 1 },
-					{ id: "nodeb", values: [{ x: 0, y: 1 }], score: 1 },
+					{ id: "nodea", values: [{ x: 0, y: 1 }], score: 1, nickname: "nn1", participation: 1 },
+					{ id: "nodeb", values: [{ x: 0, y: 1 }], score: 1, nickname: "nn2", participation: 0.5 },
 				],
 				total: 2,
 			})
 			.mockResolvedValueOnce({
 				leaders: [
-					{ id: "nodec", values: [{ x: 0, y: 2 }], score: 3 },
-					{ id: "nodea", values: [{ x: 0, y: 2 }], score: 2 },
-					{ id: "nodeb", values: [{ x: 0, y: 2 }], score: 2 },
+					{ id: "nodec", values: [{ x: 0, y: 2 }], score: 3, nickname: "nn3", participation: 1 },
+					{ id: "nodea", values: [{ x: 0, y: 2 }], score: 2, nickname: "nn1", participation: 0.5 },
+					{ id: "nodeb", values: [{ x: 0, y: 2 }], score: 2, nickname: "nn2", participation: 0.5 },
 				],
 				total: 3,
 			})
@@ -285,16 +266,16 @@ describe("SwarmProvider", () => {
 					xVal: 42,
 					response: {
 						leaders: [
-							{ id: "node-a", score: 1.0, values: [] },
-							{ id: "node-b", score: 0.5, values: [] },
+							{ id: "node-a", score: 1.0, values: [], nickname: "nn1", participation: 1 },
+							{ id: "node-b", score: 0.5, values: [], nickname: "nn2", participation: 0.5 },
 						],
 						total: 2,
 					},
 					accumulator: undefined,
 					wantOut: {
 						leaders: [
-							{ id: "node-a", score: 1.0, values: [{ x: 42, y: 1.0 }] },
-							{ id: "node-b", score: 0.5, values: [{ x: 42, y: 0.5 }] },
+							{ id: "node-a", score: 1.0, values: [{ x: 42, y: 1.0 }], nickname: "nn1", participation: 1 },
+							{ id: "node-b", score: 0.5, values: [{ x: 42, y: 0.5 }], nickname: "nn2", participation: 0.5 },
 						],
 						total: 2,
 					},
@@ -306,15 +287,15 @@ describe("SwarmProvider", () => {
 					xVal: 42,
 					response: {
 						leaders: [
-							{ id: "node-a", score: 1.0, values: [] },
-							{ id: "node-b", score: 0.5, values: [] },
+							{ id: "node-a", score: 1.0, values: [], nickname: "nn1", participation: 1 },
+							{ id: "node-b", score: 0.5, values: [], nickname: "nn2", participation: 0.5 },
 						],
 						total: 2,
 					},
 					accumulator: {
 						leaders: [
-							{ id: "node-a", score: 0.9, values: [{ x: 41, y: 0.9 }] },
-							{ id: "node-c", score: 0.8, values: [{ x: 41, y: 0.8 }] },
+							{ id: "node-a", score: 0.9, values: [{ x: 41, y: 0.9 }], nickname: "nn1", participation: 0.9 },
+							{ id: "node-c", score: 0.8, values: [{ x: 41, y: 0.8 }], nickname: "nn3", participation: 0.8 },
 						],
 						total: 2,
 					},
@@ -327,8 +308,10 @@ describe("SwarmProvider", () => {
 									{ x: 41, y: 0.9 },
 									{ x: 42, y: 1.0 },
 								],
+								nickname: "nn1",
+								participation: 0.9,
 							},
-							{ id: "node-b", score: 0.5, values: [{ x: 42, y: 0.5 }] },
+							{ id: "node-b", score: 0.5, values: [{ x: 42, y: 0.5 }], nickname: "nn2", participation: 0.5 },
 						],
 						total: 2,
 					},

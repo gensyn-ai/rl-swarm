@@ -6,7 +6,7 @@ import { useSwarm } from "./SwarmContext"
 
 export default function Swarm() {
 	const ctx = useSwarm()
-	const premadeTweet = encodeURIComponent("I'm joining the Swarm on the Gensyn Testnet")
+	const premadeTweet = encodeURIComponent("Running RL Swarm on @gensynai testnet 🔥\nhttps://testnet.gensyn.ai")
 
 	return (
 		<main class="tracking-wider !font-normal !antialiased max-w-[876px] p-2 md:pt-12 md:pl-12 md:pr-0 flex flex-col justify-between md:min-h-screen ml-auto mr-auto">
@@ -77,7 +77,7 @@ export default function Swarm() {
 					<a target="_blank" rel="noopener noreferrer" href="">
 						<img class="h-[30px]" src="/images/x-logo.svg" alt="X logo" />
 					</a>
-					<a class="ml-8"target="_blank" rel="noopener noreferrer" href="">
+					<a class="ml-8" target="_blank" rel="noopener noreferrer" href="">
 						<img class="h-[30px]" src="/images/farcaster-logo.svg" alt="X logo" />
 					</a>
 				</footer>
