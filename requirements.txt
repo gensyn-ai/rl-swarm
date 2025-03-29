@@ -5,6 +5,7 @@ datasets
 hf-transfer
 peft
 protobuf==5.29.0
+schedule
 tensorboard
 transformers>=4.46.0
 trl>=0.15.0

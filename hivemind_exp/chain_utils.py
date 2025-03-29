@@ -38,6 +38,8 @@ class SwarmCoordinator(ABC):
 
     def submit_winners(self, round_num, winners): ...
 
+    def update_stage_and_round(self): ...
+
     def get_bootnodes(self):
         return self.contract.functions.getBootnodes().call()
 
@@ -60,6 +62,15 @@ class WalletSwarmCoordinator(SwarmCoordinator):
             "gas": 500000,
             "gasPrice": self.web3.to_wei("50", "gwei"),
         }
+
+    def update_stage_and_round(self):
+        send_chain_txn(
+            self.web3,
+            self.account,
+            lambda: self.contract.functions.updateStageAndRound().build_transaction(
+                self._default_gas()
+            ),
+        )
 
     def register_peer(self, peer_id):
         send_chain_txn(
