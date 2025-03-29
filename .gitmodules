@@ -1,0 +1,3 @@
+[submodule "modal-login"]
+	path = modal-login
+	url = git@github.com:gensyn-ai/modal-login.git
