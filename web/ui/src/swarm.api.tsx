@@ -343,14 +343,18 @@ class SwarmApi implements ISwarmApi {
 
 	public async getLeaderboard(): Promise<LeaderboardResponse> {
 		try {
+			// Leaderboard contains the information for the EOAs, which we can use to get the peer IDs.
 			const voterLeaderboard = await this.swarmContract.getLeaderboard()
 			const peerIdsByEoa = await this.swarmContract.getPeerIds(voterLeaderboard.leaders.map((leader) => leader.id as `0x${string}`))
+
+			// With the eoa->id mapping, we now make an id->name mapping.
+			const peerIdsToNames = await this.mapIdsToNames(Object.values(peerIdsByEoa))
 
 			// TODO: Locally cache results so we don't 2x hit this API.
 			const rewards = await this.getRewards()
 
 			// Transform data just for lookup.
-			// We have to merge the source of truth (voterLeaderboard) with the DHT leaderboard data.
+			// We want to map peer ID to cumulative reward.
 			const dhtParticipantsById = new Map<string, Reward>()
 			rewards.leaders.forEach((leader) => {
 				dhtParticipantsById.set(leader.id, leader)
@@ -358,13 +362,15 @@ class SwarmApi implements ISwarmApi {
 
 			const data = voterLeaderboard.leaders.map((leader) => {
 				const peerId = peerIdsByEoa[leader.id as `0x${string}`]
+				const nickname = peerIdsToNames[peerId] || leader.id
+				const cumulativeReward = Number(dhtParticipantsById.get(peerId)?.score.toFixed(2)) || 0
 
 				const out: Leader = {
 					id: leader.id, // EOA
 					participation: leader.score, // Participation score
 					values: [], // Unused here
-					nickname: dhtParticipantsById.get(peerId)?.nickname || leader.id, // Nickname from DHT
-					score: dhtParticipantsById.get(peerId)?.score || 0, // Cumulative reward
+					nickname: nickname,
+					score: cumulativeReward,
 				}
 
 				return out
@@ -391,7 +397,6 @@ class SwarmApi implements ISwarmApi {
 	}
 
 	public async getPeerInfoFromName(name: string): Promise<Leader | null> {
-		debugger
 		const nameToIdResponseSchema = z.object({
 			id: z.string().nullable().optional(),
 		})
@@ -480,6 +485,26 @@ class SwarmApi implements ISwarmApi {
 			}
 		}
 	}
+
+	private async  mapIdsToNames(ids: string[]): Promise<Record<string, string>> {
+		const idToNameResponseSchema = z.record(z.string())
+		const response = await fetch("/api/id-to-name", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(ids),
+		})
+
+		if (!response.ok) {
+			throw new Error(`Failed to get names for IDs: ${response.statusText}`)
+		}
+
+		const json = await response.json()
+		const result = idToNameResponseSchema.parse(json)
+		return result
+	}
+
 }
 
 const api = new SwarmApi({
@@ -489,3 +514,4 @@ const api = new SwarmApi({
 })
 
 export default api
+

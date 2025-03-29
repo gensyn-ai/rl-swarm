@@ -6,23 +6,30 @@ interface SwarmContextType {
 	// Gossip info
 	gossipMessages: () => { id: string; message: string; node: string }[]
 
-	// Leaderboard info
+	// The data for the actual leaderboard + loading, error states.
 	leaders: () => LeaderboardResponse | null | undefined
 	leadersLoading: () => boolean
 	leadersError: () => Error | null
+
+	// The number of nodes connected to the swarm.
 	nodesConnected: () => number
+
+	// The number of unique voters *(all time) + loading, error states.
 	uniqueVoters: () => number
 	uniqueVotersLoading: () => boolean
 	uniqueVotersError: () => Error | null
 
-	// Rewards info
+	// Rewards info + loading, error states.
 	rewards: () => RewardsResponse | null | undefined
 	rewardsLoading: () => boolean
 	rewardsError: () => Error | null
 
-	// State
+	// Swarm state
 	currentRound: () => number
 	currentStage: () => number
+
+	// The number of polls that have occurred.
+	// Currently used in place of a timestamp for simplicity.
 	pollCount: () => number
 }
 

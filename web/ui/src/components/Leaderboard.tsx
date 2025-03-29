@@ -3,7 +3,7 @@ import LoadingSpinner from "./LoadingSpinner"
 import ErrorMessage from "./ErrorMessage"
 import SectionHeader from "./SectionHeader"
 import { createResource, createSignal, Show, Switch, Match } from "solid-js"
-import swarmApi from "../swarm.api"
+import swarmApi, { LeaderboardResponse } from "../swarm.api"
 
 export default function Leaderboard() {
 	const { leaders, leadersLoading, leadersError, nodesConnected, uniqueVoters, uniqueVotersLoading } = useSwarm()
@@ -12,24 +12,68 @@ export default function Leaderboard() {
 	// This only exists in two signals so that we search on submit, not on each keystroke.
 	const [searchInput, setSearchInput] = createSignal("")
 	const [leaderSearchQuery, setLeaderSearchQuery] = createSignal<string | null>(null)
+	const [searchTrigger, setSearchTrigger] = createSignal(0)
 
-	const [leaderSearchResult] = createResource(leaderSearchQuery, async (query: string) => {
+	type SearchResult = {
+		index: number,
+		leader: LeaderboardResponse["leaders"][number],
+		inLeaderboard: boolean,
+	}
+
+	// This is a little hacky, but I want to allow triggering another search even if the leaderSearchQuery hasn't changed.
+	// The searchTrigger() signal is incremented with each search, so we can always re-fire the search.
+	const [leaderSearchResult] = createResource(() => ({ query: leaderSearchQuery(), trigger: searchTrigger() }), async ({ query }) => {
 		if (!query || query.length === 0) {
 			return
 		}
 
-		// If the leaderboard contains the query, no reason to search.
-		// The row will be highlighted.
-		const found = leaders()?.leaders.find((leader) => leader.id === query) !== undefined
-		if (found) {
-			return
+		const index = leaders()?.leaders.findIndex((leader) => {
+			const qlc = query.toLowerCase()
+			return leader.nickname.toLowerCase() === qlc || leader.id.toLowerCase() === qlc
+		})
+
+		// Index must be tracked, because if the leader is outside the top 10, 
+		// it needs to render elsewhere in the leaderboard table.
+		if (index !== undefined && index !== null && index >= 0) {
+			return {
+				index: index,
+				leader: leaders()?.leaders[index],
+				inLeaderboard: true,
+			} as SearchResult
+		}
+
+		// The searched name is not in the leaderboard.
+		// There's three cases here to consider:
+		// 1. The name doesn't exist at all.
+		// 2. The name exists, but the peer is not connected to the DHT.
+		// 3. The name exists, and the peer is connected to the DHT, so we can find it.
+		//
+		// We can't tell the difference between 1 and 2, so those can be handled the same way.
+		const leader = await swarmApi.getPeerInfoFromName(query)
+		if (!leader) {
+			throw new Error(`could not find peer ${query}`)
+		}
+
+		// Otherwise the searched leader is not in the leaderboard.
+
+		/*
+		if (index !== undefined && index !== null) {
+			return {
+				id: query,
+				score: 1,
+				values: [],
+			}
+		if (found !== undefined && found !== null) {
+			return found
 		}
 
 		const leader = await swarmApi.getPeerInfoFromName(query)
 		if (!leader) {
 			return
 		}
+			*/
 
+			/*
 		// Simulate network request
 		await new Promise((resolve) => setTimeout(resolve, 2_000))
 
@@ -41,7 +85,8 @@ export default function Leaderboard() {
 			index: 99,
 			nickname: "foobarbaz",
 			participation: 0.5,
-		}
+		} as SearchResult
+			*/
 	})
 
 	const searchLeaderboard = (e: SubmitEvent) => {
@@ -49,6 +94,26 @@ export default function Leaderboard() {
 
 		// This will trigger the refetch for the leaderSearchResult.
 		setLeaderSearchQuery(searchInput())
+		setSearchTrigger(prev => prev + 1)
+	}
+
+	/**
+	 * Checks if the leader is the searched leader.
+	 * @param leader - The leader to check.
+	 * @returns True if the leader is the searched leader, false otherwise.
+	 */
+	const isSearchedLeader = (target: LeaderboardResponse["leaders"][number]) => {
+		if (!leaderSearchResult()) {
+			return false
+		}
+		const leader = leaderSearchResult()?.leader
+		if (!leader) {
+			return false
+		}
+		const matchId = leader.id.toLowerCase() === target.id.toLowerCase()
+		const matchName = leader.nickname.toLowerCase() === target.nickname.toLowerCase()
+
+		return matchId || matchName
 	}
 
 	// Only show spinner on the first render.
@@ -67,7 +132,7 @@ export default function Leaderboard() {
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
 				<div class="border border-2 border-dotted p-2">
 					{/* This value comes from the leaderboard API since it's the total number of peers (DHT). */}
-					Nodes Connected:
+					current Nodes Connected:
 					<Show when={leadersLoading() && leaders()?.leaders.length === 0} fallback={nodesConnected()}>
 						<LoadingSpinner message="..." />
 					</Show>
@@ -110,16 +175,16 @@ export default function Leaderboard() {
 							<span class="absolute bottom-0 left-0 w-[90%] border-b border-dotted"></span>
 						</th>
 						<th class="font-normal text-left w-auto relative hidden md:table-cell">
-							Cumulative&nbsp;Reward
+							Training&nbsp;Reward
 							<span class="absolute bottom-0 left-0 w-[100%] border-b border-dotted"></span>
 						</th>
 					</tr>
 				</thead>
-				<tbody>
+				<tbody class="uppercase">
 					{leaders()
 						?.leaders.slice(0, 10)
 						.map((leader, index) => (
-							<tr class={`${leader.id === leaderSearchQuery() ? "bg-gensyn-green text-white" : ""}`}>
+							<tr classList={{ "bg-gensyn-green text-white": isSearchedLeader(leader) }}>
 								{/* Rank */}
 								<td class="text-left">{index + 1}</td>
 
@@ -140,7 +205,7 @@ export default function Leaderboard() {
 							</tr>
 						))}
 				</tbody>
-				<tbody>
+				<tbody class="uppercase">
 					<Switch>
 						<Match when={leaderSearchResult.loading}>
 							<tr>
@@ -149,20 +214,22 @@ export default function Leaderboard() {
 						</Match>
 						<Match when={leaderSearchResult.error}>
 							<tr>
-								<td colspan="4" class="text-center"><ErrorMessage message="Failed to search leaderboard" /></td>
+								<td colspan="4" class="text-center"><ErrorMessage message={`${leaderSearchResult.error?.message || "Failed to search leaderboard"}`} /></td>
 							</tr>
 						</Match>
-						<Match when={leaderSearchResult()}>
-							<tr class={`${leaderSearchResult() && leaderSearchResult()?.id === leaderSearchQuery() ? "bg-gensyn-green text-white" : ""}`}>
-								<td class="text-left">{leaderSearchResult()?.index}</td>
+						<Match when={leaderSearchResult() && leaderSearchResult()!.index > 10}>
+							<tr class="bg-gensyn-green text-white">
 								<td class="text-left">
-									<span>{leaderSearchResult()?.nickname}</span>
+									{leaderSearchResult()?.inLeaderboard ? leaderSearchResult()!.index : ">99"}
 								</td>
 								<td class="text-left">
-									<span>{leaderSearchResult()?.participation}</span>
+									<span>{leaderSearchResult()?.leader?.nickname}</span>
+								</td>
+								<td class="text-left">
+									<span>{leaderSearchResult()?.leader?.participation}</span>
 								</td>
 								<td class="text-right hidden md:table-cell">
-									<span>{leaderSearchResult()?.score}</span>
+									<span>{leaderSearchResult()?.leader?.score}</span>
 								</td>
 							</tr>
 						</Match>

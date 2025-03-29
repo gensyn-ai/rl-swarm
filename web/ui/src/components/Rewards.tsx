@@ -12,7 +12,7 @@ export default function Rewards() {
 
 	return (
 		<section class="flex flex-col gap-2">
-			<SectionHeader title="Cumulative Reward" tooltip={<RewardsTooltip />} />
+			<SectionHeader title="Training Rewards" tooltip={<RewardsTooltip />} />
 			<RewardsGraph data={rewardsData()} />
 		</section>
 	)
