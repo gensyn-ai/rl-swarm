@@ -6,7 +6,7 @@ import { useSwarm } from "./SwarmContext"
 
 export default function Swarm() {
 	const ctx = useSwarm()
-	const premadeTweet = encodeURIComponent("Running RL Swarm on @gensynai testnet 🔥\nhttps://testnet.gensyn.ai")
+	const premadeTweet = encodeURIComponent("Running RL Swarm on @gensynai testnet 🔥\n\nhttps://testnet.gensyn.ai")
 
 	return (
 		<main class="tracking-wider !font-normal !antialiased max-w-[876px] p-2 md:pt-12 md:pl-12 md:pr-0 flex flex-col justify-between md:min-h-screen ml-auto mr-auto">
@@ -47,12 +47,12 @@ export default function Swarm() {
 						<div class="my-8 uppercase flex items-center">
 							<ul class="list-none flex gap-8 flex-col md:flex-row">
 								<li>
-									<a class="underline" href="">
+									<a class="underline" href="https://gensyn-testnet.explorer.alchemy.com/" target="_blank" rel="noopener noreferrer">
 										Block Explorer
 									</a>
 								</li>
 								<li>
-									<a class="underline" href="">
+									<a class="underline" href="https://www.gensyn.ai/articles/rl-swarm" target="_blank" rel="noopener noreferrer">
 										RL Swarm Overview
 									</a>
 								</li>

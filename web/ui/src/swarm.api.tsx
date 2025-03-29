@@ -393,7 +393,7 @@ class SwarmApi implements ISwarmApi {
 	public async getPeerInfoFromName(name: string): Promise<Leader | null> {
 		debugger
 		const nameToIdResponseSchema = z.object({
-			id: z.string().optional(),
+			id: z.string().nullable().optional(),
 		})
 
 		try {

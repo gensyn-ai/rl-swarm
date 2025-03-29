@@ -2,7 +2,7 @@ import { useSwarm } from "../SwarmContext"
 import LoadingSpinner from "./LoadingSpinner"
 import ErrorMessage from "./ErrorMessage"
 import SectionHeader from "./SectionHeader"
-import { createResource, createSignal, Show } from "solid-js"
+import { createResource, createSignal, Show, Switch, Match } from "solid-js"
 import swarmApi from "../swarm.api"
 
 export default function Leaderboard() {
@@ -141,34 +141,32 @@ export default function Leaderboard() {
 						))}
 				</tbody>
 				<tbody>
-					<Show when={leaderSearchResult()}>
-						<tr class={`${leaderSearchResult() && leaderSearchResult()?.id === leaderSearchQuery() ? "bg-gensyn-green text-white" : ""}`}>
-							<td class="text-left">{leaderSearchResult()?.index}</td>
-							<td class="text-left">
-								<span>{leaderSearchResult()?.nickname}</span>
-							</td>
-							<td class="text-left">
-								<span>{leaderSearchResult()?.participation}</span>
-							</td>
-							<td class="text-right hidden md:table-cell">
-								<span>{leaderSearchResult()?.score}</span>
-							</td>
-						</tr>
-					</Show>
-					<Show when={leaderSearchResult.loading}>
-						<tr>
-							<td colspan="4" class="text-center">
-								<LoadingSpinner message="Searching..." />
-							</td>
-						</tr>
-					</Show>
-					<Show when={leaderSearchResult.error}>
-						<tr>
-							<td colspan="4" class="text-center">
-								<ErrorMessage message="Failed to search leaderboard" />
-							</td>
-						</tr>
-					</Show>
+					<Switch>
+						<Match when={leaderSearchResult.loading}>
+							<tr>
+								<td colspan="4" class="text-center"><LoadingSpinner message="Searching..." /></td>
+							</tr>
+						</Match>
+						<Match when={leaderSearchResult.error}>
+							<tr>
+								<td colspan="4" class="text-center"><ErrorMessage message="Failed to search leaderboard" /></td>
+							</tr>
+						</Match>
+						<Match when={leaderSearchResult()}>
+							<tr class={`${leaderSearchResult() && leaderSearchResult()?.id === leaderSearchQuery() ? "bg-gensyn-green text-white" : ""}`}>
+								<td class="text-left">{leaderSearchResult()?.index}</td>
+								<td class="text-left">
+									<span>{leaderSearchResult()?.nickname}</span>
+								</td>
+								<td class="text-left">
+									<span>{leaderSearchResult()?.participation}</span>
+								</td>
+								<td class="text-right hidden md:table-cell">
+									<span>{leaderSearchResult()?.score}</span>
+								</td>
+							</tr>
+						</Match>
+					</Switch>
 				</tbody>
 			</table>
 		</div>
