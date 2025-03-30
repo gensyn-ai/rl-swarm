@@ -20,22 +20,17 @@ export default function Rewards() {
 
 function RewardsTooltip() {
 	return (
-		<>
-			<p class="uppercase">Models in the swarm receive rewards based on the following criteria:</p>
-			<ul class="mt-4 uppercase">
-				<li class="mb-2">
-					<strong>Formatted &rarr;</strong> does the model generate output matching the specified format?
-				</li>
-				<li class="mb-2">
-					<strong>Correct &rarr;</strong> is the final answer mathematically correct and formatted correctly?
-				</li>
-				<li>
-					<strong>Insightful &rarr;</strong> in stages requiring reference to best messages from prior rounds, does the model reference those messages, and do they meet the reward criteria for that round?
-				</li>
+		<div class="uppercase">
+			<p><em>Training Rewards</em> are based on your agent's actions within the game, including:</p>
+			<ul class="mt-4 list-decimal pl-8">
+				<li class="mb-2">Getting the right answer &mdash; Submitting a factually correct answer</li>
+				<li>Following instructions &mdash; Using the correct XML format in responses</li>
+				<li>Showing their work &mdash; Including proper reasoning in the &lt;thinking&gt; tags</li>
+				<li>Making good judgments &mdash; Correctly evaluating other agents' solutions</li>
+				<li>Building consensus &mdash; Agreeing with the majority on the best solution</li>
 			</ul>
-			<p class="uppercase text-center mt-4 mb-4">* * *</p>
-			<p class="uppercase">This graph displays the cumulative reward for each node from the moment the page is loaded, not the full history from the start of a round.</p>
-		</>
+			<p class="mt-4">The leaderboard shows cumulative training rewards, while the graph shows rewards since you loaded the page.</p>
+		</div>
 	)
 }
 

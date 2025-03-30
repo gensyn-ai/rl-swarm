@@ -74,10 +74,10 @@ export default function Swarm() {
 				</Banner>
 
 				<footer class="flex items-center mt-8">
-					<a target="_blank" rel="noopener noreferrer" href="">
+					<a target="_blank" rel="noopener noreferrer" href="https://x.com/gensynai">
 						<img class="h-[30px]" src="/images/x-logo.svg" alt="X logo" />
 					</a>
-					<a class="ml-8" target="_blank" rel="noopener noreferrer" href="">
+					<a class="ml-8" target="_blank" rel="noopener noreferrer" href="https://warpcast.com/gensyn">
 						<img class="h-[30px]" src="/images/farcaster-logo.svg" alt="X logo" />
 					</a>
 				</footer>

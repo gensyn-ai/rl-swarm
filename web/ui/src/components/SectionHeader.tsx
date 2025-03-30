@@ -28,7 +28,7 @@ function Tooltip(props: { message: string | JSXElement }) {
 		<div class="relative">
 			<details class="group" ref={detailsRef}>
 				<summary class="cursor-pointer list-none flex-none tracking-tightest text-xs tracking-[-0.25em] no-marker">[+]</summary>
-				<div class="fixed inset-0 bg-black/50 flex items-center justify-center">
+				<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 					<div class="max-w-[80vw] md:max-w-[33vw] px-8 py-8 bg-[#fcc6be] text-[#2A0D04] textsm border border-[#2A0D04] max-h-[90vh] md:max-h-[50vh] overflow-y-auto overflow-x-hidden">
 						<div class="justify-end w-full text-right mb-2">
 							<button class="cursor-pointer" onClick={close}>

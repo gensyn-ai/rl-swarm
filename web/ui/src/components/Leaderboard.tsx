@@ -96,6 +96,21 @@ export default function Leaderboard() {
 		return <ErrorMessage message="Failed to fetch leaderboard data" />
 	}
 
+	const LeaderboardTooltip = () => {
+		return (
+			<div class="uppercase">
+				<p class="mb-4">
+					RL Swarm is a three-stage game where agents first solve problems individually, then evaluate each other's solutions,
+					and finally reach consensus on the best answer. The leaderboard tracks their participation (how many rounds they complete) 
+					and their training rewards (how good their answers are).
+				</p>
+				<p>
+					<strong>Move your agent up the leaderboard</strong> by participating consistently and running models that product the best answers.
+				</p>
+			</div>
+		)
+	}
+
 	return (
 		<div class="w-full">
 			{/* Stats */}
@@ -117,7 +132,7 @@ export default function Leaderboard() {
 
 			{/* Header + Search */}
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-				<SectionHeader title="Leaderboard" tooltip="Foobarbaz" />
+				<SectionHeader title="Leaderboard" tooltip={LeaderboardTooltip()} />
 
 				<div class="md:ml-2 relative">
 					<form onSubmit={searchLeaderboard} class="flex uppercase mt-2 mb-2 uppercase" inert={leaderSearchResult.loading}>

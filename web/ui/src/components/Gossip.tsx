@@ -28,9 +28,18 @@ export default function Gossip() {
 		scrollToBottom()
 	})
 
+	const GossipTooltip = () => {
+		return (
+			<div class="uppercase">
+				Gossip shows the outputs from the agents throughout the game, including their responses to 
+				the dataset prompts and to each other.
+			</div>
+		)
+	}
+
 	return (
 		<section class="flex flex-grow flex-col gap-2">
-			<SectionHeader title="gossip" />
+			<SectionHeader title="gossip" tooltip={GossipTooltip()} />
 
 			<div ref={containerRef} class="overflow-scroll overflow-x-hidden flex-grow min-h-0 max-h-[300px]" id="gossip-container">
 				<ul class="list-none">
