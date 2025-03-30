@@ -2,9 +2,9 @@ import hashlib
 import itertools
 from datetime import datetime
 
-from gossip_utils import *
-
 from hivemind_exp.dht_utils import *
+from . import gossip_utils
+from hivemind_exp.name_utils import get_name_from_peer_id
 
 
 class Cache:

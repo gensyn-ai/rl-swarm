@@ -8,15 +8,15 @@ from threading import Thread
 import aiofiles
 import httpx
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import json
 
 from hivemind_exp.dht_utils import *
-from hivemind_exp.name_utils import *
+from hivemind_exp.name_utils import get_name_from_peer_id
 
-import global_dht
+from . import global_dht
 
 # UI is served from the filesystem
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -110,7 +110,7 @@ def get_id_from_name(name: str = Query("")):
 	global dht_cache
 	assert dht_cache
 
-	leaderboard = dht_cache.get_leaderboard()
+	leaderboard = global_dht.dht_cache.get_leaderboard()
 	leader_ids = [leader["id"] for leader in leaderboard["leaders"]] or []
 
 	uuid = search_peer_ids_for_name(leader_ids, name)
