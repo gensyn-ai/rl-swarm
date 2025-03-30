@@ -22,72 +22,42 @@ export default function Leaderboard() {
 
 	// This is a little hacky, but I want to allow triggering another search even if the leaderSearchQuery hasn't changed.
 	// The searchTrigger() signal is incremented with each search, so we can always re-fire the search.
-	const [leaderSearchResult] = createResource(() => ({ query: leaderSearchQuery(), trigger: searchTrigger() }), async ({ query }) => {
-		if (!query || query.length === 0) {
-			return
-		}
+	const [leaderSearchResult] = createResource(
+		() => ({ 
+			query: leaderSearchQuery(), 
+			trigger: searchTrigger(),
+			leaders: leaders() // Now we always refresh the searched data when the leaderboard changes.
+		}), 
+		async ({ query, leaders }) => {
+			if (!query || query.length === 0) {
+				return
+			}
 
-		const index = leaders()?.leaders.findIndex((leader) => {
-			const qlc = query.toLowerCase()
-			return leader.nickname.toLowerCase() === qlc || leader.id.toLowerCase() === qlc
-		})
+			const index = leaders?.leaders.findIndex((leader) => {
+				const qlc = query.toLowerCase()
+				return leader.nickname.toLowerCase() === qlc || leader.id.toLowerCase() === qlc
+			})
 
-		// Index must be tracked, because if the leader is outside the top 10, 
-		// it needs to render elsewhere in the leaderboard table.
-		if (index !== undefined && index !== null && index >= 0) {
+			if (index !== undefined && index !== null && index >= 0) {
+				return {
+					index: index,
+					leader: leaders?.leaders[index],
+					inLeaderboard: true,
+				} as SearchResult
+			}
+
+			const leader = await swarmApi.getPeerInfoFromName(query)
+			if (!leader) {
+				throw new Error(`could not find peer ${query}`)
+			}
+
 			return {
-				index: index,
-				leader: leaders()?.leaders[index],
-				inLeaderboard: true,
+				index: -1,
+				leader: leader,
+				inLeaderboard: false,
 			} as SearchResult
 		}
-
-		// The searched name is not in the leaderboard.
-		// There's three cases here to consider:
-		// 1. The name doesn't exist at all.
-		// 2. The name exists, but the peer is not connected to the DHT.
-		// 3. The name exists, and the peer is connected to the DHT, so we can find it.
-		//
-		// We can't tell the difference between 1 and 2, so those can be handled the same way.
-		const leader = await swarmApi.getPeerInfoFromName(query)
-		if (!leader) {
-			throw new Error(`could not find peer ${query}`)
-		}
-
-		// Otherwise the searched leader is not in the leaderboard.
-
-		/*
-		if (index !== undefined && index !== null) {
-			return {
-				id: query,
-				score: 1,
-				values: [],
-			}
-		if (found !== undefined && found !== null) {
-			return found
-		}
-
-		const leader = await swarmApi.getPeerInfoFromName(query)
-		if (!leader) {
-			return
-		}
-			*/
-
-			/*
-		// Simulate network request
-		await new Promise((resolve) => setTimeout(resolve, 2_000))
-
-		// TODO: Need this data in the API
-		return {
-			id: query,
-			score: 1,
-			values: [],
-			index: 99,
-			nickname: "foobarbaz",
-			participation: 0.5,
-		} as SearchResult
-			*/
-	})
+	)
 
 	const searchLeaderboard = (e: SubmitEvent) => {
 		e.preventDefault()
