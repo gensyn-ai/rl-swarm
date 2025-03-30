@@ -2,7 +2,7 @@ import { createContext, createResource, createSignal, useContext, onMount, onCle
 import { LeaderboardResponse, GossipResponse, RewardsResponse } from "./swarm.api"
 import api from "./swarm.api"
 
-interface SwarmContextType {
+export interface SwarmContextType {
 	// Gossip info
 	gossipMessages: () => { id: string; message: string; node: string }[]
 
@@ -33,7 +33,7 @@ interface SwarmContextType {
 	pollCount: () => number
 }
 
-const SwarmContext = createContext<SwarmContextType>()
+export const SwarmContext = createContext<SwarmContextType>()
 
 export function useSwarm() {
 	const context = useContext(SwarmContext)

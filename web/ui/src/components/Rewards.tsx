@@ -6,7 +6,7 @@ import SectionHeader from "./SectionHeader"
 
 export default function Rewards() {
 	const ctx = useSwarm()
-	
+
 	// Create a memoized value for the rewards data
 	const rewardsData = createMemo(() => ctx.rewards() ?? { leaders: [], total: 0 })
 

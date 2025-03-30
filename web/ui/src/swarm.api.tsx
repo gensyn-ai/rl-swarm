@@ -376,9 +376,18 @@ class SwarmApi implements ISwarmApi {
 				return out
 			})
 
+			// Adding bunch of shit for testing.
+			const mocked = Array.from({ length: 20 }, (_, i) => ({
+				id: `mock${i + 1}`,
+				participation: i + 1,
+				values: [],
+				nickname: `mock${i + 1}nn`,
+				score: (i + 1) * 10,
+			}))
+
 			return {
-				leaders: data,
-				total: rewards.total,
+				leaders: [...data, ...mocked],
+				total: rewards.total + mocked.length,
 			}
 		} catch (e) {
 			if (e instanceof z.ZodError) {
@@ -443,7 +452,7 @@ class SwarmApi implements ISwarmApi {
 				throw new Error(`could not get peer info from name: ${e.message}`)
 			} else {
 				throw new Error("could not get peer info from name")
-			}	
+			}
 		}
 	}
 
@@ -486,7 +495,12 @@ class SwarmApi implements ISwarmApi {
 		}
 	}
 
-	private async  mapIdsToNames(ids: string[]): Promise<Record<string, string>> {
+	/**
+	 * Maps a list of IDs to a list of names.
+	 * @param ids - The list of IDs to map to names.
+	 * @returns A record of IDs to names.
+	 */
+	private async mapIdsToNames(ids: string[]): Promise<Record<string, string>> {
 		const idToNameResponseSchema = z.record(z.string())
 		const response = await fetch("/api/id-to-name", {
 			method: "POST",
@@ -504,7 +518,6 @@ class SwarmApi implements ISwarmApi {
 		const result = idToNameResponseSchema.parse(json)
 		return result
 	}
-
 }
 
 const api = new SwarmApi({
@@ -514,4 +527,3 @@ const api = new SwarmApi({
 })
 
 export default api
-

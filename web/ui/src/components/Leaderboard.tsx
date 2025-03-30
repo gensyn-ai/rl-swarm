@@ -15,19 +15,19 @@ export default function Leaderboard() {
 	const [searchTrigger, setSearchTrigger] = createSignal(0)
 
 	type SearchResult = {
-		index: number,
-		leader: LeaderboardResponse["leaders"][number],
-		inLeaderboard: boolean,
+		index: number
+		leader: LeaderboardResponse["leaders"][number]
+		inLeaderboard: boolean
 	}
 
 	// This is a little hacky, but I want to allow triggering another search even if the leaderSearchQuery hasn't changed.
 	// The searchTrigger() signal is incremented with each search, so we can always re-fire the search.
 	const [leaderSearchResult] = createResource(
-		() => ({ 
-			query: leaderSearchQuery(), 
+		() => ({
+			query: leaderSearchQuery(),
 			trigger: searchTrigger(),
-			leaders: leaders() // Now we always refresh the searched data when the leaderboard changes.
-		}), 
+			leaders: leaders(), // Now we always refresh the searched data when the leaderboard changes.
+		}),
 		async ({ query, leaders }) => {
 			if (!query || query.length === 0) {
 				return
@@ -56,7 +56,7 @@ export default function Leaderboard() {
 				leader: leader,
 				inLeaderboard: false,
 			} as SearchResult
-		}
+		},
 	)
 
 	const searchLeaderboard = (e: SubmitEvent) => {
@@ -64,7 +64,7 @@ export default function Leaderboard() {
 
 		// This will trigger the refetch for the leaderSearchResult.
 		setLeaderSearchQuery(searchInput())
-		setSearchTrigger(prev => prev + 1)
+		setSearchTrigger((prev) => prev + 1)
 	}
 
 	/**
@@ -154,23 +154,25 @@ export default function Leaderboard() {
 					{leaders()
 						?.leaders.slice(0, 10)
 						.map((leader, index) => (
-							<tr classList={{ "bg-gensyn-green text-white": isSearchedLeader(leader) }}>
+							<tr classList={{ "bg-gensyn-green text-white": isSearchedLeader(leader) }} data-testid={`leader-${leader.id}`}>
 								{/* Rank */}
-								<td class="text-left">{index + 1}</td>
+								<td class="text-left" data-column="rank">
+									{index + 1}
+								</td>
 
 								{/* Name */}
-								<td class="text-left">
-									<span>{leader.nickname}</span>
+								<td class="text-left" data-column="name">
+									{leader.nickname}
 								</td>
 
 								{/* Participation */}
-								<td class="text-left">
-									<span>{leader.participation}</span>
+								<td class="text-left" data-column="participation">
+									{leader.participation}
 								</td>
 
 								{/* Cumulative Reward */}
-								<td class="text-right hidden md:table-cell">
-									<span>{leader.score}</span>
+								<td class="text-right hidden md:table-cell" data-column="reward">
+									{leader.score}
 								</td>
 							</tr>
 						))}
@@ -179,27 +181,29 @@ export default function Leaderboard() {
 					<Switch>
 						<Match when={leaderSearchResult.loading}>
 							<tr>
-								<td colspan="4" class="text-center"><LoadingSpinner message="Searching..." /></td>
+								<td colspan="4" class="text-center">
+									<LoadingSpinner message="Searching..." />
+								</td>
 							</tr>
 						</Match>
 						<Match when={leaderSearchResult.error}>
 							<tr>
-								<td colspan="4" class="text-center"><ErrorMessage message={`${leaderSearchResult.error?.message || "Failed to search leaderboard"}`} /></td>
+								<td colspan="4" class="text-center">
+									<ErrorMessage message={`${leaderSearchResult.error?.message || "Failed to search leaderboard"}`} />
+								</td>
 							</tr>
 						</Match>
-						<Match when={leaderSearchResult() && leaderSearchResult()!.index > 10}>
-							<tr class="bg-gensyn-green text-white">
+						<Match when={leaderSearchResult() && leaderSearchResult()!.index >= 10}> {/* Leaderboard cuts off at 10 (9th index) */}
+							<tr class="bg-gensyn-green text-white" data-testid={`leader-search-result=${leaderSearchResult()!.leader.id}`}>
+								<td class="text-left">{leaderSearchResult()?.inLeaderboard ? leaderSearchResult()!.index + 1 : ">99"}</td>
 								<td class="text-left">
-									{leaderSearchResult()?.inLeaderboard ? leaderSearchResult()!.index : ">99"}
+									{leaderSearchResult()?.leader?.nickname}
 								</td>
 								<td class="text-left">
-									<span>{leaderSearchResult()?.leader?.nickname}</span>
-								</td>
-								<td class="text-left">
-									<span>{leaderSearchResult()?.leader?.participation}</span>
+									{leaderSearchResult()?.leader?.participation}
 								</td>
 								<td class="text-right hidden md:table-cell">
-									<span>{leaderSearchResult()?.leader?.score}</span>
+									{leaderSearchResult()?.leader?.score}
 								</td>
 							</tr>
 						</Match>
