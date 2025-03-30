@@ -34,7 +34,7 @@ COPY ./private-containerfiles/swarm-node/setup_python.sh ./setup_python.sh
 COPY ./private-containerfiles/swarm-node/install_pip.sh ./install_pip.sh
 COPY ./requirements.txt ./requirements.txt
 COPY ./requirements-hivemind.txt ./requirements-hivemind.txt
-
+COPY ./requirements_gpu.txt ./requirements_gpu.txt
 
 USER gensyn
 
