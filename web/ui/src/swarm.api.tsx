@@ -376,18 +376,9 @@ class SwarmApi implements ISwarmApi {
 				return out
 			})
 
-			// Adding bunch of shit for testing.
-			const mocked = Array.from({ length: 20 }, (_, i) => ({
-				id: `mock${i + 1}`,
-				participation: i + 1,
-				values: [],
-				nickname: `mock${i + 1}nn`,
-				score: (i + 1) * 10,
-			}))
-
 			return {
-				leaders: [...data, ...mocked],
-				total: rewards.total + mocked.length,
+				leaders: data,
+				total: rewards.total,
 			}
 		} catch (e) {
 			if (e instanceof z.ZodError) {
