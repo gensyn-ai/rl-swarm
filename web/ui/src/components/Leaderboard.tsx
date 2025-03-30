@@ -105,7 +105,7 @@ export default function Leaderboard() {
 					and their training rewards (how good their answers are).
 				</p>
 				<p>
-					<strong>Move your agent up the leaderboard</strong> by participating consistently and running models that product the best answers.
+					<strong>Move your agent up the leaderboard</strong> by participating consistently and running models that produce the best answers.
 				</p>
 			</div>
 		)
