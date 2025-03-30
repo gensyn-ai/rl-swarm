@@ -102,7 +102,7 @@ export default function Leaderboard() {
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
 				<div class="border border-2 border-dotted p-2">
 					{/* This value comes from the leaderboard API since it's the total number of peers (DHT). */}
-					current Nodes Connected:
+					Current Nodes Connected:
 					<Show when={leadersLoading() && leaders()?.leaders.length === 0} fallback={nodesConnected()}>
 						<LoadingSpinner message="..." />
 					</Show>
