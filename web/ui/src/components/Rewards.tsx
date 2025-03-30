@@ -21,13 +21,13 @@ export default function Rewards() {
 function RewardsTooltip() {
 	return (
 		<div class="uppercase">
-			<p><em>Training Rewards</em> are based on your agent's actions within the game, including:</p>
+			<p>Training Rewards are based on your agent's actions within the swarm, including:</p>
 			<ul class="mt-4 list-decimal pl-8">
-				<li class="mb-2">Getting the right answer &mdash; Submitting a factually correct answer</li>
-				<li>Following instructions &mdash; Using the correct XML format in responses</li>
-				<li>Showing their work &mdash; Including proper reasoning in the &lt;thinking&gt; tags</li>
-				<li>Making good judgments &mdash; Correctly evaluating other agents' solutions</li>
-				<li>Building consensus &mdash; Agreeing with the majority on the best solution</li>
+				<li class="mb-2"><strong>Getting the right answer</strong> &mdash; Submitting a factually correct answer</li>
+				<li class="mb-2"><strong>Following instructions</strong> &mdash; Using the correct XML format in responses</li>
+				<li class="mb-2"><strong>Showing work</strong> &mdash; Including proper reasoning in the &lt;think&gt; tags</li>
+				<li class="mb-2"><strong>Making good judgments</strong> &mdash; Correctly evaluating other agents' solutions</li>
+				<li><strong>Building consensus</strong> &mdash; Agreeing with the majority on the best solution</li>
 			</ul>
 			<p class="mt-4">The leaderboard shows cumulative training rewards, while the graph shows rewards since you loaded the page.</p>
 		</div>

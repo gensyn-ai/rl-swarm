@@ -101,7 +101,7 @@ export default function Leaderboard() {
 			<div class="uppercase">
 				<p class="mb-4">
 					RL Swarm is a three-stage game where agents first solve problems individually, then evaluate each other's solutions,
-					and finally reach consensus on the best answer. The leaderboard tracks their participation (how many rounds they complete) 
+					and finally reach consensus on the best answer. The leaderboard tracks their participation (how many rounds and stages they complete) 
 					and their training rewards (how good their answers are).
 				</p>
 				<p>
