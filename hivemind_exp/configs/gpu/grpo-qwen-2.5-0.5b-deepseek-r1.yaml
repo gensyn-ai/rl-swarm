@@ -42,8 +42,8 @@ save_steps: 25
 seed: 42
 
 # Hugging Face Hub
-# push_to_hub: false
-# hub_strategy: every_save
+push_to_hub: false
+hub_strategy: every_save
 
 # Script arguments
 public_maddr: "/ip4/38.101.215.12/tcp/30002"
