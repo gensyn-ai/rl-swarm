@@ -1,6 +1,6 @@
 import { ParentProps } from "solid-js"
 import { SwarmContext, SwarmContextType } from "./SwarmContext"
-import { LeaderboardResponse, RewardsResponse } from "./swarm.api"
+import { LeaderboardResponse, RewardsResponse, RewardsHistory } from "./swarm.api"
 
 export const defaultMockSwarmContext: SwarmContextType = {
 	gossipMessages: () => [],
@@ -14,6 +14,9 @@ export const defaultMockSwarmContext: SwarmContextType = {
 	rewards: () => null,
 	rewardsLoading: () => false,
 	rewardsError: () => null,
+	rewardsHistory: () => null,
+	rewardsHistoryLoading: () => false,
+	rewardsHistoryError: () => null,
 	currentRound: () => -1,
 	currentStage: () => -1,
 	pollCount: () => 0,
@@ -32,6 +35,9 @@ interface MockSwarmProviderProps extends ParentProps {
 		rewards?: () => RewardsResponse | null | undefined
 		rewardsLoading?: () => boolean
 		rewardsError?: () => Error | null
+		rewardsHistory?: () => RewardsHistory | null | undefined
+		rewardsHistoryLoading?: () => boolean
+		rewardsHistoryError?: () => Error | null
 		currentRound?: () => number
 		currentStage?: () => number
 		pollCount?: () => number
@@ -52,6 +58,9 @@ export function MockSwarmProvider(props: MockSwarmProviderProps) {
 		rewards: () => props.values.rewards?.() || defaultMockSwarmContext.rewards(),
 		rewardsLoading: () => props.values.rewardsLoading?.() || defaultMockSwarmContext.rewardsLoading(),
 		rewardsError: () => props.values.rewardsError?.() || defaultMockSwarmContext.rewardsError(),
+		rewardsHistory: () => props.values.rewardsHistory?.() || defaultMockSwarmContext.rewardsHistory(),
+		rewardsHistoryLoading: () => props.values.rewardsHistoryLoading?.() || defaultMockSwarmContext.rewardsHistoryLoading(),
+		rewardsHistoryError: () => props.values.rewardsHistoryError?.() || defaultMockSwarmContext.rewardsHistoryError(),
 		currentRound: () => props.values.currentRound?.() || defaultMockSwarmContext.currentRound(),
 		currentStage: () => props.values.currentStage?.() || defaultMockSwarmContext.currentStage(),
 		pollCount: () => props.values.pollCount?.() || defaultMockSwarmContext.pollCount(),

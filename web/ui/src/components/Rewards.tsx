@@ -1,6 +1,5 @@
 import { createMemo, createEffect, onMount } from "solid-js"
 import { useSwarm } from "../SwarmContext"
-import { RewardsResponse } from "../swarm.api"
 import * as d3 from "d3"
 import SectionHeader from "./SectionHeader"
 
@@ -8,12 +7,12 @@ export default function Rewards() {
 	const ctx = useSwarm()
 
 	// Create a memoized value for the rewards data
-	const rewardsData = createMemo(() => ctx.rewards() ?? { leaders: [], total: 0 })
+	const rewardsHistoryData = createMemo(() => ctx.rewardsHistory() ?? { leaders: [] })
 
 	return (
 		<section class="flex flex-col gap-2">
 			<SectionHeader title="Training Rewards" tooltip={<RewardsTooltip />} />
-			<RewardsGraph data={rewardsData()} />
+			<RewardsGraph data={rewardsHistoryData()} />
 		</section>
 	)
 }
@@ -34,7 +33,7 @@ function RewardsTooltip() {
 	)
 }
 
-function RewardsGraph(props: { data: RewardsResponse }) {
+function RewardsGraph(props: { data: { leaders: { id: string; values: { x: number; y: number }[] }[] } }) {
 	let svgRef: SVGSVGElement | undefined
 
 	// Props aren't automatically reactive, so we need to turn the props into a signal.
@@ -74,10 +73,12 @@ function RewardsGraph(props: { data: RewardsResponse }) {
 		// Set scales based on data.
 		const allXs = chartData().leaders.flatMap((leader) => leader.values.map((d) => d.x))
 		const allYs = chartData().leaders.flatMap((leader) => leader.values.map((d) => d.y))
+
 		yScale.domain([d3.min(allYs)!, d3.max(allYs)!])
 		xScale.domain([d3.min(allXs)!, d3.max(allXs)!])
 
 		const xTicksCount = Math.min(5, allXs.length)
+		const minX = d3.min(allXs)!
 
 		// Horizontal grid lines
 		// Setting a tick size to a negative width here extends the ticks across the chart.
@@ -146,7 +147,7 @@ function RewardsGraph(props: { data: RewardsResponse }) {
 				d3
 					.axisBottom(xScale)
 					.tickSize(0)
-					.tickFormat((d) => `${Math.round(d.valueOf())}`)
+					.tickFormat((d) => `${Math.round(d.valueOf() - minX)}`)
 					.ticks(xTicksCount),
 			)
 			.attr("stroke-width", 2)

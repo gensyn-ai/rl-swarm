@@ -1,5 +1,5 @@
 import { createContext, createResource, createSignal, useContext, onMount, onCleanup, ParentProps } from "solid-js"
-import { LeaderboardResponse, GossipResponse, RewardsResponse } from "./swarm.api"
+import { LeaderboardResponse, GossipResponse, RewardsResponse, RewardsHistory } from "./swarm.api"
 import api from "./swarm.api"
 
 export interface SwarmContextType {
@@ -23,6 +23,11 @@ export interface SwarmContextType {
 	rewards: () => RewardsResponse | null | undefined
 	rewardsLoading: () => boolean
 	rewardsError: () => Error | null
+
+	// Rewards history info + loading, error states.
+	rewardsHistory: () => RewardsHistory | null | undefined
+	rewardsHistoryLoading: () => boolean
+	rewardsHistoryError: () => Error | null
 
 	// Swarm state
 	currentRound: () => number
@@ -56,6 +61,7 @@ export function SwarmProvider(props: ParentProps) {
 	const [pollCount, setPollCount] = createSignal(0)
 	const [leaders, setLeaders] = createSignal<LeaderboardResponse | null | undefined>(null)
 	const [rewards, setRewards] = createSignal<RewardsResponse | null | undefined>(null)
+	const [rewardsHistory, setRewardsHistory] = createSignal<RewardsHistory | null | undefined>(null)
 
 	const [nodesConnected, setNodesConnected] = createSignal(-1)
 	const [uniqueVoters, setUniqueVoters] = createSignal(-1)
@@ -150,11 +156,19 @@ export function SwarmProvider(props: ParentProps) {
 		return { ...data, messages: msgs }
 	})
 
+	// @ts-expect-warning - Intentionally unused variable
+	const [_rewardsHistory, { refetch: refetchRewardsHistory }] = createResource(async () => {
+		const data = await fetchRewardsHistoryData()
+		setRewardsHistory(data)
+		return data
+	})
+
 	// Polling timers
 	let leaderboardTimer: ReturnType<typeof setTimeout> | undefined = undefined
 	let gossipTimer: ReturnType<typeof setTimeout> | undefined = undefined
 	let roundAndStageTimer: ReturnType<typeof setTimeout> | undefined = undefined
 	let rewardsTimer: ReturnType<typeof setTimeout> | undefined = undefined
+	let rewardsHistoryTimer: ReturnType<typeof setTimeout> | undefined = undefined
 
 	// Polling functions
 	const pollGossip = async () => {
@@ -198,6 +212,16 @@ export function SwarmProvider(props: ParentProps) {
 		rewardsTimer = setTimeout(pollRewards, 10_000)
 	}
 
+	const pollRewardsHistory = async () => {
+		await refetchRewardsHistory()
+
+		if (rewardsHistoryTimer !== undefined) {
+			clearTimeout(rewardsHistoryTimer)
+		}
+
+		rewardsHistoryTimer = setTimeout(pollRewardsHistory, 10_000)
+	}
+
 	// Setup and cleanup
 	onMount(() => {
 		// These already fire once immediately since the calls are created through createResource,
@@ -206,6 +230,7 @@ export function SwarmProvider(props: ParentProps) {
 		gossipTimer = setTimeout(pollGossip, 10_000)
 		roundAndStageTimer = setTimeout(pollRoundAndStage, 10_000)
 		rewardsTimer = setTimeout(pollRewards, 10_000)
+		rewardsHistoryTimer = setTimeout(pollRewardsHistory, 10_000)
 	})
 
 	onCleanup(() => {
@@ -246,6 +271,10 @@ export function SwarmProvider(props: ParentProps) {
 		rewards,
 		rewardsLoading: () => _rewardsData.loading,
 		rewardsError: () => _rewardsData.error,
+
+		rewardsHistory,
+		rewardsHistoryLoading: () => _rewardsHistory.loading,
+		rewardsHistoryError: () => _rewardsHistory.error,
 	}
 
 	return <SwarmContext.Provider value={value}>{props.children}</SwarmContext.Provider>
@@ -274,6 +303,15 @@ async function fetchRewardsData(): Promise<RewardsResponse | undefined> {
 		return await api.getRewards()
 	} catch (e) {
 		console.error("fetchRewardsData failed", e)
+		return undefined
+	}
+}
+
+async function fetchRewardsHistoryData(): Promise<RewardsHistory | undefined> {
+	try {
+		return await api.getRewardsHistory()
+	} catch (e) {
+		console.error("fetchRewardsHistoryData failed", e)
 		return undefined
 	}
 }

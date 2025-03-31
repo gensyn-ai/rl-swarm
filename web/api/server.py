@@ -102,7 +102,24 @@ def get_round_and_stage():
 @app.get("/api/leaderboard")
 def get_leaderboard():
     leaderboard = global_dht.dht_cache.get_leaderboard()
-    return dict(leaderboard)
+    res = dict(leaderboard)
+
+    if res is not None:
+        return {
+            "leaders": res.get("leaders", []),
+            "total": res.get("total", 0),
+        }
+
+
+@app.get("/api/rewards-history")
+def get_leaderboard():
+    leaderboard = global_dht.dht_cache.get_leaderboard()
+    res = dict(leaderboard)
+
+    if res is not None:
+        return {
+            "leaders": res.get("rewardsHistory", []),
+        }
 
 
 @app.get("/api/name-to-id")

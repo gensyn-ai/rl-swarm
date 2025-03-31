@@ -275,6 +275,13 @@ type SwarmApiConfig = {
 	environment: "local" | "testnet" | "mainnet"
 }
 
+export type RewardsHistory = {
+	leaders: Array<{
+		id: string
+		values: Array<{ x: number; y: number }>
+	}>
+}
+
 interface ISwarmApi {
 	getRoundAndStage(): Promise<RoundAndStageResponse>
 	getLeaderboard(): Promise<LeaderboardResponse>
@@ -337,6 +344,39 @@ class SwarmApi implements ISwarmApi {
 				throw new Error(`could not get rewards: ${e.message}`)
 			} else {
 				throw new Error("could not get rewards")
+			}
+		}
+	}
+
+	public async getRewardsHistory(): Promise<RewardsHistory> {
+		const rewardsHistorySchema = z.object({
+			leaders: z.array(z.object({
+				id: z.string(),
+				values: z.array(z.object({ x: z.number(), y: z.number() })),
+			})),
+		})
+
+		try {
+			const res = await fetch("/api/rewards-history")
+			if (!res.ok) {
+				throw new Error(`Failed to fetch rewards history: ${res.statusText}`)
+			}
+
+			const json = await res.json()
+			const result = rewardsHistorySchema.parse(json)
+
+			return result
+		} catch (e) {
+			if (e instanceof z.ZodError) {
+				console.warn("zod error fetching rewards history. returning empty rewards history response.", e)
+				return {
+					leaders: [],
+				}
+			} else if (e instanceof Error) {
+				console.error("error fetching rewards history", e)
+				throw new Error(`could not get rewards history: ${e.message}`)
+			} else {
+				throw new Error("could not get rewards history")
 			}
 		}
 	}

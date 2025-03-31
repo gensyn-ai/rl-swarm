@@ -5,6 +5,7 @@ from datetime import datetime
 from hivemind_exp.dht_utils import *
 from . import gossip_utils
 from hivemind_exp.name_utils import get_name_from_peer_id
+from .gossip_utils import stage1_message, stage2_message, stage3_message
 
 
 class Cache:
@@ -18,6 +19,7 @@ class Cache:
 
     def reset(self):
         self.leaderboard = self.manager.dict()
+        self.rewards_history = self.manager.dict()
         self.gossips = self.manager.dict()
 
         self.current_round = self.manager.Value("i", -1)
@@ -74,17 +76,36 @@ class Cache:
             all_entries = [
                 {
                     "id": str(t[0]),
-					"nickname": get_name_from_peer_id(t[0]),
+                    "nickname": get_name_from_peer_id(t[0]),
                     "score": t[1],
                     "values": [],
                 }
                 for t in (raw or [])
             ]
+            self.logger.info(">>> all_entries length: %d", len(all_entries))
+
+            current_history = []
+            with self.lock:
+                for entry in all_entries:
+                    latestScore = entry["score"]
+                    id = entry["id"]
+                    nn = entry["nickname"]
+
+                    past_scores = self.rewards_history.get(id, [])
+                    next_scores = past_scores + [{"x": int(datetime.now().timestamp()), "y": latestScore}][-100:]
+                    self.logger.info(">>> id: %s, past_scores length: %d, next_scores length: %d", id, len(past_scores), len(next_scores))
+                    self.rewards_history[id] = next_scores
+                    current_history.append({
+                        "id": id,
+                        "nickname": nn,
+                        "values": next_scores,
+                    })
 
             with self.lock:
                 self.leaderboard = {
                     "leaders": all_entries,
                     "total": len(raw) if raw else 0,
+                    "rewardsHistory": current_history,
                 }
         except Exception as e:
             self.logger.warning("could not get leaderboard data: %s", e)
@@ -96,6 +117,7 @@ class Cache:
         ]
 
         round_gossip = []
+        start_time = datetime.now()
         try:
             # Basically a proxy for the reachable peer group.
             curr_rewards: dict[str, Any] | None = self._get_dht_value(
@@ -116,6 +138,12 @@ class Cache:
                 range(0, 3),
                 nodes,
             ):
+                # Check if we've exceeded 10 seconds
+                # Adding this as a stop gap to make sure the gossip collection doesn't stop other data from being polled.
+                if (datetime.now() - start_time).total_seconds() > 10:
+                    self.logger.warning(">>> gossip collection timed out after 10s")
+                    break
+
                 if round_num > curr_round or (round_num == curr_round and stage > curr_stage):
                     break
 
@@ -146,6 +174,9 @@ class Cache:
                         )
         except Exception as e:
             self.logger.warning("could not get gossip: %s", e)
+        finally:
+            elapsed = (datetime.now() - start_time).total_seconds()
+            self.logger.info(">>> completed gossip with %d messages in %.2fs", len(round_gossip), elapsed)
 
         with self.lock:
             self.gossips = {
