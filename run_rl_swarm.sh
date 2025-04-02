@@ -103,8 +103,16 @@ if [ "$CONNECT_TO_TESTNET" = "True" ]; then
 fi
 #lets go!
 echo "Getting requirements..."
-pip install -r "$ROOT"/requirements-hivemind.txt > /dev/null
-pip install -r "$ROOT"/requirements.txt > /dev/null
+
+# Check if uv is being used by looking in pyvenv.cfg
+if [ -f "$ROOT/.venv/pyvenv.cfg" ] && grep -q "^uv" "$ROOT/.venv/pyvenv.cfg"; then
+    PIP_PREFIX="uv "
+else
+    PIP_PREFIX=""
+fi
+
+${PIP_PREFIX}pip install -r "$ROOT"/requirements-hivemind.txt > /dev/null
+${PIP_PREFIX}pip install -r "$ROOT"/requirements.txt > /dev/null
 
 if ! which nvidia-smi; then
    #You don't have a NVIDIA GPU
@@ -114,7 +122,7 @@ elif [ -n "$CPU_ONLY" ]; then
    CONFIG_PATH="$ROOT/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml"
 else
    #NVIDIA GPU found
-   pip install -r "$ROOT"/requirements_gpu.txt > /dev/null
+   ${PIP_PREFIX}pip install -r "$ROOT"/requirements_gpu.txt > /dev/null
    CONFIG_PATH="$ROOT/hivemind_exp/configs/gpu/grpo-qwen-2.5-0.5b-deepseek-r1.yaml"
 fi
 
