@@ -41,26 +41,29 @@ done
 if [ "$CONNECT_TO_TESTNET" = "True" ]; then
     # run modal_login server
     echo "Please login to create an Ethereum Server Wallet"
-    cd modal-login
-    # Check if the yarn command exists; if not, install Yarn.
-    source ~/.bashrc
-    
-    if ! command -v yarn >/dev/null 2>&1; then
-        # Detect Ubuntu (including WSL Ubuntu) and install Yarn accordingly
-        if grep -qi "ubuntu" /etc/os-release 2>/dev/null || uname -r | grep -qi "microsoft"; then
-            echo "Detected Ubuntu or WSL Ubuntu. Installing Yarn via apt..."
-            curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-            sudo apt update && sudo apt install -y yarn
-        else
-            echo "Yarn is not installed. Installing Yarn..."
-            curl -o- -L https://yarnpkg.com/install.sh | sh
-            echo 'export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"' >> ~/.bashrc
-            source ~/.bashrc
-        fi
+cd modal-login
+
+# Check if the npm command exists; if not, install npm.
+source ~/.bashrc
+
+if ! command -v npm >/dev/null 2>&1; then
+    # Detect Ubuntu (including WSL Ubuntu) and install npm accordingly
+    if grep -qi "ubuntu" /etc/os-release 2>/dev/null || uname -r | grep -qi "microsoft"; then
+        echo "Detected Ubuntu or WSL Ubuntu. Installing npm via apt..."
+        sudo apt update
+        sudo apt install -y npm
+    else
+        echo "npm is not installed. Installing npm..."
+        curl -L https://npmjs.org/install.sh | sh
     fi
-    yarn install
-    yarn dev > /dev/null 2>&1 & # Run in background and suppress output
+fi
+
+# Install dependencies using npm with --legacy-peer-deps
+npm install --legacy-peer-deps # Why so?, I discovered a lot of peer dependency issues, this is probably why I ran into the dev error (https://github.com/gensyn-ai/rl-swarm/issues/74) I decided it's best to use npm and ignore them with this flag
+
+# Run the server in the background and suppress output
+npm run dev > /dev/null 2>&1 &
+
 
     SERVER_PID=$!  # Store the process ID
     sleep 5
