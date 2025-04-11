@@ -1,50 +1,60 @@
-# Model arguments
-model_name_or_path: Gensyn/Qwen2.5-0.5B-Instruct
-model_revision: main
-torch_dtype: bfloat16
-attn_implementation: flash_attention_2
-bf16: false
-tf32: false
-output_dir: runs/gsm8k/multinode/Qwen2.5-0.5B-Instruct-Gensyn-Swarm
+# ===============================
+# ✅ MODEL ARGUMENTS
+# ===============================
+model_name_or_path: Gensyn/Qwen2.5-0.5B-Instruct         # Kullanılacak modelin HuggingFace repo adı
+model_revision: main                                     # Hangi branch/revision'dan kullanılacağı (genelde 'main')
+torch_dtype: float32                                     # Apple M1/M2/M3 için en güvenli precision formatı
+attn_implementation: flash_attention_2                   # Daha hızlı attention mekanizması (eğer destekleniyorsa)
+bf16: false                                              # bf16 Apple cihazlarda desteklenmez (False bırak)
+tf32: false                                              # Sadece bazı NVIDIA GPU’larda geçerli – Apple cihazlarda False kalmalı
+output_dir: runs/gsm8k/multinode/Qwen2.5-0.5B-Instruct-Gensyn-Swarm  # Eğitilmiş model çıktılarının kaydedileceği klasör
 
-# Dataset arguments
-dataset_id_or_path: 'openai/gsm8k'
+# ===============================
+# ✅ DATASET ARGUMENTS
+# ===============================
+dataset_id_or_path: 'openai/gsm8k'                       # HuggingFace üzerindeki eğitim datası (ilkokul matematiği görevleri)
 
-# Lora Arguments
-# No LoRA is used here
-
-# Training arguments
-max_steps: 20 # Original 450
-per_device_train_batch_size: 1
-gradient_accumulation_steps: 8
-gradient_checkpointing: true
+# ===============================
+# ✅ TRAINING ARGUMENTS
+# ===============================
+max_steps: 20                                            # Eğitimde toplam kaç adım yapılacağı (deneme için düşük)
+per_device_train_batch_size: 1                           # Her GPU için batch büyüklüğü (1 seçmek bellek dostu)
+gradient_accumulation_steps: 8                           # 8 adımda bir optimizasyon yapılır (virtual batch = 8)
+gradient_checkpointing: true                             # Bellekten tasarruf için ara katmanları yeniden hesaplar
 gradient_checkpointing_kwargs:
-  use_reentrant: false
-learning_rate: 5.0e-7 # 1.0e-6 as in the deepseek math paper 5-e7 from https://hijkzzz.notion.site/unraveling-rlhf-and-its-variants-engineering-insights#147d9a33ecc9806090f3d5c749d31f05
-lr_scheduler_type: cosine
-warmup_ratio: 0.03
-# GRPO specific parameters
-beta: 0.001 # 0.04 as in the deepseek math paper 0.001 from https://hijkzzz.notion.site/unraveling-rlhf-and-its-variants-engineering-insights#147d9a33ecc9806090f3d5c749d31f05
-max_prompt_length: 256
-max_completion_length: 1024
-num_generations: 8
-use_vllm: false
-# vllm_device: "cuda:3"
-vllm_gpu_memory_utilization: 0.2
+  use_reentrant: false                                   # Bazı modellerde reentrant hatalara neden olabilir, False daha güvenli
+learning_rate: 5.0e-7                                    # Öğrenme oranı (küçük model ve az adım için düşük tutuldu)
+lr_scheduler_type: cosine                                # Cosine annealing öğrenme oranı zamanlaması
+warmup_ratio: 0.03                                       # Başlangıçta öğrenme oranı yavaşça artar (%3 oranında)
 
-# Logging arguments
-logging_strategy: steps
-logging_steps: 2
+# ===============================
+# ✅ GRPO / REWARD LEARNING PARAMS
+# ===============================
+beta: 0.001                                              # PPO/GRPO stabilizasyonu için kullanılan katsayı
+max_prompt_length: 64                                    # Input token uzunluğu (küçültmek belleği rahatlatır)
+max_completion_length: 64                                # Modelin üretmesi beklenen maksimum output token sayısı
+num_generations: 4                                       # Her prompt için üretilen yanıt sayısı (çoğaltmak RAM harcar)
+use_vllm: false                                          # vLLM kullanılsın mı? (False: klasik transformer forward)
+vllm_gpu_memory_utilization: 0.2                         # vLLM GPU kullanım oranı (şimdilik pasif)
+
+# ===============================
+# ✅ LOGGING & CHECKPOINTING
+# ===============================
+logging_strategy: steps                                  # Adım bazlı loglama yapılacak
+logging_steps: 2                                         # Her 2 adımda bir loglama
 report_to:
-- tensorboard
-save_strategy: "steps"
-save_steps: 25
-seed: 42
+  - tensorboard                                          # TensorBoard'a log gönderimi
+save_strategy: "steps"                                   # Belirli adımlarda checkpoint alınacak
+save_steps: 25                                           # Her 25 adımda bir model checkpoint kaydedilir
+seed: 42                                                 # Reprodüksiyon için sabit rastgelelik değeri
 
-# Hugging Face Hub
-# push_to_hub: false
-# hub_strategy: every_save
+# ===============================
+# ✅ HUGGINGFACE HUB (opsiyonel)
+# ===============================
+# push_to_hub: false                                     # Eğitim sonrası modeli HuggingFace Hub’a göndermek istiyorsan true yap
+# hub_strategy: every_save                               # Modeli her kayıtta Hub'a yollamak için (aktif değil)
 
-# Script arguments
-# 10000 is approximately infinite
-max_rounds: 10000
+# ===============================
+# ✅ SCRIPT ARGUMENTS
+# ===============================
+max_rounds: 10000                                        # RL eğitimi için maksimum iterasyon sayısı (büyük tutulmuş)
