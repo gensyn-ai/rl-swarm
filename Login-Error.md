@@ -1,4 +1,5 @@
 If you are stuck on the login screen of the Gensyn testnet, follow the commands below:
+```bash
 `pkill -f "SCREEN.*gensyn"`
 `screen -S gensyn`
 `cd rl-swarm`
