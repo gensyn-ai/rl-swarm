@@ -1,178 +1,418 @@
-# RL Swarm
+<div align="center">
 
-RL Swarm is a peer-to-peer system for reinforcement learning. It allows you to train a model collaboratively with other models in the swarm, leveraging their collective intelligence. It is open source and permissionless, meaning you can run it on a consumer laptop at home or on a powerful GPU in the cloud. You can also connect your model to the Gensyn Testnet, to receive an on-chain identity that tracks your progress over time.
+# 💻 Gensyn-ai-Rl-Swarm_Guide {Mac/Linux} 💻
 
-There are currently multiple swarms running on the Testnet, each training on a different data set. The current list of available models and swarms include:
-
-Models:
-   - Qwen 2.5 0.5B
-   - Qwen 2.5 1.5B
-   - Qwen 2.5 7B
-   - Qwen 2.5 32B (4 bit)
-   - Qwen 2.5 72B (4 bit)
-
-Swarms:
-   - Math (GSM8K dataset)
-   - Math Hard (DAPO-Math 17K dataset)
-
-Soon you will be able to create your own swarms with unique data sets, and eventually connect multiple swarms together to train powerful models across domains.
-
-## Requirements
-
-Your hardware requirements will vary depending on which swarm and model you choose.  Users with less powerful hardware should select a smaller model (e.g. Qwen 0.5B or 1.5B) and smaller dataset (GSM8K). Users with more powerful hardware can select a larger model (e.g. Qwen 7B, 32B or 72B) and larger dataset (DAPO-Math 17K).  The requirements for each are listed below:     
-
-**Small model (0.5B or 1.5B) + Math (GSM8K dataset)**
-
-- arm64 or x86 CPU with minimum 16gb ram (note that if you run other applications during training it might crash training).
+</div>
 
 
-OR
+# Device/System Requirements 🖥️
 
-- CUDA devices (officially supported):
-    - RTX 3090
-    - RTX 4090
-    - A100
-    - H100
-
-**Big model (7B, 32B or 72B) + Math Hard (DAPO-Math 17K dataset)**
-
-- Recommended:
-    - A100 (80GB) 
-    - H100 (80GB)
+![image](https://github.com/user-attachments/assets/4fbf23bb-846c-4def-be24-157c51fa0b4e)
 
 
 
-***
+* Open Your Vps
 
-With either configuration, you will need Python >=3.10 (for Mac, you will likely need to upgrade).
+```
+ssh username@ip
+```
 
-## ⚠️ Please read before continuing ⚠️
+# Pre-Requirements 🛠
 
-This software is **experimental** and provided as-is for users who are interested in using (or helping to develop) an early version of the Gensyn Protocol for training models.
+# Install Python and Other Tools
 
-If you care about on-chain participation, you **must** read the [Identity Management](#identity-management) section below.
+* For **Linux/Wsl**
 
-If you encounter issues, please first check [Troubleshooting](#troubleshooting). If you cannot find a solution there, please check if there is an open (or closed) [Issue](../../issues). If there is no relevant issue, please file one and include 1) all relevant logs, 2) information about your device (e.g. which GPU, if relevant), and 3) your operating system information.
+```
+sudo apt update && sudo apt install -y python3 python3-venv python3-pip curl wget screen git lsof
 
-## Instructions
+```
 
-### Run the swarm
+* **For Mac**
 
-```sh
+```
+brew install python
+```
+
+Check Version
+
+```
+python3 --version
+```
+
+
+# Install Node.js , npm & yarn
+
+* For **Linux/Wsl**
+
+```
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt update && sudo apt install -y nodejs
+```
+
+* Install Yarn (linux)
+
+```
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+```
+
+```
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list > /dev/null
+```
+
+```
+sudo apt update && sudo apt install -y yarn
+```
+
+
+* For **Mac**
+
+```
+brew install node && corepack enable && npm install -g yarn
+```
+
+* Check version **(Linux/Mac)**
+
+```
+node -v
+```
+```
+npm -v
+```
+
+```
+yarn -v
+```
+
+
+<div align="center">
+
+# 👨🏻‍💻 Start The Node (Linux/Mac) 
+
+</div>
+
+
+* 1️⃣ Clone RL-SWARM Repo
+
+```
+git clone https://github.com/krrpatel/rl-swarm.git
+```
+
+
+* 2️⃣ Create a screen session **(vps)**
+
+```
+screen -S gensyn
+````
+
+* 3️⃣ Navigate to rl-swarm
+
+```
+cd rl-swarm
+```
+
+* 4️⃣ Create & Activate a Virtual Environment
+
+```
 python3 -m venv .venv
 source .venv/bin/activate
+```
+
+* 5️⃣ Install Left-over dependencies
+
+```
+cd modal-login
+```
+
+```
+yarn install
+```
+
+```
+yarn upgrade &&  yarn add next@latest &&  yarn add viem@latest
+```
+
+* 6️⃣ Run the swarm Node 🚀
+
+```
+cd ..
+```
+
+```
 ./run_rl_swarm.sh
 ```
 
-### Testnet participation
+- After Running the Above command it will promt `Would you like to connect to the Testnet? [Y/n]` Enter `Y`
 
-Please answer 'Y' (or just press enter), N is provided as an alternative flow but isn't currently maintained.
+- After than it will promt `>> Which swarm would you like to join (Math (A) or Math Hard (B))? [A/b]`  Enter   `a`
 
-### Select your Swarm
+- After than it will promt `>> How many parameters (in billions)? [0.5, 1.5, 7, 32, 72]`    
 
-To select your swarm, answer 'B' to join the Math Hard (DAPO-Math 17K dataset) or 'S' to join the Math (GSM8K dataset). 
+👇See below and Choose the model Depends on Your System! 
 
-### Select your Model
-
-To select your model, answer '0.5', '1.5', '7', '32', or '72' to pick the parameter count. 
-
-### Login
-
-1. A browser window will pop open (you'll need to manually navigate to http://localhost:3000/ if you're on a VM).
-2. Click 'login'.
-3. Login with your preferred method.
-
-### Huggingface
-
-If you would like to upload your model to Hugging Face, enter your Hugging Face access token when prompted. You can generate one from your Hugging Face account, under [Access Tokens](https://huggingface.co/docs/hub/en/security-tokens).
-
-### Initial peering and training
-
-From this stage onward your device will begin training. You should see your peer register and vote on-chain [here](https://gensyn-testnet.explorer.alchemy.com/address/0x2fC68a233EF9E9509f034DD551FF90A79a0B8F82?tab=logs).
-
-You can also track your training progress in real time:
-- For the Math swarm (GSM8K dataset): [dashboard-math.gensyn.ai](https://dashboard-math.gensyn.ai)
-- For the Math Hard swarm (DAPO-Math 17K dataset): [dashboard-math-hard.gensyn.ai](https://dashboard-math-hard.gensyn.ai)
-
-## Identity management
-
-### Introduction
-
-On-chain identity is managed via an Alchemy modal sign-in screen. You need to supply an email address or login via a supported method (e.g. Google). This creates an EOA public/private key (which are stored by Alchemy). You will also receive local session keys in the `userApiKey`. Note that these aren't your EOA public/private keys. 
-
-During the initial set-up process, you will also create a `swarm.pem` file which maintains the identity of your peer. This is then registered on chain using the EOA wallet hosted in Alchemy, triggered using your local api keys. This links the `swarm.pem` to the `email address` (and corresponding EOA in Alchemy).
-
-**If you want to link multiple nodes to a single EOA**, simply sign up each node using the same email address. You will get a new peer ID for each node, however they will all be linked to the same EOA that your email is linked to.
-
-**Please note**: if you are using a fork of this repo, or a service organised by someone else (e.g. a 'one click deployment' provider) the identity management flow below is not guaranteed.
-
-### What this means
-In the following two scenarios, everything will work (i.e. you will have an on-chain identity linked with your RL Swarm peer training):
-
-- The very first time you run the node from scratch with a new email address. The smart account will be created fresh and linked with the swarm.pem that is also fresh.
-- If you run it again with a `swarm.pem` AND login the original `email address` used with that `swarm.pem`. Note: this will throw an error into the log on registration but will still be able to sign transactions.
-
-In the following two scenarios, it will not work (i.e. you won't have an on-chain identity linked with your RL Swarm peer training):
-
-- If you keep your `swarm.pem` and try to link it to an `email address` distinct from the one with which it was first registered.
-
-Therefore, you should do these actions in the following scenarios
-
-- **Signed up with `email address`, generated `swarm.pem`, BUT lost `swarm.pem`** OR **You want to run multiple nodes at once**: run from scratch with the same email address and generate a new `swarm.pem`. 
-- **Signed up with `email address`, generated `swarm.pem`, kept `swarm.pem`** -> you can re-run a single node using this pair if you've still got them both.
-
-## Troubleshooting
-
-- **My peer 'skipped a round'**: this occurs when your device isn't fast enough to keep up with the pace of the swarm. For example, if you start training at round 100 and by the time you finish training the rest of the swarm reaches round 102, you will skip round 101 and go straight to 102. This is because your peer is more valuable if it is participating in the active round.
-- **My model doesn't seem to be training?**
-
-    - If you're using a consumer device (e.g. a MacBook), it is likely just running slowly - check back in 20 minutes.
-
-- **Logging in with a new account after previous login?**
+<pre>
+- Qwen 2.5 0.5B                - Recommended 4GB RAM, (1GB DOWNLOAD)
+- Qwen 2.5 1.5B                - Recommended 8GB RAM, (4GB DOWNLOAD)
+- Qwen 2.5 7B                  - Recommended 16GB RAM, (15GB DOWNLOAD)
+- Qwen 2.5 32B (4 bit)         - Recommended 50GB RAM, (35GB DOWNLOAD)
+- Qwen 2.5 72B (4 bit)         - Recommended 100GB RAM, (70GB DOWNLOAD)
+</pre>
     
-    - Make sure you click 'Logout' on the login screen before you leave your previous session
-    - Make sure you delete `swarm.pem` from the root directory (try `sudo rm swarm.pem`). If you don't do this, and you previously registered with the peer-id stored in this file, it will disrupt the training process.
+- After that A web Pop-Up will appear, It will ask u to Login ( if no web pop-up then u have to paste this on ur brower `http://localhost:3000/` 
 
-- **Issues with the Login screen**
 
-    - **Upgrade viem**: some users report issues with the `viem` package. There are two fixes:
-        - in the `modal-login/package.json` update: `"viem": "2.25.0"`
-        - in the terminal `cd /root/rl-swarm/modal-login/ && yarn upgrade && yarn add next@latest && yarn add viem@latest`
+- Now Login With Your Email Id, Enter OTP and back to ur Terminal/Wsl? **( VPS users check FAQ1 )**
 
-- **I'm getting lots of warnings**
-    - This is expected behaviour and usually the output of the package managers or other dependencies. The most common is the below Protobuf warning - which can be ignored
-        ```
-        WARNING: The candidate selected for download or install is a yanked version: 'protobuf' candidate...
-        ```
+![image](https://github.com/user-attachments/assets/1fed4b08-4ec4-44de-868c-b2d314cd2a02)
 
-- **Issues on VMs/VPSs?**
 
-    - **How do I access the login screen if I'm running in a VM?**: port forwarding. Add this SSH flag: `-L 3000:localhost:3000` when connecting to your VM. E.g. `gcloud compute ssh --zone "us-central1-a" [your-vm] --project [your-project] -- -L 3000:localhost:3000`. Note, some VPSs may not work with `rl-swarm`. Check the Gensyn [discord](https://discord.gg/AdnyWNzXh5) for up-to-date information on this.
+- Now U can see A `ORG_ID` On ur Terminal..Save it!
+
+
+* Now It will promt `Would you like to push models you train in the RL swarm to the Hugging Face Hub? [y/N]` Enter `N`
+
+<img width="1223" alt="Screenshot 2025-05-01 at 4 47 30 PM" src="https://github.com/user-attachments/assets/05fcfc61-b562-4089-b21f-ba95b1036a24" />
+
+
+
+
+![image](https://github.com/user-attachments/assets/33344c45-a108-4671-af31-a5e431878736)
+
+
+Here we go🚀
+
+Its Done ✅
+
+It will Generate Logs Soon🙌
+
+
+* Detach from `screen session` **(vps)**
+
+Use `Ctrl + A` and then press `D`
+
+* Attach to gensyn Screen to see Logs
+
+```
+screen -r gensyn
+```
+
+
+
+<div align="center">
+
+#  🛠 FAQ & Troubleshoot 🛠
+
+</div>
+
+
+# 1️⃣ How to Login or access  http://localhost:3000/ in VPS? 📶
+
+* Open a new Terminal and login ur vps 
+
+* Allow Incoming connection on VPS
+
+```
+sudo apt install ufw -y
+sudo ufw allow 22
+sudo ufw allow 3000/tcp
+```
+
+* Enable ufw
+
+```
+sudo ufw enable
+```
+
+* Install cloudflared on the VPS
+
+```
+wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+````
+
+```
+sudo dpkg -i cloudflared-linux-amd64.deb
+```
+
+* Check version
+
+```
+cloudflared --version
+```
+
+* Make sure your Node is running on port 3000 in Previous Screen
+
+* Run the tunnel command
+
+```
+cloudflared tunnel --url http://localhost:3000
+```
+
+* Access the Link from your local machine
+
     
-    - **Disconnection/general issues**: If you are tunneling to a VM and suffer a broken pipe, you will likely encounter OOM or unexepected behaviour the first time you relaunch the script. If you `control + c` and kill the script it should spin down all background processes. Restart the script and everything should work normally.
+    ![image](https://github.com/user-attachments/assets/c5bdfec5-123d-4625-8da8-f46269700950)
 
-- **Issues with npm/general installation?**
+* Now follow Login!
+ 
+* Done!✅
 
-    - Try  `npm install -g node@latest`
 
-- **OOM errors on MacBook?**
-    - Try this (experimental) fix to increase memory:
-        ```
-        export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0
-        ```
-- **I have a Windows machine, can I still train a model on the swarm?**: Yes - but this is not very well tested and may require you to do some debugging to get it set up properly. Install WSL and Linux on your Windows machine using the following instructions: https://learn.microsoft.com/en-us/windows/wsl/install
 
-- **I want to move my to a different machine and/or restart with a fresh build of the repo, but I want my animal name/peer id to persist.**: To achieve this simply backup the `swarm.pem` file on your current machine and then put it in the corresponding location on your new machine/build of the repo.
+# 2️⃣ Solution of OOM errors on MacBook (Memory/Cpu limit)
 
-- **I have multiple GPUs on one machine, can I run multiple peers?**: Yes - but you'll need to manually change things. You'll need to isolate each GPU, install this repo for each GPU, and expose each peer under a different port to pass the modal onboard.
+* Open -
+ ```
+nano ~/.zshrc
+```
 
-- **My round/stage is behind the smart contract/other peers?**: This is expected behaviour given the different speeds of machines in the network. Once your machine completes it's current round, it will move to the the current round.
+* Paste in the file
 
-- **I want to use a bigger and/or different model in the RL swarm, can I do that?**: Yes - but we only recommend doing so if you are comfortable manually changing files and appropriately configuring the model(s) you wish to run for your device(s). You'll simply need to edit the config file in `./hivemind_exp/configs/<directory_relevant_to_your_device>/grpo-qwen-2.5-0.5b-deepseek-r1.yaml` to reflect the model_name_or_path and training arguments corresponding to what you want in the swarm. Note that, although any pre-trained LLM compatible with Hugging Face's `AutoModelForCausalLM` class should work in theory, we have only tested with a handful of Qwen 2.5 instruction-tuned models.
+```
+export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+```
+* Reload with
 
-- **I am running a model in the swarm on my CPU, have received a python `RuntimeError`, and my training progress seems to have stopped.**: There are several possible causes for this, but before trying anything please wait long enough to be sure your training actually is frozen and not just slow (e.g., wait longer than a single training iteration has previously taken on your machine). If you're sure training is actually frozen, then some things to try are:
-    - Set this (experimental) fix: `export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && ./run_rl_swarm.sh`
-    - In the config for your device (`./hivemind_exp/configs/<directory_relevant_to_your_device>/grpo-qwen-2.5-0.5b-deepseek-r1.yaml`) add the following training argument: `max_grad_norm=0.5`
-    - Use floating point 32 instead of bfloat16 to train your model. This can be changed in the config for your device, i.e. `./hivemind_exp/configs/<directory_relevant_to_your_device>/grpo-qwen-2.5-0.5b-deepseek-r1.yaml`.
+```
+  source ~/.zshrc
+```
 
-- **How can I optimsie `rl-swarm` for my device**? open the `hivemind_exp/configs/gpu/grpo-qwen-2.5-0.5b-deepseek-r1.yaml`. Note that this is for the gpu and not cpu configuration. You can then edit parameters that optimsie the training run. For example, try adjusting the `vllm_gpu_memory_utilization`. Note that optimal settings will vary by device.
+# 3️⃣ How to get the Node Name?
+
+* Check the image below to get your Node id!
+
+![image](https://github.com/user-attachments/assets/728c6401-75c8-43b4-973c-e9d515c4b453)
+
+# 4️⃣ Save your `swarm.pem` file (for future login)
+
+* open a wsl window 
+
+* If U have to copy this file to your local machine from VPS then Run this command from your local Terminal--
+
+```
+scp USERNAME@YOUR_IP:~/rl-swarm/swarm.pem ~/swarm.pem
+```
+
+It will save here in ur Terminal's Root Directory!
+
+
+# 5️⃣ How To start the Next Day (Local Pc)
+
+*
+ ```
+  cd rl-swarm
+ ```
+
+*
+ ```
+  python3 -m venv .venv
+```
+
+*
+```
+source .venv/bin/activate
+```
+
+*
+```
+./run_rl_swarm.sh
+```
+
+
+
+
+
+<div align="center">
+
+# 📈 How to upgrade to new release (v0.4.2) {Mac/Linux} 
+
+</div>
+
+* Go to gensyn screen (Vps)
+
+```
+screen -r gensyn
+```
+
+* Stop your node by `ctrl+c` if u are on gensyn screen (Vps)
+
+* Move to rl-swarm directory
+```
+cd rl-swarm
+```
+
+* Pull the latest release (If u didn't make any changes in files previously)
+
+```
+git pull
+```
+
+* Pull the latest release ( If u make any changes in files previously)
+
+
+```
+git reset --hard HEAD
+git pull
+```
+
+
+* Start the swarm Node 🚀
+
+```
+./run_rl_swarm.sh
+```
+
+- After Running the Above command it will promt `Would you like to connect to the Testnet? [Y/n]` Enter `Y`
+
+- After than it will promt `>> Which swarm would you like to join (Math (A) or Math Hard (B))? [A/b]`  Enter   `a`
+
+- After than it will promt `>> How many parameters (in billions)? [0.5, 1.5, 7, 32, 72]`    
+
+👇See below and Choose the model Depends on Your System! 
+
+<pre>
+- Qwen 2.5 0.5B                - Recommended 4GB RAM, (1GB DOWNLOAD)
+- Qwen 2.5 1.5B                - Recommended 8GB RAM, (4GB DOWNLOAD)
+- Qwen 2.5 7B                  - Recommended 16GB RAM, (15GB DOWNLOAD)
+- Qwen 2.5 32B (4 bit)         - Recommended 50GB RAM, (35GB DOWNLOAD)
+- Qwen 2.5 72B (4 bit)         - Recommended 100GB RAM, (70GB DOWNLOAD)
+</pre>
+    
+- After that A web Pop-Up will appear, It will ask u to Login ( if no web pop-up then u have to paste this on ur brower `http://localhost:3000/` 
+
+
+- Now Login With Your Email Id, Enter OTP and back to ur Terminal/Wsl? **( VPS users check FAQ1 )**
+
+![image](https://github.com/user-attachments/assets/1fed4b08-4ec4-44de-868c-b2d314cd2a02)
+
+
+- Now U can see A `ORG_ID` On ur Terminal..Save it!
+
+
+* Now It will promt `Would you like to push models you train in the RL swarm to the Hugging Face Hub? [y/N]` Enter `N`
+
+<img width="1223" alt="Screenshot 2025-05-01 at 4 47 30 PM" src="https://github.com/user-attachments/assets/05fcfc61-b562-4089-b21f-ba95b1036a24" />
+
+
+
+
+![image](https://github.com/user-attachments/assets/33344c45-a108-4671-af31-a5e431878736)
+
+
+
+
+
+
+
+
+
+
+
+Follow official Docs for more info and Errors!
+
+
+👉 Join TG for more Updates: https://telegram.me/cryptogg
+
+If U have any issue then open a issue on this repo or Dm me on TG~
+
+Thank U! 👨🏻‍💻 Happy Coding💗
+
