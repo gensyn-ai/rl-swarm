@@ -19,5 +19,5 @@ curl -o hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml https://raw
 Step-5:
 ```bash
 rm -rf .venv
-python3 -m venv .venv && . .venv/bin/activate && PEER_MULTI_ADDRS="" ./run_rl_swarm.sh
+python3 -m venv .venv && . .venv/bin/activate && ./run_rl_swarm.sh
 ```
