@@ -37,7 +37,7 @@ class TestnetGRPORunner(GRPORunner):
         self.coordinator.register_peer(peer_id)
 
     def setup_dht(self, grpo_args):
-        dht = hivemind.DHT(start=True, ensure_bootstrap_success=False, **self._dht_kwargs(grpo_args))
+        dht = super().setup_dht(grpo_args)
         peer_id = str(dht.peer_id)
         self.register_peer(peer_id)
         return dht
