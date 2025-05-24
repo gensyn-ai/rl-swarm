@@ -144,7 +144,7 @@ class GRPORunner:
 
     def setup_dht(self, grpo_args):
         initial_peers = grpo_args.initial_peers
-        dht = hivemind.DHT(start=True, ensure_bootstrap_success=False, startup_timeout=120, **self._dht_kwargs(grpo_args))
+        dht = hivemind.DHT(start=True, ensure_bootstrap_success=False, ensure_bootstrap_success=False, startup_timeout=120, **self._dht_kwargs(grpo_args))
         if initial_peers:
             logger.info(f"🐝 Joining swarm with initial_peers = {initial_peers}")
         else:
