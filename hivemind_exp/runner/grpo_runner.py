@@ -20,6 +20,7 @@ if UNSLOTH_ENABLED:
     except ImportError:
         UNSLOTH_ENABLED = False
 
+import time
 import hivemind
 from datasets import Dataset
 from huggingface_hub import login
@@ -47,6 +48,7 @@ class GRPOArguments:
     public_maddr: str | None = None
     host_maddr: str | None = None
     identity_path: str | None = None
+    dht_retry_timeout: float = 60.0
     max_rounds: int = 100
 
     # Model arguments
@@ -144,7 +146,23 @@ class GRPORunner:
 
     def setup_dht(self, grpo_args):
         initial_peers = grpo_args.initial_peers
-        dht = hivemind.DHT(start=True, startup_timeout=30, **self._dht_kwargs(grpo_args))
+        dht_retry_timeout = grpo_args.dht_retry_timeout
+
+        while True:
+            try:
+                dht = hivemind.DHT(start=True, **self._dht_kwargs(grpo_args))
+                # In case everything succeeded and no exception were raised.
+                break
+            except Exception as e:
+                # Its better to log this behavior to simplify investigation
+                # in the future.
+                logger.warning(
+                    f"Failed to start DHT peer due to exception: `{e}`. "
+                    f"Will try it again in {dht_retry_timeout} seconds...")
+                # I'm not sure progressive timeout is required here now, so
+                # let it be static now.
+                time.sleep(dht_retry_timeout)
+
         if initial_peers:
             logger.info(f"🐝 Joining swarm with initial_peers = {initial_peers}")
         else:
