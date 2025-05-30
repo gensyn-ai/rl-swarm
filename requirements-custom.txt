@@ -1,0 +1,14 @@
+bitsandbytes
+colorlog
+datasets
+hivemind @ git+https://github.com/learning-at-home/hivemind@1.11.11
+hf-transfer
+peft
+pytest
+tensorboard
+transformers==4.46.0
+trl<0.12.2
+vllm>=0.9.0
+wandb
+web3
+xformers

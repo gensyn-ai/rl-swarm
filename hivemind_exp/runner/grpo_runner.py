@@ -82,7 +82,7 @@ class GRPORunner:
                 model_name,
                 load_in_4bit=quantization == Quantization._4BIT,
                 load_in_8bit=False,
-                fast_inference=True,
+                fast_inference=False,  # RTX 5090 için vLLM devre dışı
                 use_exact_model_name=True,
                 max_seq_length=MAX_SEQ_LENGTH,
                 gpu_memory_utilization=self.peak_memory_percentage,
@@ -144,7 +144,7 @@ class GRPORunner:
 
     def setup_dht(self, grpo_args):
         initial_peers = grpo_args.initial_peers
-        dht = hivemind.DHT(start=True, startup_timeout=30, **self._dht_kwargs(grpo_args))
+        dht = hivemind.DHT(start=True, startup_timeout=60, ensure_bootstrap_success=False, **self._dht_kwargs(grpo_args))
         if initial_peers:
             logger.info(f"🐝 Joining swarm with initial_peers = {initial_peers}")
         else:
