@@ -1,0 +1,53 @@
+{
+  "os": "Linux-6.11.0-25-generic-x86_64-with-glibc2.39",
+  "python": "CPython 3.12.3",
+  "startedAt": "2025-05-30T00:08:03.362396Z",
+  "args": [
+    "--hf_token",
+    "None",
+    "--identity_path",
+    "/home/taygun/rl-swarm/swarm.pem",
+    "--modal_org_id",
+    "a71171d9-c951-4493-b68e-0e844cd37ca4",
+    "--contract_address",
+    "0x69C6e1D608ec64885E7b185d39b04B491a71768C",
+    "--config",
+    "/home/taygun/rl-swarm/hivemind_exp/configs/gpu/grpo-qwen-2.5-0.5b-deepseek-r1.yaml",
+    "--game",
+    "gsm8k"
+  ],
+  "program": "-m hivemind_exp.gsm8k.train_single_gpu",
+  "git": {
+    "remote": "https://github.com/gensyn-ai/rl-swarm",
+    "commit": "9b24b7012ad1dcab3e53aed5d5ac08be84c3d773"
+  },
+  "email": "taygundogan@gmail.com",
+  "root": "/home/taygun/rl-swarm",
+  "host": "taygun",
+  "executable": "/home/taygun/gensyn_env/bin/python",
+  "cpu_count": 24,
+  "cpu_count_logical": 32,
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "1885364539392",
+      "used": "921910276096"
+    }
+  },
+  "memory": {
+    "total": "101018951680"
+  },
+  "cpu": {
+    "count": 24,
+    "countLogical": 32
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GeForce RTX 5090",
+      "memoryTotal": "34190917632",
+      "cudaCores": 21760
+    }
+  ],
+  "cudaVersion": "12.8"
+}
