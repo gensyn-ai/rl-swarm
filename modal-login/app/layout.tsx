@@ -1,25 +1,10 @@
-import { config } from "@/config";
-import { cookieToInitialState } from "@account-kit/core";
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { headers } from "next/headers";
-import "./globals.css";
-import { Providers } from "./providers";
-
-const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "Sign in to Gensyn Testnet",
-  description: "Modal sign in for Gensyn Testnet",
-};
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headerValues = await headers();
-  const cookie = headerValues.get("cookie") ?? undefined;
+  const headersList = headers();
+  const cookie = headersList.get("cookie") ?? undefined;
 
   const initialState = cookieToInitialState(config, cookie);
 
