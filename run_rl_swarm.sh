@@ -2,9 +2,22 @@
 
 set -euo pipefail
 
+# RTX 5090 için CUDA ayarları
+export CUDA_LAUNCH_BLOCKING=1
+export TORCH_USE_CUDA_DSA=1
+
 # General arguments
 ROOT=$PWD
 
+
+export ACCELERATE_MIXED_PRECISION=no
+export ACCELERATE_GRADIENT_ACCUMULATION_STEPS=1
+export HIVEMIND_STARTUP_TIMEOUT=120
+export HIVEMIND_REQUEST_TIMEOUT=60
+export PYTHONUNBUFFERED=1
+export USE_VLLM=0
+export TRL_USE_VLLM=0
+export DISABLE_VLLM=1
 export PUB_MULTI_ADDRS
 export PEER_MULTI_ADDRS
 export HOST_MULTI_ADDRS
@@ -222,13 +235,13 @@ echo_green ">> Getting requirements..."
 pip install --upgrade pip
 if [ -n "$CPU_ONLY" ] || ! command -v nvidia-smi &> /dev/null; then
     # CPU-only mode or no NVIDIA GPU found
-    pip install -r "$ROOT"/requirements-cpu.txt
+    # pip install -r "$ROOT"/requirements-cpu.txt
     CONFIG_PATH="$ROOT/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml" # TODO: Fix naming.
     GAME="gsm8k"
 else
     # NVIDIA GPU found
-    pip install -r "$ROOT"/requirements-gpu.txt
-    pip install flash-attn --no-build-isolation
+    # pip install -r "$ROOT"/requirements-gpu.txt
+    # pip install flash-attn --no-build-isolation
 
     case "$PARAM_B" in
         32 | 72) CONFIG_PATH="$ROOT/hivemind_exp/configs/gpu/grpo-qwen-2.5-${PARAM_B}b-bnb-4bit-deepseek-r1.yaml" ;;
@@ -265,6 +278,9 @@ echo_blue ">> Post about rl-swarm on X/twitter! --> https://tinyurl.com/swarmtwe
 echo_blue ">> And remember to star the repo on GitHub! --> https://github.com/gensyn-ai/rl-swarm"
 
 if [ -n "$ORG_ID" ]; then
+    python /home/taygun/rl-swarm/full_patch.py
+    python /home/taygun/rl-swarm/fix_flash_attn.py
+    python /home/taygun/rl-swarm/fix_flash_attn.py
     python -m hivemind_exp.gsm8k.train_single_gpu \
         --hf_token "$HUGGINGFACE_ACCESS_TOKEN" \
         --identity_path "$IDENTITY_PATH" \
