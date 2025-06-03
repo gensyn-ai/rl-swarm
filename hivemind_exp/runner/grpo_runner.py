@@ -172,8 +172,13 @@ class GRPORunner:
         # Log into HF hub if wanted
         ############################
         if grpo_args.hf_token not in [None, "None"]:
-            training_args.push_to_hub_token = grpo_args.hf_token
-            login(token=training_args.push_to_hub_token, add_to_git_credential=True)
+            try:
+                login(token=grpo_args.hf_token, add_to_git_credential=True)
+                training_args.push_to_hub_token = grpo_args.hf_token
+                logger.info("Logged into Hugging Face Hub")
+            except Exception as e:
+                training_args.push_to_hub_token = None
+                logger.warning(f"Hugging Face login failed: {e}")
         else:
             training_args.push_to_hub_token = None
 
