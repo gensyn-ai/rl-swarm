@@ -70,7 +70,7 @@ Please answer 'Y' (or just press enter), N is provided as an alternative flow bu
 
 ### Select your Swarm
 
-To select your swarm, answer 'B' to join the Math Hard (DAPO-Math 17K dataset) or 'S' to join the Math (GSM8K dataset). 
+To select your swarm, answer 'B' to join the Math Hard (DAPO-Math 17K dataset) or 'A' to join the Math (GSM8K dataset). 
 
 ### Select your Model
 
