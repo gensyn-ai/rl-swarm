@@ -215,7 +215,6 @@ if [ "$CONNECT_TO_TESTNET" = true ]; then
             sleep 5
         fi
     done
-fi
 
 echo_green ">> Getting requirements..."
 
