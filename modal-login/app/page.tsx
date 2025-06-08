@@ -96,6 +96,12 @@ export default function Home() {
     }
   }, []);
 
+  useEffect(() => {
+  if (!user && !signerStatus.isInitializing) {
+    openAuthModal(); 
+  }
+}, [user, signerStatus.isInitializing]);
+
   return (
     <main className="flex min-h-screen flex-col items-center gap-4 justify-center text-center">
       {(!sawDisconnected && !sawConnected) || (user && !createdApiKey) ? (
