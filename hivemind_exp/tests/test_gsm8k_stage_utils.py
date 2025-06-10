@@ -15,13 +15,20 @@ from trl import GRPOConfig
 from hivemind_exp.dht_utils import ROUND_STAGE_NUMBER_KEY, outputs_key
 from hivemind_exp.gsm8k.stage_utils import (
     HivemindNode,
-    get_stage2_samples,
-    get_stage3_samples,
-    gsm8k_stage_data,
+    rewards_key,
+    merged_prev_stage_datasets,
+)
+
+from hivemind_exp.gsm8k.stage_merger import (
     merge_stage1_question,
     merge_stage2_question,
-    merged_prev_stage_datasets,
-    rewards_key,
+)
+
+from hivemind_exp.gsm8k.stages import gsm8k_stage_data
+
+from hivemind_exp.gsm8k.generate_prompts import (
+    get_stage2_samples,
+    get_stage3_samples,
 )
 from hivemind_exp.hivemind_utils import SingleStageData
 from hivemind_exp.tests.fake_data import (

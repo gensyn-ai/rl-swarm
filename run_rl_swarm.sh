@@ -41,6 +41,7 @@ ORG_ID=${ORG_ID:-""}
 
 GREEN_TEXT="\033[32m"
 BLUE_TEXT="\033[34m"
+RED_TEXT="\033[31m"
 RESET_TEXT="\033[0m"
 
 echo_green() {
@@ -51,7 +52,12 @@ echo_blue() {
     echo -e "$BLUE_TEXT$1$RESET_TEXT"
 }
 
+echo_red() {
+    echo -e "$RED_TEXT$1$RESET_TEXT"
+}
+
 ROOT_DIR="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
+
 
 # Function to clean up the server process upon exit
 cleanup() {
@@ -66,7 +72,12 @@ cleanup() {
     exit 0
 }
 
+errnotify() {
+    echo_red ">> An error was detected while running rl-swarm. See $ROOT/logs for full logs."
+}
+
 trap cleanup EXIT
+trap errnotify ERR
 
 echo -e "\033[38;5;224m"
 cat << "EOF"

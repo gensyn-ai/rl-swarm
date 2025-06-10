@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 from collections import defaultdict
 
-from hivemind_exp.gsm8k.stage_utils import gsm8k_stage_data
+from hivemind_exp.gsm8k.stages import gsm8k_stage_data
 from hivemind_exp.dht_utils import HivemindNode
 from hivemind_exp.tests.fake_data import CK, QUESTION, SAMPLES
 

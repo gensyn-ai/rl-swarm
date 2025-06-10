@@ -95,12 +95,23 @@ class ModalSwarmCoordinator(SwarmCoordinator):
     def register_peer(self, peer_id):
         try:
             send_via_api(self.org_id, "register-peer", {"peerId": peer_id})
-        except requests.exceptions.HTTPError as e:
-            if e.response is None or e.response.status_code != 500:
+        except requests.exceptions.HTTPError as http_err:
+            if http_err.response is None or http_err.response.status_code != 400:
                 raise
 
-            logger.debug("Unknown error calling register-peer endpoint! Continuing.")
-            # logger.info(f"Peer ID [{peer_id}] is already registered! Continuing.")
+            try:
+                err_data = http_err.response.json()
+                err_name = err_data["error"]
+                if err_name != "PeerIdAlreadyRegistered":
+                    logger.info(f"Registering peer failed with: f{err_name}")
+                    raise
+                logger.info(f"Peer ID [{peer_id}] is already registered! Continuing.")
+
+            except json.JSONDecodeError as decode_err:
+                logger.debug(
+                    "Error decoding JSON during handling of register-peer error"
+                )
+                raise http_err
 
     def submit_reward(self, round_num, stage_num, reward, peer_id):
         try:

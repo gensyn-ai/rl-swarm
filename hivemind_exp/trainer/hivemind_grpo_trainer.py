@@ -222,7 +222,6 @@ class HivemindGRPOTrainer:
             pass
 
         self.node.clear_stage_cache()
-        self.wandb_run.finish()
 
     def train_stage_and_save(self, trainer, train_dataset):
         for _ in range(MAX_TRAIN_FAILS):
@@ -337,8 +336,10 @@ class HivemindGRPOTrainer:
     def train(self):
         try:
             self._train()
+            self.wandb_run.finish()
 
         except Exception:
             self.logger.debug(print_system_info())
             self.logger.exception("Exception during training", stack_info=True)
+            self.wandb_run.finish()
             raise
