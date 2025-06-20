@@ -1,0 +1,41 @@
+# Model arguments
+model_revision: main
+torch_dtype: float16
+bf16: false
+tf32: false
+
+# Dataset arguments
+dataset_id_or_path: 'openai/gsm8k'
+
+# Training arguments
+max_steps: 5  # 减少步数用于测试
+gradient_accumulation_steps: 2  # 减少内存使用
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+learning_rate: 5.0e-7
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+
+# GRPO arguments
+use_vllm: false
+num_generations: 2  # GRPO 至少需要 2 个生成
+per_device_train_batch_size: 1  # 减少批次大小
+beta: 0.001
+max_prompt_length: 128  # 减少序列长度
+max_completion_length: 256
+
+# Logging arguments
+logging_strategy: steps
+logging_steps: 1
+report_to: []  # 禁用 wandb 避免网络问题
+save_strategy: "steps"
+save_steps: 5
+seed: 42
+
+# Script arguments
+max_rounds: 10
+
+# Model-specific arguments - 使用公开的模型
+model_name_or_path: microsoft/DialoGPT-small
+output_dir: runs/gsm8k/local/DialoGPT-small-Local-Test 

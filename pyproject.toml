@@ -1,0 +1,42 @@
+[project]
+name = "rl-swarm"
+version = "0.1.0"
+description = "Distributed reinforcement learning swarm using hivemind"
+requires-python = ">=3.9"
+dependencies = [
+    "colorlog",
+    "datasets",
+    "hivemind @ git+https://github.com/learning-at-home/hivemind@1.11.11",
+    "hf-transfer",
+    "peft",
+    "pytest",
+    "tensorboard",
+    "transformers>=4.46.0",
+    "trl",
+    "wandb",
+    "web3",
+]
+
+[project.optional-dependencies]
+gpu = [
+    "bitsandbytes",
+    "torch",
+    "transformers>=4.46.0",
+    "vllm==0.7.3",
+    "xformers",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["hivemind_exp", "web"]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest",
+] 
