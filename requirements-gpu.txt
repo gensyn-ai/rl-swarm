@@ -15,3 +15,4 @@ vllm==0.7.3
 wandb
 web3
 xformers
+accelerate==1.7.0
