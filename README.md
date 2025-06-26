@@ -58,11 +58,21 @@ If you encounter issues, please first check [Troubleshooting](#troubleshooting).
 
 ### Run the swarm
 
+**For macOS users (recommended):**
+
+```sh
+./run_rl_swarm_mac.sh
+```
+
+**For other systems or alternative UV-based approach:**
+
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
 ./run_rl_swarm.sh
 ```
+
+> **Note**: Mac users should use `run_rl_swarm_mac.sh` which is specially optimized for macOS with automatic dependency management via Homebrew and improved compatibility. See [Mac Usage Guide](doc/RL-Swarm-Mac使用指南.md) for detailed instructions.
 
 ### Testnet participation
 
