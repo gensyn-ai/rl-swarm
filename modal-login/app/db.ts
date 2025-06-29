@@ -3,35 +3,62 @@
 
 import fs from "fs";
 import path from "path";
+import { z, ZodSchema } from "zod";
+import { hexSchema } from "./lib/schemas";
+import { Hex } from "viem";
 
 const userDataPath = path.join(process.cwd(), "./temp-data/userData.json");
 const apiKeyPath = path.join(process.cwd(), "./temp-data/userApiKey.json");
 
-const readJson = (filePath: string): any => {
+function readJson<T extends ZodSchema>(
+  filePath: string,
+  schema: T,
+): z.infer<T> {
   if (!fs.existsSync(filePath)) {
     return {};
   }
   const fileData = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(fileData);
-};
+  const raw = JSON.parse(fileData);
 
-const writeJson = (filePath: string, data: any) => {
+  return schema.parse(raw);
+}
+
+const writeJson = (filePath: string, data: ApiKeyRecord | UserDataRecord) => {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 };
 
-interface UserData {
-  orgId: string;
-  address: string;
-  userId: string;
-  email?: string;
-}
+const userDataSchema = z.object({
+  orgId: z.string(),
+  address: z.string(),
+  userId: z.string(),
+  email: z.optional(z.string()),
+});
+const userDataRecordSchema = z.record(userDataSchema);
 
-interface UserApiKey {
-  publicKey: string;
-  privateKey: string;
-  createdAt: Date;
-  activated?: boolean;
-}
+export type UserData = z.infer<typeof userDataSchema>;
+type UserDataRecord = z.infer<typeof userDataRecordSchema>;
+
+export const userApiKeySchema = z.discriminatedUnion("activated", [
+  z.object({
+    publicKey: hexSchema,
+    privateKey: hexSchema,
+    createdAt: z.coerce.date(),
+    deferredActionDigest: hexSchema,
+    accountAddress: hexSchema,
+    initCode: hexSchema,
+    activated: z.literal(true),
+  }),
+  z.object({
+    publicKey: hexSchema,
+    privateKey: hexSchema,
+    createdAt: z.coerce.date(),
+    activated: z.literal(false),
+  }),
+]);
+export const apiKeyRecordSchema = z.record(z.array(userApiKeySchema));
+
+export type UserApiKey = z.infer<typeof userApiKeySchema>;
+type ApiKeyRecord = z.infer<typeof apiKeyRecordSchema>;
 
 /**
  * Upsert a user's data and their API key. Removes all other users
@@ -43,8 +70,8 @@ interface UserApiKey {
  */
 export const upsertUser = (data: UserData, apiKey: UserApiKey) => {
   // Read from disk.
-  const usersData = readJson(userDataPath);
-  const apiKeyData = readJson(apiKeyPath);
+  const usersData = readJson(userDataPath, userDataRecordSchema);
+  const apiKeyData = readJson(apiKeyPath, apiKeyRecordSchema);
 
   // Update data.
   usersData[data.orgId] = data;
@@ -67,7 +94,7 @@ export const upsertUser = (data: UserData, apiKey: UserApiKey) => {
  * Retrieve user data for a given organization id.
  */
 export const getUser = (orgId: string): UserData | null => {
-  const userData = readJson(userDataPath);
+  const userData = readJson(userDataPath, userDataRecordSchema);
   return userData[orgId] ?? null;
 };
 
@@ -75,22 +102,36 @@ export const getUser = (orgId: string): UserData | null => {
  * Get the latest API key for a given organization id.
  */
 export const getLatestApiKey = (orgId: string): UserApiKey | null => {
-  const apiKeyData = readJson(apiKeyPath);
+  const apiKeyData = readJson(apiKeyPath, apiKeyRecordSchema);
   const keys: UserApiKey[] = apiKeyData[orgId];
   return keys?.[keys.length - 1] ?? null;
 };
 
-export const setApiKeyActivated = (orgId: string, apiKey: string): void => {
-  const apiKeyData = readJson(apiKeyPath);
-  const keys: UserApiKey[] = apiKeyData[orgId];
+export const setApiKeyActivated = (
+  orgId: string,
+  apiKey: Hex,
+  deferredActionDigest: Hex,
+  accountAddress: Hex,
+  initCode: Hex,
+): void => {
+  const apiKeyData = readJson(apiKeyPath, apiKeyRecordSchema);
+  const keys = apiKeyData[orgId];
   const key = keys.find((k) => k.publicKey === apiKey);
   if (!key) {
     throw new Error("API key not found");
   }
-  const updatedData = {
+  const updatedData: ApiKeyRecord = {
     ...apiKeyData,
     [orgId]: keys.map((k) =>
-      k.publicKey === apiKey ? { ...k, activated: true } : k,
+      k.publicKey === apiKey
+        ? {
+            ...k,
+            activated: true,
+            deferredActionDigest,
+            accountAddress,
+            initCode,
+          }
+        : k,
     ),
   };
   writeJson(apiKeyPath, updatedData);

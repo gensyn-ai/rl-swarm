@@ -1,29 +1,25 @@
 # RL Swarm
 
-RL Swarm is a peer-to-peer system for reinforcement learning. It allows you to train a model collaboratively with other models in the swarm, leveraging their collective intelligence. It is open source and permissionless, meaning you can run it on a consumer laptop at home or on a powerful GPU in the cloud. You can also connect your model to the Gensyn Testnet, to receive an on-chain identity that tracks your progress over time.
+RL Swarm is a peer-to-peer system for reinforcement learning. It allows you to train models collaboratively with others in the swarm, leveraging their collective intelligence. It is open source and permissionless, meaning you can run it on a consumer laptop at home or on a powerful GPU in the cloud. You can also connect your model to the Gensyn Testnet to receive an on-chain identity that tracks your progress over time.
 
-There are currently multiple swarms running on the Testnet, each training on a different data set. The current list of available models and swarms include:
+Currently, we are running the [reasoning-gym](https://github.com/open-thought/reasoning-gym/tree/main) swarm on the Testnet. This swarm is designed to train models to solve a diverse set of reasoning tasks using the reasoning-gym dataset. The current list of default models includes:
 
 Models:
-   - Qwen 2.5 0.5B
-   - Qwen 2.5 1.5B
-   - Qwen 2.5 7B
-   - Qwen 2.5 32B (4 bit)
-   - Qwen 2.5 72B (4 bit)
+   - Gensyn/Qwen2.5-0.5B-Instruct
+   - Qwen/Qwen3-0.6B
+   - nvidia/AceInstruct-1.5B
+   - dnotitia/Smoothie-Qwen3-1.7B
+   - Gensyn/Qwen2.5-1.5B-Instruct
 
-Swarms:
-   - Math (GSM8K dataset)
-   - Math Hard (DAPO-Math 17K dataset)
-
-Soon you will be able to create your own swarms with unique data sets, and eventually connect multiple swarms together to train powerful models across domains.
+This iteration of rl-swarm is powered by the [GenRL-Swarm](https://github.com/gensyn-ai/genrl-swarm) library.  It is a fully composable framework for decentralized reinforcement learning which enables users to create and customize their own swarms for reinforcement learning with multi-agent multi-stage environments.
 
 ## Requirements
 
-Your hardware requirements will vary depending on which swarm and model you choose.  Users with less powerful hardware should select a smaller model (e.g. Qwen 0.5B or 1.5B) and smaller dataset (GSM8K). Users with more powerful hardware can select a larger model (e.g. Qwen 7B, 32B or 72B) and larger dataset (DAPO-Math 17K).  The requirements for each are listed below:     
+Your hardware requirements will vary depending on a number of factors including model size and the accelerator platform you use.  Users running large NVIDIA GPU will be assigned a model from the large model pool, while users running less powerful hardware will be assigned a model from the small model pool. This design decision is intended to allow users to advance at a similar rate regardless of the hardware they use, maximizing their utility to the swarm.      
 
-**Small model (0.5B or 1.5B) + Math (GSM8K dataset)**
+**Supported Hardware**
 
-- arm64 or x86 CPU with minimum 16gb ram (note that if you run other applications during training it might crash training).
+- arm64 or x86 CPU with minimum 32gb ram (note that if you run other applications during training it might crash training).
 
 
 OR
@@ -31,18 +27,10 @@ OR
 - CUDA devices (officially supported):
     - RTX 3090
     - RTX 4090
+    - RTX 5090
     - A100
     - H100
 
-**Big model (7B, 32B or 72B) + Math Hard (DAPO-Math 17K dataset)**
-
-- Recommended:
-    - A100 (80GB) 
-    - H100 (80GB)
-
-
-
-***
 
 With either configuration, you will need Python >=3.10 (for Mac, you will likely need to upgrade).
 
@@ -56,35 +44,51 @@ If you encounter issues, please first check [Troubleshooting](#troubleshooting).
 
 ## Instructions
 
-### Run the swarm
+### Run the Swarm
 
-**For macOS users (recommended):**
+The easiest way to run RL Swarm is using Docker. This ensures a consistent setup across all operating systems with minimal dependencies.
+
+#### 1. Clone this repo
 
 ```sh
-./run_rl_swarm_mac.sh
+git clone https://github.com/gensyn-ai/rl-swarm
 ```
 
-**For other systems or alternative UV-based approach:**
+#### 2. Install Docker
 
+Make sure you have Docker installed and the Docker daemon is running on your machine. To do that, follow [these instructions](https://docs.docker.com/get-started/get-docker/) according to your OS. Ensure you allot sufficient memory to the Docker containers. For example if using Docker Desktop, this can be done by going to Docker Desktop Settings > Resources > Advanced > Memory Limit, and increasing it to the maximum possible value.
+
+#### 3. Start the Swarm
+
+Run the following commands from the root of the repository.
+
+##### CPU support
+
+ If you’re using a Mac or if your machine has CPU-only support:
+```sh
+docker-compose run --rm --build -Pit swarm-cpu
+```
+
+##### GPU support
+
+If you're using a machine with an officially supported GPU:
+```sh
+docker-compose run --rm --build -Pit swarm-gpu
+```
+
+##### Docker compose issue
+
+If `docker-compose` does not work when running the above commands, please try `docker compose` (no hyphen) instead. I.e. ` docker compose run --rm --build -Pit swarm-gpu`. This issue sometimes occurs on users running Ubuntu.
+
+### Experimental (advanced) mode
+
+If you want to experiment with the [GenRL-Swarm](https://github.com/gensyn-ai/genrl-swarm) library and its [configurable parameters](https://github.com/gensyn-ai/genrl-swarm/blob/main/recipes/rgym/rg-swarm.yaml), we recommend you run RL Swarm via shell script:
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
 ./run_rl_swarm.sh
-```
-
-> **Note**: Mac users should use `run_rl_swarm_mac.sh` which is specially optimized for macOS with automatic dependency management via Homebrew and improved compatibility. See [Mac Usage Guide](doc/RL-Swarm-Mac使用指南.md) for detailed instructions.
-
-### Testnet participation
-
-Please answer 'Y' (or just press enter), N is provided as an alternative flow but isn't currently maintained.
-
-### Select your Swarm
-
-To select your swarm, answer 'B' to join the Math Hard (DAPO-Math 17K dataset) or 'S' to join the Math (GSM8K dataset). 
-
-### Select your Model
-
-To select your model, answer '0.5', '1.5', '7', '32', or '72' to pick the parameter count. 
+```  
+To learn more about experimental mode, check out our [getting started guide](https://github.com/gensyn-ai/genrl-swarm/blob/main/getting_started.ipynb).
 
 ### Login
 
@@ -98,28 +102,10 @@ If you would like to upload your model to Hugging Face, enter your Hugging Face 
 
 ### Initial peering and training
 
-From this stage onward your device will begin training. You should see your peer register and vote on-chain [here](https://gensyn-testnet.explorer.alchemy.com/address/0x2fC68a233EF9E9509f034DD551FF90A79a0B8F82?tab=logs).
+From this stage onward your device will begin training. You should see your peer register and vote on-chain [here](https://gensyn-testnet.explorer.alchemy.com/address/0xFaD7C5e93f28257429569B854151A1B8DCD404c2?tab=logs).
 
 You can also track your training progress in real time:
-- For the Math swarm (GSM8K dataset): [dashboard-math.gensyn.ai](https://dashboard-math.gensyn.ai)
-- For the Math Hard swarm (DAPO-Math 17K dataset): [dashboard-math-hard.gensyn.ai](https://dashboard-math-hard.gensyn.ai)
-
-### Uploading training stats to Weights & Biases (wandb.ai)
-
-Once you stop the `rl_swarm.sh` process in your console (e.g., by pressing Ctrl+C), you will see a message similar to this:
-
-```sh
-wandb: You can sync this run to the cloud by running:
-wandb: wandb sync logs/wandb/offline-run-xxxxxxxx_xxxxxx-xxxxxxxxxx
-```
-
-To upload your training statistics:
-
-1. Make sure you have created an account on [wandb.ai](https://wandb.ai/).
-2. Copy the wandb sync command provided in your terminal (the part that looks like `wandb sync logs/wandb/offline-run-xxxxxxxx_xxxxxx-xxxxxxxxxx`).
-3. Run that command in your terminal.
-
-This will upload your local training run data to the Weights & Biases cloud, allowing you to visualize and track your experiments. For more details on this command, you can refer to the [official documentation](https://docs.wandb.ai/ref/cli/wandb-sync).
+- On The RL-Swarm Dashboard: [dashboard.gensyn.ai](https://dashboard.gensyn.ai)
 
 ## Identity management
 
@@ -153,7 +139,7 @@ Therefore, you should do these actions in the following scenarios
 - **How do I find my logs?** You can find them inside the `/logs` directory:
     - `yarn.log`: This file contains logs for the modal login server.
     - `swarm.log`: This is the main log file for the RL Swarm application.
-    - `wandb/`: This directory contains various logs related to your training runs, including a `debug.log` file. These can be updated to Weights & Biases (see [above](#uploading-training-stats-to-weights--biases-wandbai)).
+    - `wandb/`: This directory contains various logs related to your training runs, including a `debug.log` file. These can be updated to Weights & Biases (only available if you log_with wandb).
 
 - **My peer 'skipped a round'**: this occurs when your device isn't fast enough to keep up with the pace of the swarm. For example, if you start training at round 100 and by the time you finish training the rest of the swarm reaches round 102, you will skip round 101 and go straight to 102. This is because your peer is more valuable if it is participating in the active round.
 - **My model doesn't seem to be training?**
@@ -181,7 +167,7 @@ Therefore, you should do these actions in the following scenarios
 
     - **How do I access the login screen if I'm running in a VM?**: port forwarding. Add this SSH flag: `-L 3000:localhost:3000` when connecting to your VM. E.g. `gcloud compute ssh --zone "us-central1-a" [your-vm] --project [your-project] -- -L 3000:localhost:3000`. Note, some VPSs may not work with `rl-swarm`. Check the Gensyn [discord](https://discord.gg/AdnyWNzXh5) for up-to-date information on this.
     
-    - **Disconnection/general issues**: If you are tunneling to a VM and suffer a broken pipe, you will likely encounter OOM or unexepected behaviour the first time you relaunch the script. If you `control + c` and kill the script it should spin down all background processes. Restart the script and everything should work normally.
+    - **Disconnection/general issues**: If you are tunneling to a VM and suffer a broken pipe, you will likely encounter OOM or unexpected behaviour the first time you relaunch the script. If you `control + c` and kill the script it should spin down all background processes. Restart the script and everything should work normally.
 
 - **Issues with npm/general installation?**
 
@@ -200,11 +186,8 @@ Therefore, you should do these actions in the following scenarios
 
 - **My round/stage is behind the smart contract/other peers?**: This is expected behaviour given the different speeds of machines in the network. Once your machine completes it's current round, it will move to the the current round.
 
-- **I want to use a bigger and/or different model in the RL swarm, can I do that?**: Yes - but we only recommend doing so if you are comfortable manually changing files and appropriately configuring the model(s) you wish to run for your device(s). You'll simply need to edit the config file in `./hivemind_exp/configs/<directory_relevant_to_your_device>/grpo-qwen-2.5-0.5b-deepseek-r1.yaml` to reflect the model_name_or_path and training arguments corresponding to what you want in the swarm. Note that, although any pre-trained LLM compatible with Hugging Face's `AutoModelForCausalLM` class should work in theory, we have only tested with a handful of Qwen 2.5 instruction-tuned models.
+- **I want to use a bigger and/or different model in the RL swarm, can I do that?**: Yes - but we only recommend doing so if you are comfortable understanding what size model can reasonably run on your hardware.  If you elect to bring a custom model, just paste the repo/model name into the command line when prompted.
 
 - **I am running a model in the swarm on my CPU, have received a python `RuntimeError`, and my training progress seems to have stopped.**: There are several possible causes for this, but before trying anything please wait long enough to be sure your training actually is frozen and not just slow (e.g., wait longer than a single training iteration has previously taken on your machine). If you're sure training is actually frozen, then some things to try are:
     - Set this (experimental) fix: `export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && ./run_rl_swarm.sh`
-    - In the config for your device (`./hivemind_exp/configs/<directory_relevant_to_your_device>/grpo-qwen-2.5-0.5b-deepseek-r1.yaml`) add the following training argument: `max_grad_norm=0.5`
-    - Use floating point 32 instead of bfloat16 to train your model. This can be changed in the config for your device, i.e. `./hivemind_exp/configs/<directory_relevant_to_your_device>/grpo-qwen-2.5-0.5b-deepseek-r1.yaml`.
 
-- **How can I optimsie `rl-swarm` for my device**? open the `hivemind_exp/configs/gpu/grpo-qwen-2.5-0.5b-deepseek-r1.yaml`. Note that this is for the gpu and not cpu configuration. You can then edit parameters that optimsie the training run. For example, try adjusting the `vllm_gpu_memory_utilization`. Note that optimal settings will vary by device.

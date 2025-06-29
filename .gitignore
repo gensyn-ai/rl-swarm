@@ -5,7 +5,6 @@
 .env
 .next/
 temp-data/
-
 swarm.pem
 logs/
 runs/
@@ -25,4 +24,11 @@ MODULE.bazel.lock
 **/.direnv
 .tmux.conf
 
+
 *.history
+
+user/
+
+configs/
+genrl-swarm/
+

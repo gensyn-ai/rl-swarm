@@ -10,10 +10,10 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@account-kit/core": "4.20.0",
-    "@account-kit/infra": "4.20.0",
-    "@account-kit/react": "4.20.0",
-    "@account-kit/smart-contracts": "4.20.0",
+    "@account-kit/core": "4.40.0",
+    "@account-kit/infra": "4.40.0",
+    "@account-kit/react": "4.40.0",
+    "@account-kit/smart-contracts": "4.40.0",
     "@tanstack/react-query": "^5.50.1",
     "@turnkey/api-key-stamper": "^0.4.4",
     "@turnkey/http": "^2.21.0",

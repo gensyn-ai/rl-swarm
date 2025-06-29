@@ -1,7 +1,7 @@
 import json
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Optional
 
 import boto3
 from botocore.exceptions import ClientError
@@ -22,40 +22,13 @@ class DateTimeEncoder(json.JSONEncoder):
             return obj.isoformat()
         return super().default(obj)
 
-
-class RewardsMessageData(BaseModel):
-    """Data for a single rewards message"""
-
-    peer_id: str = Field(..., alias="peerId")
-    peer_name: str = Field(..., alias="peerName")
-    amount: float
-    round: int
-    stage: int
-    timestamp: datetime
-
-    @field_serializer("timestamp")
-    def serialize_timestamp(self, dt: datetime, _info):
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
-        # Convert to UTC and format as RFC3339
-        utc_dt = dt.astimezone(timezone.utc)
-        # Format with 'Z' for UTC timezone (RFC3339)
-        return utc_dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-
-class RewardsMessage(BaseModel):
-    """Message type for rewards messages"""
-
-    type: Literal["rewards"] = "rewards"
-    data: List[RewardsMessageData]
-
-
 class GossipMessageData(BaseModel):
     """Data for a single gossip message"""
 
     id: str
     peer_id: str = Field(..., alias="peerId")
     peer_name: str = Field(..., alias="peerName")
+    dataset: Optional[str] = None
     message: str
     timestamp: datetime
 
@@ -152,16 +125,3 @@ class Kinesis:
         except Exception as e:
             self.logger.error(f"Failed to put gossip data: {str(e)}", exc_info=True)
             raise KinesisError(f"Failed to put gossip data: {str(e)}")
-
-    def put_rewards(self, data: RewardsMessage) -> None:
-        """Put rewards data to Kinesis stream"""
-        try:
-            self.logger.info("Preparing to put rewards data to Kinesis")
-            self.logger.debug(
-                f"Rewards data: {json.dumps(data.model_dump(by_alias=True), cls=DateTimeEncoder)}"
-            )
-            self._put_record(data.model_dump(by_alias=True), "swarm-rewards")
-            self.logger.info("Successfully put rewards data to Kinesis")
-        except Exception as e:
-            self.logger.error(f"Failed to put rewards data: {str(e)}", exc_info=True)
-            raise KinesisError(f"Failed to put rewards data: {str(e)}")

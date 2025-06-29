@@ -1,17 +1,11 @@
 import argparse
-import json
 import logging
 import os
-import time
 from datetime import datetime, timedelta
-from threading import Thread
 
-import aiofiles
-import httpx
 import uvicorn
-from fastapi import FastAPI, HTTPException, Query, Request, Response
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pythonjsonlogger import jsonlogger
 
 from hivemind_exp.chain_utils import ModalSwarmCoordinator, setup_web3
@@ -19,22 +13,8 @@ from hivemind_exp.dht_utils import *
 from hivemind_exp.name_utils import *
 
 from . import global_dht
-from .dht_pub import GossipDHTPublisher, RewardsDHTPublisher
+from .dht_pub import GossipDHTPublisher
 from .kinesis import Kinesis
-
-# UI is served from the filesystem
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DIST_DIR = os.path.join(BASE_DIR, "ui", "dist")
-
-index_html = None
-
-
-async def load_index_html():
-    global index_html
-    if index_html is None:
-        index_path = os.path.join(BASE_DIR, "ui", "dist", "index.html")
-        async with aiofiles.open(index_path, mode="r") as f:
-            index_html = await f.read()
 
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
@@ -109,180 +89,12 @@ async def get_health():
     }
 
 
-@app.get("/api/round_and_stage")
-def get_round_and_stage():
-    r, s = global_dht.dht_cache.get_round_and_stage()
-
-    return {
-        "round": r,
-        "stage": s,
-    }
-
-
-@app.get("/api/leaderboard")
-def get_leaderboard():
-    leaderboard = global_dht.dht_cache.get_leaderboard()
-    res = dict(leaderboard)
-
-    if res is not None:
-        return {
-            "leaders": res.get("leaders", []),
-            "total": res.get("total", 0),
-        }
-
-
-@app.get("/api/leaderboard-cumulative")
-def get_leaderboard_cumulative():
-    leaderboard = global_dht.dht_cache.get_leaderboard_cumulative()
-    res = dict(leaderboard)
-
-    if res is not None:
-        return {
-            "leaders": res.get("leaders", []),
-            "total": res.get("total", 0),
-        }
-    else:
-        return {
-            "leaders": [],
-            "total": 0,
-        }
-
-
-@app.get("/api/rewards-history")
-def get_rewards_history():
-    leaderboard = global_dht.dht_cache.get_leaderboard()
-    res = dict(leaderboard)
-
-    if res is not None:
-        return {
-            "leaders": res.get("rewardsHistory", []),
-        }
-
-
-@app.get("/api/name-to-id")
-def get_id_from_name(name: str = Query("")):
-    leaderboard = global_dht.dht_cache.get_leaderboard()
-    leader_ids = [leader["id"] for leader in leaderboard["leaders"]] or []
-
-    peer_id = search_peer_ids_for_name(leader_ids, name)
-    return {
-        "id": peer_id,
-    }
-
-
-@app.post("/api/id-to-name")
-async def id_to_name(request: Request):
-    # Check request body size (100KB limit)
-    content_length = request.headers.get("content-length")
-    if content_length and int(content_length) > 100 * 1024:  # 100KB in bytes
-        raise HTTPException(
-            status_code=413, detail="Request body too large. Maximum size is 100KB."
-        )
-
-    # Parse request body
-    try:
-        body = await request.json()
-        if not isinstance(body, list):
-            raise HTTPException(
-                status_code=400, detail="Request body must be a list of peer IDs"
-            )
-    except json.JSONDecodeError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid JSON: {str(e)}")
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid request body: {str(e)}")
-
-    # Validate input size
-    if len(body) > 1000:  # Limit number of IDs that can be processed
-        raise HTTPException(
-            status_code=400, detail="Too many peer IDs. Maximum is 1000."
-        )
-
-    # Process each ID
-    id_to_name_map = {}
-    for peer_id in body:
-        try:
-            name = get_name_from_peer_id(peer_id)
-            if name is not None:
-                id_to_name_map[peer_id] = name
-        except Exception as e:
-            logger.error(f"Error looking up name for peer ID {peer_id}: {str(e)}")
-
-    return id_to_name_map
-
-
-@app.get("/api/gossip")
-def get_gossip():
-    gs = global_dht.dht_cache.get_gossips()
-    return dict(gs)
-
-
-if os.getenv("API_ENV") != "dev":
-    app.mount(
-        "/assets",
-        StaticFiles(directory=os.path.join(DIST_DIR, "assets")),
-        name="assets",
-    )
-    app.mount(
-        "/fonts", StaticFiles(directory=os.path.join(DIST_DIR, "fonts")), name="fonts"
-    )
-    app.mount(
-        "/images",
-        StaticFiles(directory=os.path.join(DIST_DIR, "images")),
-        name="images",
-    )
-
-
-@app.get("/{full_path:path}")
-async def catch_all(full_path: str, request: Request):
-    # Development reverse proxies to ui dev server
-    if os.getenv("API_ENV") == "dev":
-        logger.info(
-            f"proxying {full_path} into local UI development environment on 5173..."
-        )
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(
-                url=f"http://localhost:5173/{full_path}", headers=request.headers
-            )
-            headers = {
-                k: v
-                for k, v in resp.headers.items()
-                if k.lower() not in ["content-length", "transfer-encoding"]
-            }
-            return Response(
-                content=resp.content, status_code=resp.status_code, headers=headers
-            )
-
-    # Live environment (serve from dist)
-    # We don't want to cache index.html, but other static assets are fine to cache.
-    await load_index_html()
-    return HTMLResponse(
-        content=index_html,
-        headers={
-            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-            "Pragma": "no-cache",
-            "Expires": "0",
-        },
-    )
-
-
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-ip", "--initial_peers", help="initial peers", nargs="+", type=str, default=[]
     )
     return parser.parse_args()
-
-
-def populate_cache():
-    logger.info("populate_cache initialized")
-    try:
-        while True:
-            logger.info("pulling latest dht data...")
-            global_dht.dht_cache.poll_dht()
-            time.sleep(10)
-            logger.info("dht polled")
-    except Exception as e:
-        logger.error("uncaught exception while polling dht", e)
 
 
 def main(args):
@@ -304,21 +116,7 @@ def main(args):
 
     global_dht.setup_global_dht(initial_peers, coordinator, logger, kinesis_client)
 
-    thread = Thread(target=populate_cache)
-    thread.daemon = True
-    thread.start()
-
     # Start publishing to kinesis. This will eventually replace the populate_cache thread.
-    logger.info("Starting rewards publisher")
-    rewards_publisher = RewardsDHTPublisher(
-        dht=global_dht.dht,
-        kinesis_client=kinesis_client,
-        logger=logger,
-        coordinator=coordinator,
-        poll_interval_seconds=300,  # 5 minute
-    )
-    rewards_publisher.start()
-
     logger.info("Starting gossip publisher")
     gossip_publisher = GossipDHTPublisher(
         dht=global_dht.dht,

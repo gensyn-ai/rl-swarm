@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# RL-Swarm 快速启动脚本
-# 使用默认配置 (连接测试网, Math A swarm, 不推送到HF Hub)
-# 增强版：自动检测和修复 Apple Silicon 兼容性问题
+# RL-Swarm 智能启动脚本
+# 自动检测网络连接问题，智能选择运行模式
+# 增强版：自动修复 Apple Silicon 兼容性问题，网络故障自动降级
 
 set -euo pipefail
 
@@ -26,6 +26,44 @@ echo_yellow() {
 
 echo_red() {
     echo -e "$RED_TEXT$1$RESET_TEXT"
+}
+
+# 检测网络连接性
+check_network_connectivity() {
+    echo_blue "🌐 检测网络连接状态..."
+    
+    # 检测基础网络连接
+    if ! ping -c 2 -W 5000 8.8.8.8 >/dev/null 2>&1; then
+        echo_red "❌ 基础网络连接失败"
+        return 1
+    fi
+    
+    # 检测DHT bootstrap节点连接性
+    local bootstrap_ips=("38.101.215.14" "38.101.215.13")
+    local bootstrap_ports=("31111" "31222" "30002")
+    local connection_success=false
+    
+    echo_yellow "   检测DHT bootstrap节点连接性..."
+    
+    for ip in "${bootstrap_ips[@]}"; do
+        for port in "${bootstrap_ports[@]}"; do
+            if timeout 3 bash -c "</dev/tcp/$ip/$port" 2>/dev/null; then
+                echo_green "   ✅ 成功连接到 $ip:$port"
+                connection_success=true
+                break 2
+            else
+                echo_yellow "   ⚠️  无法连接到 $ip:$port"
+            fi
+        done
+    done
+    
+    if [ "$connection_success" = true ]; then
+        echo_green "✅ 网络连接正常，可以使用网络模式"
+        return 0
+    else
+        echo_red "❌ DHT bootstrap节点不可用"
+        return 1
+    fi
 }
 
 # 自动检测和修复 accelerate 兼容性问题
@@ -60,21 +98,47 @@ auto_fix_accelerate() {
     fi
 }
 
+# 网络模式启动
+start_network_mode() {
+    echo_green "🌐 启动网络模式 (连接测试网)..."
+    
+    # 设置自动配置环境变量
+    export AUTO_TESTNET="y"
+    export AUTO_SWARM="a" 
+    export AUTO_HF_HUB="n"
+    
+    echo_green "   配置: 测试网 + Math swarm + 不推送HF Hub"
+    
+    # 启动网络模式
+    exec bash "./ops/scripts/run_rl_swarm_mac.sh"
+}
+
+# 本地模式启动
+start_local_mode() {
+    echo_yellow "🏠 启动本地模式 (离线训练)..."
+    echo_blue "   本地模式优势:"
+    echo_blue "   - 不依赖网络连接"
+    echo_blue "   - 更稳定的训练环境"
+    echo_blue "   - 专注于模型训练本身"
+    
+    # 启动本地模式
+    exec bash "./run_rl_swarm_local.sh"
+}
+
 echo -e "\033[38;5;220m"
 cat << "EOF"
-    🚀 RL-Swarm 增强快速启动脚本
+    🚀 RL-Swarm 智能启动脚本 v2.0
     
-    增强功能:
-    ✅ 自动检测和修复 Apple Silicon 兼容性问题
-    ✅ 连接到测试网 (Testnet)
-    ✅ 加入 Math (A) swarm  
-    ✅ 不推送模型到 Hugging Face Hub
+    新功能:
+    🧠 智能网络检测 - 自动选择最佳运行模式
+    🔧 自动修复兼容性问题 - Apple Silicon 优化
+    🌐 网络模式 - 连接测试网进行分布式训练  
+    🏠 本地模式 - 离线训练，避开网络依赖
     
 EOF
 echo -e "$RESET_TEXT"
 
-echo_green ">> 🎯 使用默认配置启动 RL-Swarm..."
-echo_blue ">> 如需自定义配置，请直接运行: ./ops/scripts/run_rl_swarm_mac.sh"
+echo_green ">> 🎯 开始智能启动流程..."
 echo ""
 
 # 🔧 第一步：安全检查
@@ -98,30 +162,37 @@ if ! auto_fix_accelerate; then
 fi
 
 echo ""
-echo_green ">> 🚀 步骤3: 启动训练系统..."
 
-# 设置自动配置环境变量
-export AUTO_TESTNET="y"
-export AUTO_SWARM="a" 
-export AUTO_HF_HUB="n"
+# 🌐 第三步：网络连接检测
+echo_green ">> 🌐 步骤3: 智能网络检测..."
 
-echo_green ">> 🤖 自动配置已设置:"
-echo_green "   - AUTO_TESTNET=y (连接测试网)"
-echo_green "   - AUTO_SWARM=a (Math swarm)"  
-echo_green "   - AUTO_HF_HUB=n (不推送到HF Hub)"
-echo ""
-
-# 检查脚本是否存在
-SCRIPT_PATH="./ops/scripts/run_rl_swarm_mac.sh"
-if [ ! -f "$SCRIPT_PATH" ]; then
-    echo_red ">> ❌ 错误: 找不到 $SCRIPT_PATH"
-    echo_yellow ">> 请确保您在 rl-swarm 项目根目录中运行此脚本"
-    exit 1
-fi
-
-echo_green ">> 🚀 启动 RL-Swarm..."
-echo_yellow ">> 按 Ctrl+C 可以停止训练"
-echo ""
-
-# 启动 RL-Swarm
-exec bash "$SCRIPT_PATH" 
+if check_network_connectivity; then
+    echo ""
+    echo_green ">> 🚀 启动网络模式..."
+    echo_yellow ">> 按 Ctrl+C 可以停止训练"
+    echo ""
+    
+    # 检查脚本是否存在
+    if [ ! -f "./ops/scripts/run_rl_swarm_mac.sh" ]; then
+        echo_red ">> ❌ 错误: 找不到网络模式启动脚本"
+        echo_yellow ">> 降级到本地模式..."
+        start_local_mode
+    else
+        start_network_mode
+    fi
+else
+    echo ""
+    echo_yellow ">> ⚠️ 网络连接不可用，自动切换到本地模式"
+    echo_green ">> 🏠 启动本地模式..."
+    echo_yellow ">> 按 Ctrl+C 可以停止训练"
+    echo ""
+    
+    # 检查本地模式脚本是否存在
+    if [ ! -f "./run_rl_swarm_local.sh" ]; then
+        echo_red ">> ❌ 错误: 找不到本地模式启动脚本"
+        echo_yellow ">> 请确保您在 rl-swarm 项目根目录中运行此脚本"
+        exit 1
+    else
+        start_local_mode
+    fi
+fi 

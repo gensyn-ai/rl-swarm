@@ -2,6 +2,7 @@ import { upsertUser } from "@/app/db";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { TSignedRequest } from "@turnkey/http";
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 const ALCHEMY_BASE_URL = "https://api.g.alchemy.com";
 
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
       privateKey,
       publicKey,
       createdAt: new Date(),
+      activated: false,
     });
 
     return NextResponse.json({ publicKey }, { status: 200 });
@@ -57,10 +59,15 @@ export async function POST(request: Request) {
 }
 
 async function generateKeyPair() {
-  const ecdh = crypto.createECDH("prime256v1");
-  ecdh.generateKeys();
+  const privateKey = generatePrivateKey();
+  const account = privateKeyToAccount(privateKey);
+
+  // `account` has a `publicKey` field but Alchemy team mentions this should
+  // be the `address`
+  const publicKey = account.address;
+
   return {
-    publicKey: ecdh.getPublicKey("hex", "compressed"),
-    privateKey: ecdh.getPrivateKey("hex"),
+    publicKey,
+    privateKey,
   };
 }

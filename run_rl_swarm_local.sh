@@ -72,14 +72,12 @@ mkdir -p "$ROOT/logs"
 echo_green ">> Installing CPU-only dependencies with uv..."
 uv sync --no-dev
 
-# Use local test config
-CONFIG_PATH="$ROOT/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-local.yaml"
-GAME="gsm8k"
-
+# Local training configuration 
 echo_green ">> Configuration:"
-echo "   - Config: $CONFIG_PATH"
-echo "   - Game: $GAME"
-echo "   - Mode: Local (CPU-only)"
+echo "   - Mode: Local GRPO Training (CPU-only)"
+echo "   - Dataset: gsm8k"
+echo "   - Model: unsloth/Qwen2.5-0.5B-Instruct"
+echo "   - Max Steps: 20 (for quick testing)"
 
 # Set HuggingFace token
 HF_TOKEN=${HF_TOKEN:-""}
@@ -97,15 +95,44 @@ else
     esac
 fi
 
-echo_green ">> Starting local training..."
+echo_green ">> Starting local GRPO training..."
 echo_blue ">> This will run without network connections to avoid P2P issues"
 
-# Run the training script using uv in local mode
-uv run python -m hivemind_exp.gsm8k.train_single_gpu \
-    --hf_token "$HUGGINGFACE_ACCESS_TOKEN" \
-    --identity_path "$IDENTITY_PATH" \
-    --public_maddr "$PUB_MULTI_ADDRS" \
-    --initial_peers "$PEER_MULTI_ADDRS" \
-    --host_maddr "$HOST_MULTI_ADDRS" \
-    --config "$CONFIG_PATH" \
-    --game "$GAME" 
+# Create output directory
+OUTPUT_DIR="runs/gsm8k/local/Qwen2.5-0.5B-Instruct-Local"
+mkdir -p "$OUTPUT_DIR"
+
+# Run TRL GRPO training script for local mode
+uv run python -m trl.scripts.grpo \
+    --model_name_or_path "unsloth/Qwen2.5-0.5B-Instruct" \
+    --dataset_name "gsm8k" \
+    --dataset_config "main" \
+    --dataset_train_split "train" \
+    --output_dir "$OUTPUT_DIR" \
+    --overwrite_output_dir \
+    --do_train \
+    --per_device_train_batch_size 2 \
+    --gradient_accumulation_steps 4 \
+    --learning_rate 5e-7 \
+    --max_steps 20 \
+    --warmup_ratio 0.03 \
+    --logging_steps 2 \
+    --save_strategy "steps" \
+    --save_steps 25 \
+    --use_cpu \
+    --torch_dtype "float32" \
+    --gradient_checkpointing \
+    --logging_dir "logs" \
+    --run_name "rl-swarm-local-test" \
+    --report_to "wandb" \
+    --max_prompt_length 256 \
+    --max_completion_length 1024 \
+    --num_generations 2 \
+    --temperature 1.0 \
+    --top_p 1.0 \
+    --beta 0.001 \
+    --epsilon 0.2 \
+    --loss_type "bnpo" \
+    --steps_per_generation 4 \
+    --scale_rewards \
+    --shuffle_dataset 

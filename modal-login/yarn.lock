@@ -2,41 +2,25 @@
 # yarn lockfile v1
 
 
-"@aa-sdk/core@^4.20.0", "@aa-sdk/core@^4.35.1":
-  version "4.35.1"
-  resolved "https://registry.yarnpkg.com/@aa-sdk/core/-/core-4.35.1.tgz#9f94df0db66e6023ce0da336d87f9f213865e4e9"
-  integrity sha512-qEryVcdyXmrmmFyVn0c42ywzZUrp8zKa2uoyQXEZ/tR/+hkyuHlP2FZ6yYQ7OciD6EV9ppIC0A31GMgJJhyt6w==
+"@aa-sdk/core@^4.40.0":
+  version "4.40.0"
+  resolved "https://registry.yarnpkg.com/@aa-sdk/core/-/core-4.40.0.tgz#f086ef933530b9b9c39e77e436a064fd7573464e"
+  integrity sha512-MYRts2ATWf258OAteeY+DkAeO29t7nxgtKXSavum8KBNUAnKH9XSzjgHlzRnihUADkKMsXIJD4kVzWV6cJo2RA==
   dependencies:
     abitype "^0.8.3"
     eventemitter3 "^5.0.1"
     zod "^3.22.4"
 
-"@account-kit/core@4.20.0":
-  version "4.20.0"
-  resolved "https://registry.yarnpkg.com/@account-kit/core/-/core-4.20.0.tgz#212832ceae56093028aeeaafb5030581d8c8f152"
-  integrity sha512-Z8e4SnIbGv4ExXx0WWNNcvLPkk4N8wNDLyMJpd8xcoEQxSJb0oZNjxYcj8xVHZcaeggFBvRXp5x66O4sIG6Ftw==
+"@account-kit/core@4.40.0", "@account-kit/core@^4.40.0":
+  version "4.40.0"
+  resolved "https://registry.yarnpkg.com/@account-kit/core/-/core-4.40.0.tgz#7e4a2a900a6112b0f75b4681de04d5ba414096fc"
+  integrity sha512-+6MYUqxA7XJbkTVC+RqGlj77XBCsM/vSWYjS1Ubzl3nM6gosScb/1PVaYdYt/6ZdwMA/xavzTs4XDvHMH3ILBA==
   dependencies:
-    "@account-kit/infra" "^4.20.0"
-    "@account-kit/logging" "^4.20.0"
-    "@account-kit/react-native-signer" "^4.20.0"
-    "@account-kit/signer" "^4.20.0"
-    "@account-kit/smart-contracts" "^4.20.0"
-    js-cookie "^3.0.5"
-    zod "^3.22.4"
-    zustand "^5.0.0-rc.2"
-  optionalDependencies:
-    alchemy-sdk "^3.0.0"
-
-"@account-kit/core@^4.20.0":
-  version "4.35.1"
-  resolved "https://registry.yarnpkg.com/@account-kit/core/-/core-4.35.1.tgz#6814049e2a7d2df2dd7917b73df3c85d46e8b60e"
-  integrity sha512-zm+j4pRe9/Spmqgo1sHAgjP5ydzgjkYhPi674ApHdcwpSKTs0TTNV3toZjpZUNhExuxoDA+ACcCEu/e9OWb/IA==
-  dependencies:
-    "@account-kit/infra" "^4.35.1"
-    "@account-kit/logging" "^4.35.1"
-    "@account-kit/react-native-signer" "^4.35.1"
-    "@account-kit/signer" "^4.35.1"
-    "@account-kit/smart-contracts" "^4.35.1"
+    "@account-kit/infra" "^4.40.0"
+    "@account-kit/logging" "^4.40.0"
+    "@account-kit/react-native-signer" "^4.40.0"
+    "@account-kit/signer" "^4.40.0"
+    "@account-kit/smart-contracts" "^4.40.0"
     "@solana/web3.js" "^1.98.0"
     js-cookie "^3.0.5"
     zod "^3.22.4"
@@ -44,59 +28,51 @@
   optionalDependencies:
     alchemy-sdk "^3.0.0"
 
-"@account-kit/infra@4.20.0":
-  version "4.20.0"
-  resolved "https://registry.yarnpkg.com/@account-kit/infra/-/infra-4.20.0.tgz#6f06d723611921235315fee4d8b22af673df8a15"
-  integrity sha512-lDHCQz2i4Z8WfU8jw/6RGkSfRMOKxOUAoVWav59uuZxde8quO8zYoeKtw6381iJkBywq1bUpt9VNVW0uwd/f8g==
+"@account-kit/infra@4.40.0", "@account-kit/infra@^4.40.0":
+  version "4.40.0"
+  resolved "https://registry.yarnpkg.com/@account-kit/infra/-/infra-4.40.0.tgz#95a7324672f8f6f955c2f44442cb7f59220e8fa6"
+  integrity sha512-3hvDUzSQ4zKdrLPvoyp4QsVsc4iyuVI/SFZsuKG3YYL6HN0Sa4q18bH0v0uzVqVD508Qu1odk3rgqYreG80UCA==
   dependencies:
-    "@aa-sdk/core" "^4.20.0"
-    "@account-kit/logging" "^4.20.0"
+    "@aa-sdk/core" "^4.40.0"
+    "@account-kit/logging" "^4.40.0"
     eventemitter3 "^5.0.1"
     zod "^3.22.4"
   optionalDependencies:
     alchemy-sdk "^3.0.0"
 
-"@account-kit/infra@^4.20.0", "@account-kit/infra@^4.35.1":
-  version "4.35.1"
-  resolved "https://registry.yarnpkg.com/@account-kit/infra/-/infra-4.35.1.tgz#dc44bb30db88049deeeb4af0814955fcfc563012"
-  integrity sha512-1vgfaAWZjsU6P/t5Vb/g/KJn19bhZ5cfGXGIHuDKK4IsJbRnQjAERY8TFJNjP1lWQ+YzSXqGGuvxG3DcDSas7w==
-  dependencies:
-    "@aa-sdk/core" "^4.35.1"
-    "@account-kit/logging" "^4.35.1"
-    eventemitter3 "^5.0.1"
-    zod "^3.22.4"
-  optionalDependencies:
-    alchemy-sdk "^3.0.0"
-
-"@account-kit/logging@^4.20.0", "@account-kit/logging@^4.35.1":
-  version "4.35.1"
-  resolved "https://registry.yarnpkg.com/@account-kit/logging/-/logging-4.35.1.tgz#c22ceba2533a2d29b7a42cf53dac69cbcc7a9d03"
-  integrity sha512-aDWU1ExPTrdxV0dVpvfb6c22nxV3kFrlC07N4b6nf3XI0r1zRLC7gcK8Q4mXVblqVOVMWI6miDWjgCuwnQQ1wA==
+"@account-kit/logging@^4.40.0":
+  version "4.40.0"
+  resolved "https://registry.yarnpkg.com/@account-kit/logging/-/logging-4.40.0.tgz#e24403d15b18606a017dddb07238f7e90135fed6"
+  integrity sha512-yi+hff992fvm6nFYkNov0EfYgtz72Or/D9mytqLAIeMWb3d4TTeE3NFgH8wY9sywOMbbWOuCXj6EL6peZIH8Ng==
   dependencies:
     "@segment/analytics-next" "1.74.0"
     uuid "^11.0.2"
 
-"@account-kit/react-native-signer@^4.20.0", "@account-kit/react-native-signer@^4.35.1":
-  version "4.35.1"
-  resolved "https://registry.yarnpkg.com/@account-kit/react-native-signer/-/react-native-signer-4.35.1.tgz#50babe14f4bc5264159c4720f02202898b87b034"
-  integrity sha512-YxuQThtnyNWXv0+9ttLtyRWwAtemijdHHIz3WV/cWBKDeVlTmwvYXUxVXm8aaJ7c+F96E0L8IR15f3mq9FQtVQ==
+"@account-kit/react-native-signer@^4.40.0":
+  version "4.40.0"
+  resolved "https://registry.yarnpkg.com/@account-kit/react-native-signer/-/react-native-signer-4.40.0.tgz#c5ff8d52479357cd1d0051307f3c0674d9bd059a"
+  integrity sha512-PYr8omzuTpeTTgWIUXv0k5PKDZ14xTecDj44p2Az90KcI4Dmf7OG3wvwZcRBpae5rgTetAh94/sg+w5wXnBVJw==
   dependencies:
-    "@aa-sdk/core" "^4.35.1"
-    "@account-kit/signer" "^4.35.1"
+    "@aa-sdk/core" "^4.40.0"
+    "@account-kit/signer" "^4.40.0"
+    "@turnkey/react-native-passkey-stamper" "^1.0.14"
+    uuid "^11.1.0"
     viem "2.29.2"
 
-"@account-kit/react@4.20.0":
-  version "4.20.0"
-  resolved "https://registry.yarnpkg.com/@account-kit/react/-/react-4.20.0.tgz#e9e68173ab4bb539fa7afbc7d08b4b8706618c6c"
-  integrity sha512-QcHKJVLAAM1OmcpdCT1+lIUmtBZ+jNBZVuHZOAOhy3ohQGPH7iA61F0Cm371pBVvuf2rQS4neqsKapC9HECakA==
+"@account-kit/react@4.40.0":
+  version "4.40.0"
+  resolved "https://registry.yarnpkg.com/@account-kit/react/-/react-4.40.0.tgz#ff9936c74e334a4d5e922dfff3ea7c21a3537a0c"
+  integrity sha512-H3gVBoItW940xWzwiIXLX+czj+aC96TeJW3LuXTUgk20puZAEa+MotlhI49qjMpza7lr71BMLQO13dp9oWCaXg==
   dependencies:
-    "@account-kit/core" "^4.20.0"
-    "@account-kit/infra" "^4.20.0"
-    "@account-kit/logging" "^4.20.0"
-    "@account-kit/signer" "^4.20.0"
+    "@account-kit/core" "^4.40.0"
+    "@account-kit/infra" "^4.40.0"
+    "@account-kit/logging" "^4.40.0"
+    "@account-kit/signer" "^4.40.0"
+    "@solana/web3.js" "^1.98.0"
     "@tanstack/react-form" "^0.33.0"
     "@tanstack/zod-form-adapter" "^0.33.0"
     "@wagmi/connectors" "^5.1.15"
+    bs58 "^6.0.0"
     react-remove-scroll "^2.5.10"
     tailwindcss "^3.4.3"
     zod "^3.22.4"
@@ -104,13 +80,13 @@
   optionalDependencies:
     alchemy-sdk "^3.0.0"
 
-"@account-kit/signer@^4.20.0", "@account-kit/signer@^4.35.1":
-  version "4.35.1"
-  resolved "https://registry.yarnpkg.com/@account-kit/signer/-/signer-4.35.1.tgz#2bf7bf01c430ca6137f062b7ac7190236549b3be"
-  integrity sha512-sbA6zL7mcOgCktH9TClanmroCTojOYOFeYNaKXj0UPQFEu3wvbvPBg+XT47C7KNf/5SV5Tdu09NWP0JTaD5f4Q==
+"@account-kit/signer@^4.40.0":
+  version "4.40.0"
+  resolved "https://registry.yarnpkg.com/@account-kit/signer/-/signer-4.40.0.tgz#f00ecf75ea7819285f31181258e0df8e621b75c6"
+  integrity sha512-BIECGo3MxSfAWOv5D1ipqUkqucNoXxndK8ybJKB5fG1A9apNLd/L5nTj33EZFVUmtVtf9XF0FH2YtaufwLFA4g==
   dependencies:
-    "@aa-sdk/core" "^4.35.1"
-    "@account-kit/logging" "^4.35.1"
+    "@aa-sdk/core" "^4.40.0"
+    "@account-kit/logging" "^4.40.0"
     "@solana/web3.js" "^1.98.0"
     "@turnkey/http" "^2.22.0"
     "@turnkey/iframe-stamper" "^1.0.0"
@@ -121,21 +97,13 @@
     zod "^3.22.4"
     zustand "^5.0.0-rc.2"
 
-"@account-kit/smart-contracts@4.20.0":
-  version "4.20.0"
-  resolved "https://registry.yarnpkg.com/@account-kit/smart-contracts/-/smart-contracts-4.20.0.tgz#2baa86a6b3ce38c6658647779fe76881b45ba0da"
-  integrity sha512-Ls16oD5cK1S2taLEtmjBnEUdL6v2UV/sxi36cqQxfxbMai8iXxmtxZr6k+dxZXaLdc/tRrNPvE0FguZgJ7LqnQ==
+"@account-kit/smart-contracts@4.40.0", "@account-kit/smart-contracts@^4.40.0":
+  version "4.40.0"
+  resolved "https://registry.yarnpkg.com/@account-kit/smart-contracts/-/smart-contracts-4.40.0.tgz#eecb747c32dd08721d7d33e93981ac9da4400f06"
+  integrity sha512-6BBVyFoJg+apBJSXetDPKVHwiXT9MqBHBv4RyPJiQ7UrkXCMBtSwEt9W/2MFE2gKrPQ6J73EKyat6HzdVdiVdw==
   dependencies:
-    "@aa-sdk/core" "^4.20.0"
-    "@account-kit/infra" "^4.20.0"
-
-"@account-kit/smart-contracts@^4.20.0", "@account-kit/smart-contracts@^4.35.1":
-  version "4.35.1"
-  resolved "https://registry.yarnpkg.com/@account-kit/smart-contracts/-/smart-contracts-4.35.1.tgz#61857322980bde6f87cde76ddc3b9faf59c3ded6"
-  integrity sha512-lj9p7JUMSWDzNNGJIBrBhyBP9QBheE9SvGueQ6IDjROT/o3ey9zK/ZVXlgM+0fvJBLiPy12ygcHBtxBdce2TbQ==
-  dependencies:
-    "@aa-sdk/core" "^4.35.1"
-    "@account-kit/infra" "^4.35.1"
+    "@aa-sdk/core" "^4.40.0"
+    "@account-kit/infra" "^4.40.0"
 
 "@adraffy/ens-normalize@^1.10.1":
   version "1.11.0"
@@ -2879,6 +2847,15 @@
     "@turnkey/encoding" "0.4.0"
     sha256-uint8array "^0.10.7"
 
+"@turnkey/api-key-stamper@0.4.6":
+  version "0.4.6"
+  resolved "https://registry.yarnpkg.com/@turnkey/api-key-stamper/-/api-key-stamper-0.4.6.tgz#0356639ab9e7cb1492abc004628b82e49ef7f728"
+  integrity sha512-zUcbhOunsSD//CIKAbfyX9FWchiHcO/CjOdBKvbB+8w6gk/m4NxchVrYCdqdrtxzPFdRYAdFjcUnN0FBvDKobw==
+  dependencies:
+    "@noble/curves" "^1.3.0"
+    "@turnkey/encoding" "0.5.0"
+    sha256-uint8array "^0.10.7"
+
 "@turnkey/api-key-stamper@^0.4.4":
   version "0.4.5"
   resolved "https://registry.yarnpkg.com/@turnkey/api-key-stamper/-/api-key-stamper-0.4.5.tgz#a5b75297d38ef20ac5d0891732ee342955ec64b5"
@@ -2913,6 +2890,11 @@
   resolved "https://registry.yarnpkg.com/@turnkey/encoding/-/encoding-0.4.0.tgz#9d06efe6447322bcc9eb4d51b48961054a3c102d"
   integrity sha512-ptLgcpWVt34KTPx0omF2QLJrosW6I//clCJ4G2+yngYFCzrdR0yBchV/BOcfME67mK1v3MmauyXl9AAnQTmB4Q==
 
+"@turnkey/encoding@0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@turnkey/encoding/-/encoding-0.5.0.tgz#415d721383c8267a8ca173cef34298a325a6a57d"
+  integrity sha512-nRlKRQa6B5/xltGUKN1iKo4h4YC/0iFz0fAuFFZevc+YGDj7ddAP/3HkWmVvLmdoicUgs9rxvWbLRlgqPkbwzQ==
+
 "@turnkey/http@2.13.0":
   version "2.13.0"
   resolved "https://registry.yarnpkg.com/@turnkey/http/-/http-2.13.0.tgz#0d27f248ec94a231fe77b6aceb05318e349bc5bc"
@@ -2921,6 +2903,16 @@
     "@turnkey/api-key-stamper" "0.4.1"
     "@turnkey/encoding" "0.2.1"
     "@turnkey/webauthn-stamper" "0.5.0"
+    cross-fetch "^3.1.5"
+
+"@turnkey/http@3.4.1":
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/@turnkey/http/-/http-3.4.1.tgz#e2ca83e5e72b6da878969ed2d508c7ee9c653811"
+  integrity sha512-U/MouBgR6RNrp/1v24opJ3Smj5ke0+75we64cA8o1aMaIZqcWbunqcpXa1Eacy8jZl7KzIM8fct6B3aI3+ns0A==
+  dependencies:
+    "@turnkey/api-key-stamper" "0.4.6"
+    "@turnkey/encoding" "0.5.0"
+    "@turnkey/webauthn-stamper" "0.5.1"
     cross-fetch "^3.1.5"
 
 "@turnkey/http@^2.21.0", "@turnkey/http@^2.22.0":
@@ -2942,6 +2934,17 @@
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@turnkey/iframe-stamper/-/iframe-stamper-1.2.0.tgz#bba478e391a266833f1a5960b9f1df9de5934fb8"
   integrity sha512-OXbCVVzypa0AXa6dcNpfu8Q0xY/sq2nGXwhesrUQmE7V5I5nYYHZE3sQv54lErToX6H6YyDR9Z1DuPzEUkYTjw==
+
+"@turnkey/react-native-passkey-stamper@^1.0.14":
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/@turnkey/react-native-passkey-stamper/-/react-native-passkey-stamper-1.0.15.tgz#007ab5a5823db29fc497ad9ae8d5ebc7d3dda5fe"
+  integrity sha512-KCsiCvbm8rsWBZi7eFv9Ho0nfXG7GbipnVgPjPcAR9Ve60DALyYmSsJTqYIZzP8kA34Pj26v5yo6U6OTb28zDw==
+  dependencies:
+    "@turnkey/encoding" "0.5.0"
+    "@turnkey/http" "3.4.1"
+    buffer "^6.0.3"
+    react-native-passkey "^3.0.0"
+    sha256-uint8array "^0.10.7"
 
 "@turnkey/sdk-browser@1.5.0":
   version "1.5.0"
@@ -2987,6 +2990,13 @@
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/@turnkey/webauthn-stamper/-/webauthn-stamper-0.5.0.tgz#014b8c20b1732af49dacb04f396edf010d3b7f47"
   integrity sha512-iUbTUwD4f4ibdLy5PWWb7ITEz4S4VAP9/mNjFhoRY3cKVVTDfmykrVTKjPOIHWzDgAmLtgrLvySIIC9ZBVENBw==
+  dependencies:
+    sha256-uint8array "^0.10.7"
+
+"@turnkey/webauthn-stamper@0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@turnkey/webauthn-stamper/-/webauthn-stamper-0.5.1.tgz#3c159cd662dd73fd46fe4a38a504b222adddd2ea"
+  integrity sha512-eBwceTStSSettBQsLo3X5eJEarcK9f20cGUdi6jOesXOP86iYEIgR4+aH2qyCQ3eaovj+Hl44UGngXueIm/tKg==
   dependencies:
     sha256-uint8array "^0.10.7"
 
@@ -8328,6 +8338,11 @@ react-native-get-random-values@1.11.0:
   dependencies:
     fast-base64-decode "^1.0.0"
 
+react-native-passkey@^3.0.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-passkey/-/react-native-passkey-3.1.0.tgz#26617ed0cc115c6037e2537d264955d852395168"
+  integrity sha512-qOJ0q7AqbUOGXDOObcfiOJo1BOnG+lIQMEgltgeqmyMC+2XDlr7YrOQZgLwZbXheGC7BXPpwMSev/gxkgbt3xw==
+
 react-native-quick-base64@2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/react-native-quick-base64/-/react-native-quick-base64-2.1.2.tgz#062b09b165c1530095fe99b94544c948318dbe99"
@@ -9757,7 +9772,7 @@ utils-merge@1.0.1:
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
   integrity sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==
 
-uuid@^11.0.2:
+uuid@^11.0.2, uuid@^11.1.0:
   version "11.1.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-11.1.0.tgz#9549028be1753bb934fc96e2bca09bb4105ae912"
   integrity sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==

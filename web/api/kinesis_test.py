@@ -10,8 +10,6 @@ from .kinesis import (
     GossipMessageData,
     Kinesis,
     KinesisError,
-    RewardsMessage,
-    RewardsMessageData,
 )
 
 # Hardcoded UTC time for testing
@@ -70,43 +68,6 @@ def test_kinesis_initialization_with_invalid_stream(mock_kinesis_client):
         Kinesis("test-stream")
 
 
-def test_put_rewards(kinesis_instance, mock_kinesis_client):
-    """Test putting rewards data to Kinesis"""
-    # Create test data with hardcoded time
-    rewards_data = [
-        RewardsMessageData(
-            peerId="peer1",
-            peerName="Peer 1",
-            amount=100.0,
-            round=1,
-            stage=2,
-            timestamp=TEST_TIME,
-        )
-    ]
-    rewards_message = RewardsMessage(type="rewards", data=rewards_data)
-
-    # Call the method
-    kinesis_instance.put_rewards(rewards_message)
-
-    # Verify the client was called correctly
-    mock_kinesis_client.put_record.assert_called_once()
-    call_args = mock_kinesis_client.put_record.call_args[1]
-
-    assert call_args["StreamName"] == "test-stream"
-    assert call_args["PartitionKey"] == "swarm-rewards"
-
-    # Verify the data was serialized correctly
-    data = json.loads(call_args["Data"])
-    assert data["type"] == "rewards"
-    assert len(data["data"]) == 1
-    assert data["data"][0]["peerId"] == "peer1"
-    assert data["data"][0]["amount"] == 100.0
-    assert data["data"][0]["round"] == 1
-    assert data["data"][0]["stage"] == 2
-    # Timestamp should be in RFC3339 format with UTC
-    assert data["data"][0]["timestamp"] == "2024-03-21T12:34:56.789000Z"
-
-
 def test_put_gossip(kinesis_instance, mock_kinesis_client):
     """Test putting gossip data to Kinesis"""
     # Create test data with hardcoded time
@@ -142,62 +103,11 @@ def test_put_gossip(kinesis_instance, mock_kinesis_client):
     assert data["data"][0]["timestamp"] == "2024-03-21T12:34:56.789000Z"
 
 
-def test_put_record_error(kinesis_instance, mock_kinesis_client):
-    """Test error handling when putting a record"""
-    # Set up the mock to raise an exception
-    mock_kinesis_client.put_record.side_effect = ClientError(
-        {"Error": {"Code": "InternalFailure", "Message": "Internal server error"}},
-        "PutRecord",
-    )
-
-    # Create test data with hardcoded time
-    rewards_data = [
-        RewardsMessageData(
-            peerId="peer1",
-            peerName="Peer 1",
-            amount=100.0,
-            round=1,
-            stage=2,
-            timestamp=TEST_TIME,
-        )
-    ]
-    rewards_message = RewardsMessage(data=rewards_data)
-
-    # Call the method and expect an exception
-    with pytest.raises(KinesisError, match="Failed to put record to Kinesis"):
-        kinesis_instance.put_rewards(rewards_message)
-
-
 def test_kinesis_no_op_initialization():
     """Test Kinesis client initialization with no stream name (no-op mode)"""
     kinesis = Kinesis("")
     assert kinesis.stream_name == ""
     assert kinesis.kinesis is None
-
-
-def test_kinesis_no_op_put_rewards(kinesis_instance, mock_kinesis_client):
-    """Test putting rewards data in no-op mode"""
-    # Create a no-op Kinesis instance
-    no_op_kinesis = Kinesis("")
-
-    # Create test data with hardcoded time
-    rewards_data = [
-        RewardsMessageData(
-            peerId="peer1",
-            peerName="Peer 1",
-            amount=100.0,
-            round=1,
-            stage=2,
-            timestamp=TEST_TIME,
-        )
-    ]
-    rewards_message = RewardsMessage(data=rewards_data)
-
-    # Call the method - should not raise any errors
-    no_op_kinesis.put_rewards(rewards_message)
-
-    # Verify the client was not called
-    mock_kinesis_client.put_record.assert_not_called()
 
 
 def test_kinesis_no_op_put_gossip(kinesis_instance, mock_kinesis_client):
