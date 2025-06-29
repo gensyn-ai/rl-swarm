@@ -46,7 +46,17 @@ COPY ./containerfiles/swarm-node/setup_python.sh ./setup_python.sh
 RUN ./setup_python.sh
 
 COPY ./containerfiles/swarm-node/install_pip.sh ./install_pip.sh
-RUN ./install_pip.sh
+# Install Python packages and then fetch the libp2p daemon (p2pd) that Hivemind expects.
+# We download a pre-built static binary into the same cache path Hivemind uses by default.
+RUN ./install_pip.sh && \
+    set -ex && \
+    mkdir -p /home/gensyn/.cache/hivemind && \
+    vers="v0.9.1" && \
+    curl -L -o /tmp/p2pd.tgz "https://github.com/libp2p/go-libp2p-daemon/releases/download/${vers}/p2pd-${vers}-linux-amd64.tar.gz" && \
+    tar -xf /tmp/p2pd.tgz -C /tmp && \
+    mv /tmp/bin/p2pd-linux-amd64 /home/gensyn/.cache/hivemind/p2pd && \
+    chmod +x /home/gensyn/.cache/hivemind/p2pd && \
+    rm /tmp/p2pd.tgz
 
 ENV PATH="/home/gensyn/.pyenv/shims:/home/gensyn/.pyenv/bin:$NVM_DIR/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 
