@@ -82,7 +82,7 @@ If `docker-compose` does not work when running the above commands, please try `d
 
 ### Experimental (advanced) mode
 
-If you want to experiment with the [GenRL](https://github.com/gensyn-ai/genrl) library or the[configurable parameters](https://github.com/gensyn-ai/rl-swarm/blob/main/rgym_exp/config/rg-swarm.yaml ), we recommend you run RL Swarm via shell script:
+If you want to experiment with the [GenRL](https://github.com/gensyn-ai/genrl) library or the [configurable parameters](https://github.com/gensyn-ai/rl-swarm/blob/main/rgym_exp/config/rg-swarm.yaml ), we recommend you run RL Swarm via shell script:
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
@@ -98,7 +98,7 @@ To learn more about experimental mode, check out our [getting started guide](htt
 
 ### Huggingface
 
-If you would like to upload your model to Hugging Face, enter your Hugging Face access token when prompted. You can generate one from your Hugging Face account, under [Access Tokens](https://huggingface.co/docs/hub/en/security-tokens).
+If you would like to upload your model to Hugging Face, enter your Hugging Face access token when prompted. For effective results, ensure your token has read/write access. You can generate one from your Hugging Face account, under [Access Tokens](https://huggingface.co/docs/hub/en/security-tokens).
 
 ### Initial peering and training
 
