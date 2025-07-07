@@ -40,6 +40,7 @@ services:
       - ./user/keys:/home/gensyn/rl_swarm/keys
       - ./user/configs:/home/gensyn/rl_swarm/configs
       - ./user/logs:/home/gensyn/rl_swarm/logs
+      - ./user/cache:/home/gensyn/.cache
     environment:
       - HF_TOKEN=${HF_TOKEN}
       - GENSYN_RESET_CONFIG=${GENSYN_RESET_CONFIG}
@@ -63,6 +64,7 @@ services:
       - ./user/keys:/home/gensyn/rl_swarm/keys
       - ./user/configs:/home/gensyn/rl_swarm/configs
       - ./user/logs:/home/gensyn/rl_swarm/logs
+      - ./user/cache:/home/gensyn/.cache
     environment:
       - HF_TOKEN=${HF_TOKEN}
       - GENSYN_RESET_CONFIG=${GENSYN_RESET_CONFIG}
