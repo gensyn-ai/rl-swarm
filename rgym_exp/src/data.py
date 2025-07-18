@@ -259,11 +259,13 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
                 if batch_id not in trees[agent]:
                     trees[agent][batch_id] = None
                 payload = transplants[pair]
-                received_states, received_actions, received_metadata = (
-                    payload["world_state"],
-                    payload["actions"],
-                    payload["metadata"],
-                )
+                received_states = payload.get("world_state")
+                received_actions = payload.get("actions")
+                received_metadata = payload.get("metadata")
+
+                if received_states is None or received_actions is None or received_metadata is None:
+                    logger.warning(f"Incomplete payload: {payload}")
+                    continue  
                 world_state = received_states.environment_states
                 payload_batch_id = generate_md5_hash_id(world_state["question"])
                 assert payload_batch_id == batch_id
