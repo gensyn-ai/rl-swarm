@@ -227,25 +227,51 @@ fi
 echo_green ">> Done!"
 
 HF_TOKEN=${HF_TOKEN:-""}
-if [ -n "${HF_TOKEN}" ]; then # Check if HF_TOKEN is already set and use if so. Else give user a prompt to choose.
+if [ -n "${HF_TOKEN}" ]; then
     HUGGINGFACE_ACCESS_TOKEN=${HF_TOKEN}
 else
     echo -en $GREEN_TEXT
     read -p ">> Would you like to push models you train in the RL swarm to the Hugging Face Hub? [y/N] " yn
     echo -en $RESET_TEXT
-    yn=${yn:-N} # Default to "N" if the user presses Enter
+    yn=${yn:-N}
     case $yn in
-        [Yy]*) read -p "Enter your Hugging Face access token: " HUGGINGFACE_ACCESS_TOKEN ;;
+        [Yy]*) read -p ">> Enter your Hugging Face access token: " HUGGINGFACE_ACCESS_TOKEN ;;
         [Nn]*) HUGGINGFACE_ACCESS_TOKEN="None" ;;
-        *) echo ">>> No answer was given, so NO models will be pushed to Hugging Face Hub" && HUGGINGFACE_ACCESS_TOKEN="None" ;;
+        *) echo ">> No answer was given, so NO models will be pushed to Hugging Face Hub" && HUGGINGFACE_ACCESS_TOKEN="None" ;;
     esac
 fi
 
+# Predefined list of models
+MODELS=(
+    "Gensyn/Qwen2.5-0.5B-Instruct"
+    "Qwen/Qwen3-0.6B"
+    "nvidia/AceInstruct-1.5B"
+    "dnotitia/Smoothie-Qwen3-1.7B"
+    "Gensyn/Qwen2.5-1.5B-Instruct"
+    "Custom input"
+)
+
+# Model selection menu
 echo -en $GREEN_TEXT
-read -p ">> Enter the name of the model you want to use in huggingface repo/name format, or press [Enter] to use the default model. " MODEL_NAME
+echo ">> Choose a model to use in Hugging Face (or select Custom to type your own):"
+for i in "${!MODELS[@]}"; do
+    echo "  $((i+1)). ${MODELS[$i]}"
+done
 echo -en $RESET_TEXT
 
-# Only export MODEL_NAME if user provided a non-empty value
+read -p ">> Enter the number of your choice [1-${#MODELS[@]}]: " choice
+
+if [[ "$choice" =~ ^[1-5]$ ]]; then
+    MODEL_NAME="${MODELS[$((choice-1))]}"
+elif [[ "$choice" == "6" ]]; then
+    echo -en $GREEN_TEXT
+    read -p ">> Enter the name of the model in huggingface repo/name format: " MODEL_NAME
+    echo -en $RESET_TEXT
+else
+    echo_red ">> Invalid choice. Using default model from config."
+    MODEL_NAME=""
+fi
+
 if [ -n "$MODEL_NAME" ]; then
     export MODEL_NAME
     echo_green ">> Using model: $MODEL_NAME"
