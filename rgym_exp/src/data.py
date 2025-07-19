@@ -20,7 +20,8 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
     This class integrates reasoning-gym's composite datasets with genrl
     data management framework, providing infinite iteration through reseeding.
     """
-
+     
+    
     def __init__(
         self,
         yaml_config_path: str,
@@ -60,7 +61,7 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
             batch_item_id_column=batch_item_id_column,
             data_generator=self.load_reasoning_gym_dataset,  # TODO: this was confusing, we should document or change the way this is done
         )
-
+        self.logger = get_logger()
         self.yaml_config_path = yaml_config_path
         self.eval_split_ratio = eval_split_ratio
         self.chunk_size = chunk_size
@@ -164,7 +165,7 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
 
     def state_to_user_prompt(self, state: WorldState) -> str:
         """Convert the state to a user prompt."""
-        return state.environment_states["question"]
+        return state.environment_states.get("question", "")
 
     def state_to_answer(self, state: WorldState) -> str:
         """Extract the answer from the state."""
@@ -259,13 +260,19 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
                 if batch_id not in trees[agent]:
                     trees[agent][batch_id] = None
                 payload = transplants[pair]
-                received_states, received_actions, received_metadata = (
-                    payload["world_state"],
-                    payload["actions"],
-                    payload["metadata"],
-                )
+                received_states = payload.get("world_state")
+                received_actions = payload.get("actions")
+                received_metadata = payload.get("metadata")
+
+                if received_states is None or received_actions is None or received_metadata is None:
+                    self.logger.warning(f"Incomplete payload: {payload}")
+                    continue  # або raise / skip / return
                 world_state = received_states.environment_states
-                payload_batch_id = generate_md5_hash_id(world_state["question"])
+                question = world_state.get("question")
+                if not question:
+                    self.logger.warning(f"No 'question' found in world_state: {world_state}")
+                    continue  # або raise
+                payload_batch_id = generate_md5_hash_id(question)
                 assert payload_batch_id == batch_id
                 if (
                     trees[agent][batch_id] is None
@@ -297,11 +304,8 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
                 for batch_id in swarm_states[agent]:
                     for payload in swarm_states[agent][batch_id]:
                         if (
-                            self.num_generations
-                            and hasattr(payload, 'actions')
-                            and payload.actions is not None
-                            and isinstance(payload.actions, list) 
-                            and len(payload.actions) == self.num_generations
+                            payload.get("actions") is not None
+                            and len(payload["actions"]) == self.num_generations
                         ):
                             transplants[(agent, batch_id)] = payload
         if len(transplants) >= num_transplants:
