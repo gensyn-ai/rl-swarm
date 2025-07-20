@@ -1,42 +1,56 @@
-# Stable Setup of RL-Swarm Node on WSL (Ubuntu) with RAM Limit & SWAP
+# Stable Setup of RL‑Swarm Node on WSL (Ubuntu) with RAM Limit & SWAP
 
-Цей гайд допоможе стабільно запустити ноду RL-Swarm локально через WSL2 + Ubuntu 22.04, використовуючи обмеження RAM та додаткову SWAP-пам'ять.
-
----
-
-## ✅ Середовище
-
-- ОС: Windows 10 / 11
-- WSL2 (Windows Subsystem for Linux)
-- Ubuntu 22.04 (встановлено з Microsoft Store)
-- Обмеження RAM + SWAP
-- Інсталяція виключно через офіційні команди
+This guide shows how to run your RL‑Swarm node **locally** on Windows using **WSL2 + Ubuntu 22.04**, including memory limiting and swap configuration for stability.
 
 ---
 
-## 🧰 Підготовка: RAM та SWAP (налаштування в Windows)
+## ✅ Environment
 
-1. Відкрий файл `C:\Users\ТВОЄ_ІМ'Я\.wslconfig` (створи, якщо його немає)
-2. Встав наступне:
+- Windows 10 or 11  
+- WSL2 (Windows Subsystem for Linux)  
+- Ubuntu 22.04 (installed from Microsoft Store)  
+- Limited RAM use and SWAP enabled  
+- Installation using only official commands
 
+---
+
+## 🔧 WSL Configuration: Limit RAM & Enable SWAP
+
+Create or edit the file:  
+`C:\Users\<YourUsername>\.wslconfig`
+
+Insert the following:
+
+```
 [wsl2]
 memory=6GB
 processors=4
 swap=16GB
 localhostForwarding=true
+```
 
-3. Збережи файл
-4. Перезапусти WSL:
+Save the file, then run in PowerShell or Command Prompt:
+
 ```powershell
 wsl --shutdown
+```
 
-🐧 Встановлення Ubuntu 22.04 через WSL
-- Відкрий Microsoft Store
-- Знайди та встанови Ubuntu 22.04 LTS
-- Запусти "Ubuntu" з меню Пуск
-- Створи користувача та пароль (одноразово)
+---
 
-🚀 Встановлення RL-Swarm (тільки офіційні команди):
+## 🐧 Install Ubuntu (if not installed yet)
+
+1. Open **Microsoft Store**  
+2. Search for **Ubuntu 22.04 LTS** and install  
+3. Launch **Ubuntu** from Start menu  
+4. Create your WSL username and password
+
+---
+
+## 🚀 Install and Run RL‑Swarm (official steps only)
+
+Open Ubuntu (WSL) terminal and run:
+
+```bash
 cd ~
 rm -rf rl-swarm
 git clone https://github.com/gensyn-ai/rl-swarm.git
@@ -47,31 +61,60 @@ sudo apt install -y python3 python3-pip
 pip install pycosat
 tmux new -s swarm
 ./run_rl_swarm.sh
+```
 
-🟡 Вихід із tmux не зупиняє ноду:
-Ctrl + B, потім D
-Повернутись: tmux attach -t swarm
+> ℹ️ To detach from `tmux` without stopping the node, press:
+> `Ctrl + B` then `D`  
+> To reattach:  
+> `tmux attach -t swarm`
 
-📦 Альтернатива: Створення SWAP вручну в Ubuntu (якщо потрібно)
+---
+
+## 🔄 Optional: Create Swap File Manually in Ubuntu
+
+If swap isn't created by `.wslconfig`, run:
+
+```bash
 sudo fallocate -l 8G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
-Щоб зробити постійним:
+```
+
+To make swap permanent:
+
+```bash
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
-Перевірити:
+```
+
+Check swap with:
+
+```bash
 free -h
+```
 
-🧪 Перевірка
-Відкрий htop → перевір RAM/SWAP
-Впевнись, що порт 3000 відкритий (через tmux)
-За потреби — зроби SSH-тунель з Windows (локальний перегляд)
+---
 
-🔍 Підсумки
-VPS (Time4VPS) — спостерігались проблеми після декількох годин.
-Локальний запуск у WSL із RAM 6 ГБ + SWAP 16 ГБ — стабільна робота >24 годин.
-Всі команди відповідають офіційній документації.
+## 🧪 Verify Node Operation
 
-🗨️ Зв'язок
-Знайшли покращення? Пишіть у Discord або створіть новий Pull Request 🙌
-Contributed by: Viktorino 🇺🇦
+- Run `htop` to monitor RAM/SWAP usage  
+- Confirm that port `3000` is active (inside `tmux`)  
+- Access via browser (use SSH tunnel if necessary)
+
+---
+
+## 🔍 Summary of Testing
+
+- VPS (Time4VPS): encountered instability after a few hours  
+- Local WSL with 6GB RAM + 16GB SWAP: stable 24+ hours  
+- All setup steps use only official commands  
+- Running inside `tmux` ensures node stays active during terminal disconnects
+
+---
+
+## 💬 Feedback & Contributions
+
+Found this helpful? Feel free to share it in Discord or open another Pull Request to improve it further.
+
+**Contributed by**: Viktorino 🇺🇦
+
