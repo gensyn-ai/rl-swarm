@@ -1,4 +1,5 @@
 import os
+import random
 from typing import Any, Dict, List, Optional, Tuple
 
 from datasets import Dataset
@@ -68,7 +69,7 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
         )
         self.num_transplant_trees = kwargs.get("num_transplant_trees", 1)
         assert self.num_transplant_trees >= 0
-
+        self.num_generations = kwargs.get("num_generations", None)
         try:
             self.config = CompositeConfig.from_yaml(yaml_config_path)
 
@@ -295,30 +296,17 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
             if agent not in current_state.trees:
                 for batch_id in swarm_states[agent]:
                     for payload in swarm_states[agent][batch_id]:
-                        transplants[(agent, batch_id)] = payload
-        total_score_per_tree = [
-            sum(
-                accuracy_reward(
-                    transplants[key]["actions"],
-                    transplants[key]["world_state"].environment_states["answer"],
-                    transplants[key]["world_state"].environment_states["metadata"],
-                )
-            )
-            for key in transplants
-        ]
-        sorted_trees = [
-            key for _, key in sorted(zip(total_score_per_tree, transplants))
-        ]  # TODO(gab): Should we be sorting by avg rather than total score? Should we be filtering by "advantage" rather than bounding score stats?
-        try:
-            lower_bound_idx_filter = next(
-                idx
-                for idx, tot_score in enumerate(total_score_per_tree)
-                if tot_score != 0
-            )
-            sorted_trees = sorted_trees[lower_bound_idx_filter:]
-            num_transplants = min(num_transplants, len(sorted_trees))
-            return {key: transplants[key] for key in sorted_trees[-num_transplants:]}
-        except StopIteration:  # All elements of total_score_per_tree are == 0
-            return (
-                {}
-            )  # Default to not taking anything from the swarm, but reasonable alternative might be to do a random sample instead
+                        if (
+                            self.num_generations
+                            and hasattr(payload, 'actions')
+                            and payload.actions is not None
+                            and isinstance(payload.actions, list) 
+                            and len(payload.actions) == self.num_generations
+                        ):
+                            transplants[(agent, batch_id)] = payload
+        if len(transplants) >= num_transplants:
+            keepers = random.sample(list(transplants), num_transplants)
+        else:
+            keepers = list(transplants)
+
+        return {key: transplants[key] for key in keepers}

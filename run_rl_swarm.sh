@@ -235,7 +235,7 @@ pip install --upgrade pip
 pip install gensyn-genrl==0.1.4
 pip install reasoning-gym>=0.1.20 # for reasoning gym env
 pip install trl # for grpo config, will be deprecated soon
-pip install hivemind@git+https://github.com/learning-at-home/hivemind@4d5c41495be082490ea44cce4e9dd58f9926bb4e # We need the latest, 1.1.11 is broken
+pip install hivemind@git+https://github.com/gensyn-ai/hivemind@639c964a8019de63135a2594663b5bec8e5356dd # We need the latest, 1.1.11 is broken
 
 
 if [ ! -d "$ROOT/configs" ]; then
