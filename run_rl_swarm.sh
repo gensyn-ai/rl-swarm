@@ -61,6 +61,30 @@ echo_red() {
     echo -e "$RED_TEXT$1$RESET_TEXT"
 }
 
+# Function to find an available port starting from a given port
+find_available_port() {
+    local start_port=$1
+    local max_attempts=${2:-10}
+    local current_port=$start_port
+    
+    for ((i=0; i<max_attempts; i++)); do
+        if ! lsof -i :$current_port >/dev/null 2>&1; then
+            echo $current_port
+            return 0
+        fi
+        current_port=$((current_port + 1))
+    done
+    
+    echo_red ">> Unable to find available port starting from $start_port after $max_attempts attempts"
+    return 1
+}
+
+# Function to check if a port is available
+is_port_available() {
+    local port=$1
+    ! lsof -i :$port >/dev/null 2>&1
+}
+
 ROOT_DIR="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
 
 # Function to clean up the server process upon exit
@@ -99,6 +123,18 @@ EOF
 mkdir -p "$ROOT/logs"
 
 if [ "$CONNECT_TO_TESTNET" = true ]; then
+    # Find available port for modal-login server
+    LOGIN_PORT=$(find_available_port 3000)
+    if [ $? -ne 0 ]; then
+        echo_red ">> Failed to find available port for modal-login server"
+        exit 1
+    fi
+    
+    echo_green ">> Using port $LOGIN_PORT for modal-login server"
+    
+    # Export LOGIN_PORT so it's available to the config file
+    export LOGIN_PORT
+    
     # Run modal_login server.
     echo "Please login to create an Ethereum Server Wallet"
     cd modal-login
@@ -148,7 +184,9 @@ if [ "$CONNECT_TO_TESTNET" = true ]; then
         echo "Building server"
         yarn build > "$ROOT/logs/yarn.log" 2>&1
     fi
-    yarn start >> "$ROOT/logs/yarn.log" 2>&1 & # Run in background and log output
+    
+    # Start server on the determined port
+    PORT=$LOGIN_PORT yarn start >> "$ROOT/logs/yarn.log" 2>&1 & # Run in background and log output
 
     SERVER_PID=$!  # Store the process ID
     echo "Started server process: $SERVER_PID"
@@ -156,13 +194,13 @@ if [ "$CONNECT_TO_TESTNET" = true ]; then
 
     # Try to open the URL in the default browser
     if [ -z "$DOCKER" ]; then
-        if open http://localhost:3000 2> /dev/null; then
-            echo_green ">> Successfully opened http://localhost:3000 in your default browser."
+        if open http://localhost:$LOGIN_PORT 2> /dev/null; then
+            echo_green ">> Successfully opened http://localhost:$LOGIN_PORT in your default browser."
         else
-            echo ">> Failed to open http://localhost:3000. Please open it manually."
+            echo ">> Failed to open http://localhost:$LOGIN_PORT. Please open it manually."
         fi
     else
-        echo_green ">> Please open http://localhost:3000 in your host browser."
+        echo_green ">> Please open http://localhost:$LOGIN_PORT in your host browser."
     fi
 
     cd ..
@@ -179,7 +217,7 @@ if [ "$CONNECT_TO_TESTNET" = true ]; then
     # Wait until the API key is activated by the client
     echo "Waiting for API key to become activated..."
     while true; do
-        STATUS=$(curl -s "http://localhost:3000/api/get-api-key-status?orgId=$ORG_ID")
+        STATUS=$(curl -s "http://localhost:$LOGIN_PORT/api/get-api-key-status?orgId=$ORG_ID")
         if [[ "$STATUS" == "activated" ]]; then
             echo "API key is activated! Proceeding..."
             break

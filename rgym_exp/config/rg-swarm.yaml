@@ -14,7 +14,7 @@ blockchain:
   contract_address: ${oc.env:SWARM_CONTRACT,null} # This is set by modal-login in run_rl_swarm.sh
   org_id: ${oc.env:ORG_ID,null} # This is set by modal-login in run_rl_swarm.sh
   mainnet_chain_id: 685685 # currently unused, will be used with WalletSwarmCoordinator
-  modal_proxy_url: "http://localhost:3000/api/"
+  modal_proxy_url: "http://localhost:${oc.env:LOGIN_PORT,3000}/api/"
 
 communications:
   initial_peers:
