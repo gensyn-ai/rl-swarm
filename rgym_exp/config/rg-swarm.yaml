@@ -7,7 +7,7 @@ training:
   num_generations: 2
   num_transplant_trees: 2
   seed: 42
-  fp16: false # set this line to true if your hardware supports fp16
+  #fp16: false # set this line to true if your hardware supports fp16
 
 blockchain:
   alchemy_url: "https://gensyn-testnet.g.alchemy.com/public"
@@ -60,7 +60,8 @@ game_manager:
     config:
       _target_: trl.trainer.GRPOConfig
       logging_dir: ${log_dir}
-      fp16: ${training.fp16}
+      fp16: false
+      bf16: false
     log_with: wandb
     log_dir: ${log_dir}
     epsilon: 0.2
