@@ -117,6 +117,13 @@ During the initial set-up process, you will also create a `swarm.pem` file which
 
 **If you want to link multiple nodes to a single EOA**, simply sign up each node using the same email address. You will get a new peer ID for each node, however they will all be linked to the same EOA that your email is linked to.
 
+**If you are having issues to login to Localhost:3000**, 
+
+1) sudo apt install -y nodejs
+2) npm install -g localtunnel
+3) curl https://loca.lt/mytunnelpassword (The password is your VPS IP)
+4) lt --port 3000
+
 **Please note**: if you are using a fork of this repo, or a service organised by someone else (e.g. a 'one click deployment' provider) the identity management flow below is not guaranteed.
 
 ### What this means
