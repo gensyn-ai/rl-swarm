@@ -4,7 +4,7 @@ This package provides an API and UI for displaying gossip messages and metrics a
 
 # Running the web server
 
-From the rl_swarm directory, use docker-compose to spin up containers for the webserver and OpenTelemetry.
+From the rl_swarm directory, use docker-compose to spin up containers for the web server and OpenTelemetry.
 ```
 docker-compose build --no-cache
 ```
