@@ -1,5 +1,5 @@
 #!/bin/bash
-
+export PS1="${PS1:-}"
 set -euo pipefail
 
 # General arguments
