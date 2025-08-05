@@ -1,0 +1,19 @@
+colorlog
+datasets
+hivemind @ git+https://github.com/learning-at-home/hivemind@1.11.11
+hf-transfer
+peft
+pytest
+tensorboard
+transformers>=4.46.0
+trl
+wandb
+web3
+
+# 监控系统依赖
+flask>=2.0.0
+flask-socketio>=5.0.0
+psutil>=5.8.0
+requests>=2.25.0
+yagmail>=0.14.0
+plotly>=5.0.0

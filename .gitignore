@@ -24,9 +24,14 @@ MODULE.bazel.lock
 **/.direnv
 .tmux.conf
 
+
+*.history
+
 user/
 
 configs/
 genrl-swarm/
 
+
 result
+

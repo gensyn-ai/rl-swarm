@@ -1,0 +1,452 @@
+
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>🏆 RL-Swarm 详细奖励报告</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                margin: 0;
+                padding: 20px;
+                min-height: 100vh;
+            }
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 15px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }
+            .header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 30px;
+                text-align: center;
+            }
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                padding: 30px;
+            }
+            .stat-card {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 20px;
+                text-align: center;
+                border-left: 5px solid #667eea;
+            }
+            .stat-value {
+                font-size: 2em;
+                font-weight: bold;
+                color: #2E86AB;
+                margin: 10px 0;
+            }
+            .table-container {
+                padding: 0 30px 30px;
+                overflow-x: auto;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                background: white;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            th {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px;
+                text-align: left;
+                font-weight: 600;
+            }
+            td {
+                padding: 12px 15px;
+                border-bottom: 1px solid #eee;
+            }
+            tr:hover {
+                background: #f8f9fa;
+            }
+            .highlight {
+                background: linear-gradient(45deg, #FFD700, #FFA500);
+                color: white;
+                font-weight: bold;
+            }
+            .performance-indicator {
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                margin-right: 8px;
+            }
+            .excellent { background: #4CAF50; }
+            .good { background: #FFC107; }
+            .poor { background: #F44336; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🏆 RL-Swarm Mac Mini M4 详细奖励报告</h1>
+                <p>专业的分布式训练性能分析</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">💰 总收益</div>
+                    <div class="stat-value">58.3560 ETH</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">📅 日均收益</div>
+                    <div class="stat-value">1.9452 ETH</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">🔥 平均CPU</div>
+                    <div class="stat-value">58.2%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">💾 平均内存</div>
+                    <div class="stat-value">72.0%</div>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <h2>📊 每日详细统计</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>📅 日期</th>
+                            <th>🔄 轮次</th>
+                            <th>💰 总奖励</th>
+                            <th>📊 平均奖励</th>
+                            <th>🏅 最佳奖励</th>
+                            <th>🎯 效率分数</th>
+                            <th>📈 表现</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    
+        <tr class="">
+            <td>2025-05-26</td>
+            <td>11</td>
+            <td>0.6092</td>
+            <td>0.0554</td>
+            <td>0.0698</td>
+            <td>2.36</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-05-27</td>
+            <td>15</td>
+            <td>0.9536</td>
+            <td>0.0636</td>
+            <td>0.0804</td>
+            <td>4.12</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-05-28</td>
+            <td>12</td>
+            <td>0.8097</td>
+            <td>0.0675</td>
+            <td>0.0787</td>
+            <td>4.67</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-05-29</td>
+            <td>8</td>
+            <td>0.5674</td>
+            <td>0.0709</td>
+            <td>0.0880</td>
+            <td>3.01</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-05-30</td>
+            <td>14</td>
+            <td>1.0430</td>
+            <td>0.0745</td>
+            <td>0.0925</td>
+            <td>5.37</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-05-31</td>
+            <td>24</td>
+            <td>2.1809</td>
+            <td>0.0909</td>
+            <td>0.1137</td>
+            <td>12.49</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-01</td>
+            <td>23</td>
+            <td>2.2843</td>
+            <td>0.0993</td>
+            <td>0.1196</td>
+            <td>16.12</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-02</td>
+            <td>6</td>
+            <td>0.4915</td>
+            <td>0.0819</td>
+            <td>0.1181</td>
+            <td>3.73</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-03</td>
+            <td>8</td>
+            <td>0.7271</td>
+            <td>0.0909</td>
+            <td>0.1121</td>
+            <td>5.76</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-04</td>
+            <td>10</td>
+            <td>1.0096</td>
+            <td>0.1010</td>
+            <td>0.1111</td>
+            <td>9.35</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-05</td>
+            <td>14</td>
+            <td>1.3990</td>
+            <td>0.0999</td>
+            <td>0.1217</td>
+            <td>11.87</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-06</td>
+            <td>12</td>
+            <td>1.2235</td>
+            <td>0.1020</td>
+            <td>0.1267</td>
+            <td>10.41</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-07</td>
+            <td>19</td>
+            <td>2.5174</td>
+            <td>0.1325</td>
+            <td>0.1540</td>
+            <td>34.91</td>
+            <td><span class="performance-indicator good"></span>良好</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-08</td>
+            <td>22</td>
+            <td>3.0811</td>
+            <td>0.1400</td>
+            <td>0.1715</td>
+            <td>48.07</td>
+            <td><span class="performance-indicator excellent"></span>优秀</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-09</td>
+            <td>7</td>
+            <td>0.8822</td>
+            <td>0.1260</td>
+            <td>0.1742</td>
+            <td>8.13</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-10</td>
+            <td>15</td>
+            <td>1.9055</td>
+            <td>0.1270</td>
+            <td>0.1535</td>
+            <td>22.16</td>
+            <td><span class="performance-indicator good"></span>良好</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-11</td>
+            <td>8</td>
+            <td>1.0401</td>
+            <td>0.1300</td>
+            <td>0.1512</td>
+            <td>10.67</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-12</td>
+            <td>12</td>
+            <td>1.7116</td>
+            <td>0.1426</td>
+            <td>0.1687</td>
+            <td>20.34</td>
+            <td><span class="performance-indicator good"></span>良好</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-13</td>
+            <td>8</td>
+            <td>1.1577</td>
+            <td>0.1447</td>
+            <td>0.1631</td>
+            <td>29.88</td>
+            <td><span class="performance-indicator good"></span>良好</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-14</td>
+            <td>19</td>
+            <td>3.5028</td>
+            <td>0.1844</td>
+            <td>0.2179</td>
+            <td>48.23</td>
+            <td><span class="performance-indicator excellent"></span>优秀</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-15</td>
+            <td>22</td>
+            <td>4.1867</td>
+            <td>0.1903</td>
+            <td>0.2281</td>
+            <td>63.96</td>
+            <td><span class="performance-indicator excellent"></span>优秀</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-16</td>
+            <td>7</td>
+            <td>0.9906</td>
+            <td>0.1415</td>
+            <td>0.1882</td>
+            <td>18.25</td>
+            <td><span class="performance-indicator poor"></span>一般</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-17</td>
+            <td>9</td>
+            <td>1.5781</td>
+            <td>0.1753</td>
+            <td>0.2043</td>
+            <td>23.67</td>
+            <td><span class="performance-indicator good"></span>良好</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-18</td>
+            <td>12</td>
+            <td>2.1843</td>
+            <td>0.1820</td>
+            <td>0.2057</td>
+            <td>32.36</td>
+            <td><span class="performance-indicator good"></span>良好</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-19</td>
+            <td>11</td>
+            <td>1.9607</td>
+            <td>0.1782</td>
+            <td>0.1985</td>
+            <td>25.99</td>
+            <td><span class="performance-indicator good"></span>良好</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-20</td>
+            <td>8</td>
+            <td>1.5229</td>
+            <td>0.1904</td>
+            <td>0.2057</td>
+            <td>20.31</td>
+            <td><span class="performance-indicator good"></span>良好</td>
+        </tr>
+        
+        <tr class="highlight">
+            <td>2025-06-21</td>
+            <td>24</td>
+            <td>5.7927</td>
+            <td>0.2414</td>
+            <td>0.2714</td>
+            <td>73.17</td>
+            <td><span class="performance-indicator excellent"></span>优秀</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-22</td>
+            <td>21</td>
+            <td>5.2981</td>
+            <td>0.2523</td>
+            <td>0.2882</td>
+            <td>82.41</td>
+            <td><span class="performance-indicator excellent"></span>优秀</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-23</td>
+            <td>10</td>
+            <td>2.1473</td>
+            <td>0.2147</td>
+            <td>0.2419</td>
+            <td>26.51</td>
+            <td><span class="performance-indicator good"></span>良好</td>
+        </tr>
+        
+        <tr class="">
+            <td>2025-06-24</td>
+            <td>16</td>
+            <td>3.5974</td>
+            <td>0.2248</td>
+            <td>0.2534</td>
+            <td>58.73</td>
+            <td><span class="performance-indicator excellent"></span>优秀</td>
+        </tr>
+        
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                    <h3>🎯 关键洞察</h3>
+                    <ul style="line-height: 1.8;">
+                        <li><strong>🚀 最佳表现日：</strong>2025-06-21 (收益: 5.7927 ETH)</li>
+                        <li><strong>📉 最低表现日：</strong>2025-06-02 (收益: 0.4915 ETH)</li>
+                        <li><strong>📈 改进空间：</strong>1078.6% 提升潜力</li>
+                        <li><strong>🏆 总训练轮次：</strong>407 轮</li>
+                        <li><strong>⚡ 系统效率：</strong>高效运行</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    

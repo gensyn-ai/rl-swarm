@@ -1,0 +1,25 @@
+{
+  "email": {
+    "enabled": true,
+    "smtp_server": "smtp.126.com",
+    "smtp_port": 587,
+    "sender_email": "zhilinchn@126.com",
+    "sender_password": "XDNefhVJh9FbT3xq",
+    "recipient_email": "zhilinchn@126.com",
+    "use_tls": true
+  },
+  "sms": {
+    "enabled": false,
+    "provider": "aliyun",
+    "api_key": "",
+    "api_secret": "",
+    "phone_number": "",
+    "template_id": ""
+  },
+  "alert_levels": {
+    "critical": "🚨",
+    "error": "❌",
+    "warning": "⚠️",
+    "info": "ℹ️"
+  }
+}
