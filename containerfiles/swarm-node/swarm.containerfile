@@ -53,13 +53,15 @@ ENV PATH="/home/gensyn/.pyenv/shims:/home/gensyn/.pyenv/bin:$NVM_DIR/versions/no
 COPY --chown=gensyn ./modal-login /home/gensyn/rl_swarm/modal-login
 RUN cd /home/gensyn/rl_swarm/modal-login && yarn install --immutable && yarn build
 
-RUN git clone --depth=1 --branch v0.1.1 https://github.com/gensyn-ai/genrl-swarm.git /home/gensyn/rl_swarm/genrl-swarm
+RUN pip install gensyn-genrl==0.1.4
+RUN pip install reasoning-gym>=0.1.20 # for reasoning gym env
+RUN pip install trl # for grpo config, will be deprecated soon
+RUN pip install hivemind@git+https://github.com/gensyn-ai/hivemind@639c964a8019de63135a2594663b5bec8e5356dd # We need the latest, 1.1.11 is broken
 
 WORKDIR /home/gensyn/rl_swarm
 ENV DOCKER=t
 ENV IDENTITY_PATH=/home/gensyn/rl_swarm/keys/swarm.pem
 
-RUN cd /home/gensyn/rl_swarm/genrl-swarm && pip install -e .[examples]
 COPY --chown=gensyn . /home/gensyn/rl_swarm
 
 CMD [ "bash", "-c", "/home/gensyn/rl_swarm/run_rl_swarm.sh" ]

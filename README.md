@@ -11,7 +11,7 @@ Models:
    - dnotitia/Smoothie-Qwen3-1.7B
    - Gensyn/Qwen2.5-1.5B-Instruct
 
-This iteration of rl-swarm is powered by the [GenRL-Swarm](https://github.com/gensyn-ai/genrl-swarm) library.  It is a fully composable framework for decentralized reinforcement learning which enables users to create and customize their own swarms for reinforcement learning with multi-agent multi-stage environments.
+This iteration of rl-swarm is powered by the [GenRL](https://github.com/gensyn-ai/genrl) library.  It is a fully composable framework for decentralized reinforcement learning which enables users to create and customize their own swarms for reinforcement learning with multi-agent multi-stage environments.
 
 ## Requirements
 
@@ -82,13 +82,13 @@ If `docker-compose` does not work when running the above commands, please try `d
 
 ### Experimental (advanced) mode
 
-If you want to experiment with the [GenRL-Swarm](https://github.com/gensyn-ai/genrl-swarm) library and its [configurable parameters](https://github.com/gensyn-ai/genrl-swarm/blob/main/recipes/rgym/rg-swarm.yaml), we recommend you run RL Swarm via shell script:
+If you want to experiment with the [GenRL](https://github.com/gensyn-ai/genrl) library or the[configurable parameters](https://github.com/gensyn-ai/rl-swarm/blob/main/rgym_exp/config/rg-swarm.yaml ), we recommend you run RL Swarm via shell script:
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
 ./run_rl_swarm.sh
 ```  
-To learn more about experimental mode, check out our [getting started guide](https://github.com/gensyn-ai/genrl-swarm/blob/main/getting_started.ipynb).
+To learn more about experimental mode, check out our [getting started guide](https://github.com/gensyn-ai/genrl/blob/main/getting_started.ipynb).
 
 ### Login
 
