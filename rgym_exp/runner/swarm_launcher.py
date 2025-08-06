@@ -1,5 +1,10 @@
 import os
 
+# Set multiprocessing start method to 'spawn' safely
+import torch.multiprocessing as mp
+if mp.get_start_method(allow_none=True) != 'spawn':
+    mp.set_start_method('spawn', force=True)
+
 import hydra
 from genrl.communication.communication import Communication
 from genrl.communication.hivemind.hivemind_backend import (
