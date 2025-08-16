@@ -137,7 +137,7 @@ export async function userOperationHandler({
         },
       } = parsedDetailsResult;
 
-      // Attempt to decode the the error result on a best-effort basis
+      // Attempt to decode the error result on a best-effort basis
       try {
         const decodedError = decodeErrorResult({
           data: revertData,

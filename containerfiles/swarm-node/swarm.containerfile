@@ -3,7 +3,7 @@ FROM ${BASE_IMAGE}
 LABEL maintainer="Christopher Nies <christopher@gensyn.ai>"
 
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
-# Common libraries used by Python. These pre-requisited are recommended for the general Python
+# Common libraries used by Python. These prerequisites are recommended for the general Python
 RUN apt update -y && \
     apt install -y \
     sudo \

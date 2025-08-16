@@ -55,7 +55,7 @@ class GRPOTrainerModule(GRPOLanguageTrainerModule, LoggerMixin):
                     get_logger().debug(f'recieved question: {result["question"]}')
                 else:
                     get_logger().debug(
-                        f"Failed to recieve question: {response.status_code}"
+                        f"Failed to receive question: {response.status_code}"
                     )
                     return
 

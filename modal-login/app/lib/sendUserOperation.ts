@@ -99,7 +99,7 @@ export async function sendUserOperation<Res extends BaseOperationResult>({
         continue;
       }
     } catch (err) {
-      // Casting is not ideal but is canonical way of handling errors as per the
+      // Casting is not ideal but is a canonical way of handling errors as per the
       // viem docs.
       //
       // See: https://viem.sh/docs/error-handling#error-handling
