@@ -39,7 +39,7 @@ def accuracy_reward(completions, ground_truth, metadata, weight=1.0):
 def get_completions(
     game_state: GameState, stage: int
 ) -> Dict[Any, Dict[Any, List[Any]]]:
-    # Get completions per agent and batch item from corresponding set of actions
+    # Get completions per agent and batch item from the corresponding set of actions
     actions = game_state.get_stage_actions(stage)
     completions = {}  # Key per agent
     for agent in actions:
@@ -56,7 +56,7 @@ def get_completions(
 
 
 def get_answers(game_state: GameState, stage: int) -> Dict[Any, Dict[Any, List[Any]]]:
-    # Get answers per agent and batch item from corresponding set of world-states
+    # Get answers per agent and batch item from the corresponding set of world-states
     world_states = game_state.get_stage_state(stage)
     answers = {}  # Key per agent
     for agent in world_states:
@@ -73,7 +73,7 @@ def get_answers(game_state: GameState, stage: int) -> Dict[Any, Dict[Any, List[A
 
 
 def get_metadata(game_state: GameState, stage: int) -> Dict[Any, Dict[Any, List[Any]]]:
-    # Get metadata per agent and batch item from corresponding set of world-states
+    # Get metadata per agent and batch item from the corresponding set of world-states
     world_states = game_state.get_stage_state(stage)
     metadata = {}  # Key per agent
     for agent in world_states:
