@@ -4,7 +4,7 @@ import { z } from "zod";
   * HttpRequestErrorType from viem includes a details property. Its format is
   * not guaranteed but in practice it contains a stringified JSON with 
   * a `revertData` hex string that is useful for debugging. The runtime schemas
-  * below parse a string into a JSON into a object matching the observed shape
+  * below parse a string into a JSON object matching the observed shape
   * of the details object.
   *
   * Call `safeParse` on the schemas to check at runtime if the `revertData` is
