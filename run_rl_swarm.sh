@@ -155,15 +155,15 @@ if [ "$CONNECT_TO_TESTNET" = true ]; then
     sleep 5
 
     # Try to open the URL in the default browser
-    # if [ -z "$DOCKER" ]; then
-    #    if open http://localhost:3000 2> /dev/null; then
-    #       echo_green ">> Successfully opened http://localhost:3000 in your default browser."
-    #    else
-    #        echo ">> Failed to open http://localhost:3000. Please open it manually."
-    #    fi
-    # else
-    #    echo_green ">> Please open http://localhost:3000 in your host browser."
-    # fi
+    if [ -z "$DOCKER" ]; then
+        if open http://localhost:3000 2> /dev/null; then
+            echo_green ">> Successfully opened http://localhost:3000 in your default browser."
+        else
+            echo ">> Failed to open http://localhost:3000. Please open it manually."
+        fi
+    else
+        echo_green ">> Please open http://localhost:3000 in your host browser."
+    fi
 
     cd ..
 
@@ -196,7 +196,11 @@ pip install --upgrade pip
 # echo_green ">> Installing GenRL..."
 pip install gensyn-genrl==0.1.4
 pip install reasoning-gym>=0.1.20 # for reasoning gym env
-pip install trl # for grpo config, will be deprecated soon
+
+# 修复依赖冲突：强制重新安装特定版本的 transformers 和 trl
+echo_green ">> Fixing dependency conflicts..."
+pip install --force-reinstall transformers==4.51.3 trl==0.19.1
+
 pip install hivemind@git+https://github.com/gensyn-ai/hivemind@639c964a8019de63135a2594663b5bec8e5356dd # We need the latest, 1.1.11 is broken
 
 

@@ -55,7 +55,10 @@ RUN cd /home/gensyn/rl_swarm/modal-login && yarn install --immutable && yarn bui
 
 RUN pip install gensyn-genrl==0.1.4
 RUN pip install reasoning-gym>=0.1.20 # for reasoning gym env
-RUN pip install trl # for grpo config, will be deprecated soon
+
+# 修复依赖冲突：强制重新安装特定版本的 transformers 和 trl
+RUN pip install --force-reinstall transformers==4.51.3 trl==0.19.1
+
 RUN pip install hivemind@git+https://github.com/gensyn-ai/hivemind@639c964a8019de63135a2594663b5bec8e5356dd # We need the latest, 1.1.11 is broken
 
 WORKDIR /home/gensyn/rl_swarm
