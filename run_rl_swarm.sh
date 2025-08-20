@@ -155,15 +155,15 @@ if [ "$CONNECT_TO_TESTNET" = true ]; then
     sleep 5
 
     # Try to open the URL in the default browser
-    if [ -z "$DOCKER" ]; then
-        if open http://localhost:3000 2> /dev/null; then
-            echo_green ">> Successfully opened http://localhost:3000 in your default browser."
-        else
-            echo ">> Failed to open http://localhost:3000. Please open it manually."
-        fi
-    else
-        echo_green ">> Please open http://localhost:3000 in your host browser."
-    fi
+    # if [ -z "$DOCKER" ]; then
+    #    if open http://localhost:3000 2> /dev/null; then
+    #       echo_green ">> Successfully opened http://localhost:3000 in your default browser."
+    #    else
+    #        echo ">> Failed to open http://localhost:3000. Please open it manually."
+    #    fi
+    # else
+    #    echo_green ">> Please open http://localhost:3000 in your host browser."
+    # fi
 
     cd ..
 
