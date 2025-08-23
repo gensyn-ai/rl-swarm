@@ -77,12 +77,31 @@ setup_screen_session() {
     # 创建新的screen会话
     echo "[🆕 设置] 创建新的$SESSION_NAME会话..."
     screen -dmS "$SESSION_NAME"
-    sleep 1
+    sleep 2
     
     # 验证会话是否创建成功
     if screen -list | grep -q "$SESSION_NAME"; then
         echo "[✅ 设置] 成功创建$SESSION_NAME会话"
         echo "[📱 设置] 可以使用 'screen -r $SESSION_NAME' 连接到会话"
+        
+        # 初始化会话环境
+        echo "[🔧 设置] 初始化会话环境..."
+        
+        # 立即启动程序
+        echo "[🚀 设置] 启动RL Swarm程序..."
+        STARTUP_CMD='if [ -z "$VIRTUAL_ENV" ]; then source venv/bin/activate; fi; export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && export PYTORCH_ENABLE_MPS_FALLBACK=1 && MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"; (echo "n"; echo "$MODEL_NAME") | ./run_rl_swarm.sh\n'
+        screen -S "$SESSION_NAME" -p 0 -X stuff "$STARTUP_CMD"
+        sleep 8
+        
+        screen -S "$SESSION_NAME" -p 0 -X stuff "echo '🚀 程序已启动，等待连接...'\r"
+        sleep 1
+        
+        # 验证会话响应
+        if screen -S "$SESSION_NAME" -X select 0 >/dev/null 2>&1; then
+            echo "[✅ 设置] screen会话响应正常"
+        else
+            echo "[⚠️ 设置] screen会话响应异常"
+        fi
     else
         echo "[❌ 设置] 创建$SESSION_NAME会话失败，退出脚本"
         exit 1
@@ -126,6 +145,82 @@ show_process_info() {
         echo "3000端口占用进程: $port_3000_pids"
     fi
     echo "========================"
+}
+
+# 执行重启流程
+execute_restart() {
+    echo "[🔄 重启] 开始执行重启流程..."
+    RESTART_COUNT=$((RESTART_COUNT+1))
+    
+    # 清理现有进程
+    project_dir="$(cd "$(dirname "$0")/.." && pwd)"
+    py_pids=$(ps aux | grep python | grep "$project_dir" | awk '{print $2}')
+    if [ -n "$py_pids" ]; then
+        echo "[🧹 重启] 清理本项目 Python 进程: $py_pids"
+        echo "$py_pids" | xargs kill -9
+    fi
+    
+    p2pd_pids=$(pgrep -f "p2pd")
+    [ -n "$p2pd_pids" ] && echo "[🧹 重启] 清理 p2pd 进程: $p2pd_pids" && pkill -f "p2pd"
+    
+    node_pids=$(pgrep -f "node")
+    [ -n "$node_pids" ] && echo "[🧹 重启] 清理 node 进程: $node_pids" && pkill -f "node"
+    
+    port_3000_pids=$(lsof -ti:3000 2>/dev/null)
+    if [ -n "$port_3000_pids" ]; then
+        echo "[🧹 重启] 清理 3000 端口占用进程: $port_3000_pids"
+        echo "$port_3000_pids" | xargs kill -9
+    fi
+    
+    # 清空日志
+    > "$RL_LOG_FILE"
+    
+    # 停止 screen 会话中的当前命令
+    screen -S "$SESSION_NAME" -p 0 -X stuff "\003"
+    sleep 2
+    
+    # 发送启动命令到 screen 会话
+    echo "[🚀 重启] 向 screen 会话发送启动命令..."
+    
+    # 分步发送命令，确保每个命令都能执行
+    screen -S "$SESSION_NAME" -p 0 -X stuff "cd $(pwd)\r"
+    sleep 2
+    screen -S "$SESSION_NAME" -p 0 -X stuff "source venv/bin/activate\r"
+    sleep 2
+    screen -S "$SESSION_NAME" -p 0 -X stuff "export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0\r"
+    sleep 1
+    screen -S "$SESSION_NAME" -p 0 -X stuff "export PYTORCH_ENABLE_MPS_FALLBACK=1\r"
+    sleep 1
+    
+    # 最简单直接的启动方式
+    echo "[🚀 重启] 直接启动RL Swarm..."
+    
+    # 使用智能重启命令，自动处理虚拟环境和交互问题
+    RESTART_CMD='if [ -z "$VIRTUAL_ENV" ]; then source venv/bin/activate; fi; export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && export PYTORCH_ENABLE_MPS_FALLBACK=1 && MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"; (echo "n"; echo "$MODEL_NAME") | ./run_rl_swarm.sh\n'
+    screen -S "$SESSION_NAME" -p 0 -X stuff "$RESTART_CMD"
+    sleep 8
+    
+    echo "[✅ 重启] 启动命令发送完成"
+    
+    echo "[✅ 重启] 已向'主程序'窗口发送第${RESTART_COUNT}次重启命令，日志已清空，等待主程序恢复..."
+    
+    # 验证screen会话状态
+    echo "[🔍 重启] 验证screen会话状态..."
+    if screen -list | grep -q "$SESSION_NAME"; then
+        echo "[✅ 重启] screen会话 '$SESSION_NAME' 存在"
+        # 检查会话是否可访问
+        if screen -S "$SESSION_NAME" -X select 0 >/dev/null 2>&1; then
+            echo "[✅ 重启] screen会话可正常访问"
+        else
+            echo "[⚠️ 重启] screen会话访问异常，可能需要手动检查"
+        fi
+    else
+        echo "[❌ 重启] screen会话 '$SESSION_NAME' 不存在，重新创建..."
+        screen -dmS "$SESSION_NAME"
+        sleep 2
+    fi
+    
+    sleep 10
 }
 
 # 检查是否已连接到 Gensyn Testnet
@@ -178,115 +273,43 @@ while true; do
     # 先检查主程序进程是否存在
     if ! check_main_process; then
         echo "[❌ 监控] 主程序未运行，立即执行重启流程..."
-        RESTART_COUNT=$((RESTART_COUNT+1))
-        # 在清理流程中加入本项目python进程清理
-        # 自动获取项目根目录（假设脚本在script/目录下）
-        project_dir="$(cd "$(dirname "$0")/.." && pwd)"
-        py_pids=$(ps aux | grep python | grep "$project_dir" | awk '{print $2}')
-        if [ -n "$py_pids" ]; then
-            echo "[📸️ 监控] 清理本项目 Python 进程: $py_pids"
-            echo "$py_pids" | xargs kill -9
-        fi
-        p2pd_pids=$(pgrep -f "p2pd")
-        [ -n "$p2pd_pids" ] && echo "[📸️ 监控] 清理 p2pd 进程: $p2pd_pids" && pkill -f "p2pd"
-        node_pids=$(pgrep -f "node")
-        [ -n "$node_pids" ] && echo "[📸️ 监控] 清理 node 进程: $node_pids" && pkill -f "node"
-        port_3000_pids=$(lsof -ti:3000)
-        if [ -n "$port_3000_pids" ]; then
-            echo "[📸️ 监控] 清理 3000 端口占用进程: $port_3000_pids"
-            echo "$port_3000_pids" | xargs kill -9
-        fi
-        > "$RL_LOG_FILE"
-        screen -S "$SESSION_NAME" -p 0 -X stuff "\003"
-        sleep 2
-        RESTART_CMD='if [ -z "$VIRTUAL_ENV" ]; then source venv/bin/activate; fi; export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && export PYTORCH_ENABLE_MPS_FALLBACK=1 && MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"; (echo "n"; echo "$MODEL_NAME") | ./run_rl_swarm.sh\n'
-        screen -S "$SESSION_NAME" -p 0 -X stuff "$RESTART_CMD"
-        echo "[📸️ 监控] 已向'主程序'窗口发送${RESTART_COUNT}次重启命令，日志已清空，等待主程序恢复..."
-        sleep 10
+        execute_restart
         continue
     fi
 
     # 主程序存在，判断是否已连接
     if check_connection; then
         echo "[✅ 监控] 已连接到 Gensyn Testnet，进入常规监控模式。"
-        while true; do
-            show_process_info
-            check_anomaly
-            if [ $? -eq 0 ]; then
-                # 检查是否因为进程数不是2个导致异常
-                swarm_count=$(pgrep -f "swarm_launcher" | wc -l | awk '{print $1}')
-                if [ -z "$swarm_count" ]; then swarm_count=0; fi
-                if [ "$swarm_count" -ne 2 ]; then
-                    echo "[⏳ 监控] 检测到swarm_launcher进程数为${swarm_count}，进入120秒宽限期..."
-                    sleep 120
-                    # 宽限期后再检测一次
-                    swarm_count2=$(pgrep -f "swarm_launcher" | wc -l | awk '{print $1}')
-                    if [ -z "$swarm_count2" ]; then swarm_count2=0; fi
-                    if [ "$swarm_count2" -ne 2 ]; then
-                        RESTART_COUNT=$((RESTART_COUNT+1))
-                        echo "[📸️ 监控] 宽限期后进程数仍为${swarm_count2}，执行重启流程..."
-                        # 在清理流程中加入本项目python进程清理
-                        project_dir="$(cd "$(dirname "$0")/.." && pwd)"
-                        py_pids=$(ps aux | grep python | grep "$project_dir" | awk '{print $2}')
-                        if [ -n "$py_pids" ]; then
-                            echo "[📸️ 监控] 清理本项目 Python 进程: $py_pids"
-                            echo "$py_pids" | xargs kill -9
-                        fi
-                        p2pd_pids=$(pgrep -f "p2pd")
-                        [ -n "$p2pd_pids" ] && echo "[📸️ 监控] 清理 p2pd 进程: $p2pd_pids" && pkill -f "p2pd"
-                        node_pids=$(pgrep -f "node")
-                        [ -n "$node_pids" ] && echo "[📸️ 监控] 清理 node 进程: $node_pids" && pkill -f "node"
-                        port_3000_pids=$(lsof -ti:3000)
-                        if [ -n "$port_3000_pids" ]; then
-                            echo "[📸️ 监控] 清理 3000 端口占用进程: $port_3000_pids"
-                            echo "$port_3000_pids" | xargs kill -9
-                        fi
-                        > "$RL_LOG_FILE"
-                        screen -S "$SESSION_NAME" -p 0 -X stuff "\003"
-                        sleep 2
-                        RESTART_CMD='if [ -z "$VIRTUAL_ENV" ]; then source venv/bin/activate; fi; export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && export PYTORCH_ENABLE_MPS_FALLBACK=1 && MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"; (echo "n"; echo "$MODEL_NAME") | ./run_rl_swarm.sh\n'
-                        screen -S "$SESSION_NAME" -p 0 -X stuff "$RESTART_CMD"
-                        echo "[📸️ 监控] 已向'主程序'窗口发送${RESTART_COUNT}次重启命令，日志已清空，等待主程序恢复..."
-                        sleep 10
-                        break
-                    else
-                        echo "[✅ 监控] 宽限期后进程数恢复为2，继续监控。"
-                    fi
+        # 检查异常情况
+        check_anomaly
+        if [ $? -eq 0 ]; then
+            # 检查是否因为进程数不是2个导致异常
+            swarm_count=$(pgrep -f "swarm_launcher" | wc -l | awk '{print $1}')
+            if [ -z "$swarm_count" ]; then swarm_count=0; fi
+            if [ "$swarm_count" -ne 2 ]; then
+                echo "[⏳ 监控] 检测到swarm_launcher进程数为${swarm_count}，进入120秒宽限期..."
+                sleep 120
+                # 宽限期后再检测一次
+                swarm_count2=$(pgrep -f "swarm_launcher" | wc -l | awk '{print $1}')
+                if [ -z "$swarm_count2" ]; then swarm_count2=0; fi
+                if [ "$swarm_count2" -ne 2 ]; then
+                    echo "[📸️ 监控] 宽限期后进程数仍为${swarm_count2}，执行重启流程..."
+                    execute_restart
+                    continue
                 else
-                    # 其他异常（如日志报错、日志未更新）直接重启
-                    RESTART_COUNT=$((RESTART_COUNT+1))
-                    echo "[📸️ 监控] 检测到主程序${ANOMALY_REASON}，执行重启流程..."
-                    # 在清理流程中加入本项目python进程清理
-                    project_dir="$(cd "$(dirname "$0")/.." && pwd)"
-                    py_pids=$(ps aux | grep python | grep "$project_dir" | awk '{print $2}')
-                    if [ -n "$py_pids" ]; then
-                        echo "[📸️ 监控] 清理本项目 Python 进程: $py_pids"
-                        echo "$py_pids" | xargs kill -9
-                    fi
-                    p2pd_pids=$(pgrep -f "p2pd")
-                    [ -n "$p2pd_pids" ] && echo "[📸️ 监控] 清理 p2pd 进程: $p2pd_pids" && pkill -f "p2pd"
-                    node_pids=$(pgrep -f "node")
-                    [ -n "$node_pids" ] && echo "[📸️ 监控] 清理 node 进程: $node_pids" && pkill -f "node"
-                    port_3000_pids=$(lsof -ti:3000)
-                    if [ -n "$port_3000_pids" ]; then
-                        echo "[📸️ 监控] 清理 3000 端口占用进程: $port_3000_pids"
-                        echo "$port_3000_pids" | xargs kill -9
-                    fi
-                    > "$RL_LOG_FILE"
-                    screen -S "$SESSION_NAME" -p 0 -X stuff "\003"
-                    sleep 2
-                    RESTART_CMD='if [ -z "$VIRTUAL_ENV" ]; then source venv/bin/activate; fi; export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && export PYTORCH_ENABLE_MPS_FALLBACK=1 && MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"; (echo "n"; echo "$MODEL_NAME") | ./run_rl_swarm.sh\n'
-                    screen -S "$SESSION_NAME" -p 0 -X stuff "$RESTART_CMD"
-                    echo "[📸️ 监控] 已向'主程序'窗口发送${RESTART_COUNT}次重启命令，日志已清空，等待主程序恢复..."
-                    sleep 10
-                    break
+                    echo "[✅ 监控] 宽限期后进程数恢复为2，继续监控。"
                 fi
             else
-                echo "[📸️ 监控] 主程序运行正常，无需重启。$(date '+%Y-%m-%d %H:%M:%S')"
+                # 其他异常（如日志报错、日志未更新）直接重启
+                echo "[📸️ 监控] 检测到主程序${ANOMALY_REASON}，执行重启流程..."
+                execute_restart
+                continue
             fi
-            echo "[⏰ 监控] 等待 ${MONITOR_INTERVAL} 秒后进行下次检查..."
-            sleep $MONITOR_INTERVAL
-        done
+        else
+            echo "[📸️ 监控] 主程序运行正常，无需重启。$(date '+%Y-%m-%d %H:%M:%S')"
+        fi
+        echo "[⏰ 监控] 等待 ${MONITOR_INTERVAL} 秒后进行下次检查..."
+        sleep $MONITOR_INTERVAL
         continue
     else
         echo "[📋 监控] 未检测到连接，进入5分钟等待连接阶段..."
@@ -306,30 +329,7 @@ while true; do
         done
         if ! $connected; then
             echo "[❌ 监控] 5分钟内未检测到连接Gensyn Testnet，执行重启..."
-            RESTART_COUNT=$((RESTART_COUNT+1))
-            # 在清理流程中加入本项目python进程清理
-            project_dir="$(cd "$(dirname "$0")/.." && pwd)"
-            py_pids=$(ps aux | grep python | grep "$project_dir" | awk '{print $2}')
-            if [ -n "$py_pids" ]; then
-                echo "[📸️ 监控] 清理本项目 Python 进程: $py_pids"
-                echo "$py_pids" | xargs kill -9
-            fi
-            p2pd_pids=$(pgrep -f "p2pd")
-            [ -n "$p2pd_pids" ] && echo "[📸️ 监控] 清理 p2pd 进程: $p2pd_pids" && pkill -f "p2pd"
-            node_pids=$(pgrep -f "node")
-            [ -n "$node_pids" ] && echo "[📸️ 监控] 清理 node 进程: $node_pids" && pkill -f "node"
-            port_3000_pids=$(lsof -ti:3000)
-            if [ -n "$port_3000_pids" ]; then
-                echo "[📸️ 监控] 清理 3000 端口占用进程: $port_3000_pids"
-                echo "$port_3000_pids" | xargs kill -9
-            fi
-            > "$RL_LOG_FILE"
-            screen -S "$SESSION_NAME" -p 0 -X stuff "\003"
-            sleep 2
-            RESTART_CMD='if [ -z "$VIRTUAL_ENV" ]; then source venv/bin/activate; fi; export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && export PYTORCH_ENABLE_MPS_FALLBACK=1 && MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"; (echo "n"; echo "$MODEL_NAME") | ./run_rl_swarm.sh\n'
-            screen -S "$SESSION_NAME" -p 0 -X stuff "$RESTART_CMD"
-            echo "[📸️ 监控] 已向'主程序'窗口发送${RESTART_COUNT}次重启命令，日志已清空，等待主程序恢复..."
-            sleep 10
+            execute_restart
             continue
         fi
         echo "[🚦 监控] 已连接到Gensyn Testnet，进入常规监控模式，每${MONITOR_INTERVAL}秒检查一次进程..."

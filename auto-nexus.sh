@@ -11,8 +11,36 @@ PROCESS_NAME="nexus-network"
 # Screen会话名称
 SCREEN_SESSION="nexus"
 
-# 启动命令
-START_CMD="nexus-cli start --node-id 35915268"
+# Node ID 配置文件
+NEXUS_CONFIG_DIR="$HOME/.nexus"
+NODE_ID_FILE="$NEXUS_CONFIG_DIR/node_id"
+
+# 自动读取保存的 Node ID
+get_node_id() {
+    if [ -f "$NODE_ID_FILE" ]; then
+        NODE_ID=$(cat "$NODE_ID_FILE")
+        log "🔑 从配置文件读取 Node ID: $NODE_ID"
+    else
+        log "⚠️  未找到保存的 Node ID，请先运行安装脚本"
+        log "请手动输入 Node ID："
+        read -p "Node ID: " NODE_ID
+        if [ -z "$NODE_ID" ]; then
+            log "❌ Node ID 不能为空"
+            exit 1
+        fi
+        # 保存输入的 Node ID
+        mkdir -p "$NEXUS_CONFIG_DIR"
+        echo "$NODE_ID" > "$NODE_ID_FILE"
+        log "✅ Node ID 已保存到 $NODE_ID_FILE"
+    fi
+}
+
+# 启动命令（动态生成）
+get_start_command() {
+    get_node_id
+    START_CMD="nexus-cli start --node-id $NODE_ID"
+    log "🚀 启动命令: $START_CMD"
+}
 
 # 监控间隔（秒）- 10分钟
 CHECK_INTERVAL=600
@@ -38,63 +66,84 @@ check_screen() {
     fi
 }
 
+# 检查nexus-cli是否安装
+check_nexus_cli() {
+    if ! command -v nexus-cli > /dev/null 2>&1; then
+        log "❌ 错误: 未找到nexus-cli命令"
+        log "请先安装 Nexus CLI:"
+        log "  curl https://cli.nexus.xyz/ | sh"
+        log "安装后请重新运行此脚本"
+        log "或手动将 nexus-cli 添加到 PATH 中"
+        exit 1
+    else
+        local nexus_version=$(nexus-cli --version 2>/dev/null || echo "unknown")
+        log "✅ nexus-cli 已安装 (版本: $nexus_version)"
+    fi
+}
+
 
 # 检查进程状态
 check_process() {
     log "🔍 开始检测进程状态..."
     
-    # 方法1: 检查主要的nexus-cli start进程（核心进程）
-    local main_nexus_pids=$(ps aux | grep "nexus-cli start" | grep -v grep 2>/dev/null)
-    log "🔍 主要nexus-cli进程检查: $main_nexus_pids"
+    # 方法1: 检查真正的nexus-cli进程（不是Screen管理进程）
+    local nexus_pids=$(pgrep -f "^nexus-cli" 2>/dev/null)
+    log "🔍 nexus-cli进程检查（pgrep）: $nexus_pids"
     
-    if [ -n "$main_nexus_pids" ]; then
-        # 提取PID并验证进程存活
-        local main_pid=$(echo "$main_nexus_pids" | awk '{print $2}' | head -1)
-        if [ -n "$main_pid" ] && kill -0 "$main_pid" 2>/dev/null; then
-            local process_info=$(ps -p "$main_pid" -o pid,ppid,cmd --no-headers 2>/dev/null)
-            log "✅ 发现主要nexus-cli进程: PID=$main_pid, 信息: $process_info"
-            return 0
-        fi
-    fi
-    
-    # 方法2: 检查screen会话中的nexus进程
-    local screen_nexus_pids=$(ps aux | grep "bash -c nexus-cli start" | grep -v grep 2>/dev/null)
-    log "🔍 Screen中的nexus进程检查: $screen_nexus_pids"
-    
-    if [ -n "$screen_nexus_pids" ]; then
-        local screen_pid=$(echo "$screen_nexus_pids" | awk '{print $2}' | head -1)
-        if [ -n "$screen_pid" ] && kill -0 "$screen_pid" 2>/dev/null; then
-            log "✅ 发现Screen中的nexus进程: PID=$screen_pid"
-            return 0
-        fi
-    fi
-    
-    # 方法3: 检查SCREEN管理进程
-    local screen_manager_pids=$(ps aux | grep "SCREEN -dmS nexus" | grep -v grep 2>/dev/null)
-    log "🔍 Screen管理进程检查: $screen_manager_pids"
-    
-    if [ -n "$screen_manager_pids" ]; then
-        local manager_pid=$(echo "$screen_manager_pids" | awk '{print $2}' | head -1)
-        if [ -n "$manager_pid" ] && kill -0 "$manager_pid" 2>/dev/null; then
-            log "✅ 发现Screen管理进程: PID=$manager_pid"
-            return 0
-        fi
-    fi
-    
-    # 方法4: 使用pgrep检查（备用方法）
-    local pgrep_pids=$(pgrep -f "nexus-cli start" 2>/dev/null)
-    log "🔍 pgrep检查结果: $pgrep_pids"
-    
-    if [ -n "$pgrep_pids" ]; then
-        for pid in $pgrep_pids; do
+    if [ -n "$nexus_pids" ]; then
+        for pid in $nexus_pids; do
             if kill -0 "$pid" 2>/dev/null; then
-                log "✅ 通过pgrep发现进程: PID=$pid"
+                local process_info=$(ps -p "$pid" -o pid,ppid,cmd --no-headers 2>/dev/null)
+                log "✅ 发现真正的nexus-cli进程: PID=$pid, 信息: $process_info"
                 return 0
             fi
         done
     fi
     
-    log "❌ 未找到运行中的nexus进程"
+    # 方法2: 检查具体的nexus-cli start命令（排除Screen相关）
+    local pure_nexus_pids=$(ps aux | grep "nexus-cli start --node-id" | grep -v "SCREEN" | grep -v " -c " | grep -v grep 2>/dev/null)
+    log "🔍 纯nexus-cli进程检查: $pure_nexus_pids"
+    
+    if [ -n "$pure_nexus_pids" ]; then
+        local pure_pid=$(echo "$pure_nexus_pids" | awk '{print $2}' | head -1)
+        if [ -n "$pure_pid" ] && kill -0 "$pure_pid" 2>/dev/null; then
+            local process_info=$(ps -p "$pure_pid" -o pid,ppid,cmd --no-headers 2>/dev/null)
+            log "✅ 发现纯nexus-cli进程: PID=$pure_pid, 信息: $process_info"
+            return 0
+        fi
+    fi
+    
+    # 方法3: 检查进程树中的nexus相关进程
+    if check_screen_session; then
+        local session_pid=$(screen -list | grep "$SCREEN_SESSION" | awk '{print $1}' | sed 's/\.nexus//')
+        if [ -n "$session_pid" ]; then
+            # 查找Screen会话的所有子进程
+            local child_pids=$(pgrep -P "$session_pid" 2>/dev/null)
+            log "🔍 Screen会话子进程: $child_pids"
+            
+            for child_pid in $child_pids; do
+                # 检查子进程是否是nexus-cli
+                local child_cmd=$(ps -p "$child_pid" -o cmd --no-headers 2>/dev/null)
+                if [[ "$child_cmd" == *"nexus-cli"* ]] && [[ "$child_cmd" != *" -c "* ]]; then
+                    log "✅ 在Screen会话中发现nexus-cli进程: PID=$child_pid, CMD: $child_cmd"
+                    return 0
+                fi
+                
+                # 递归检查孙进程
+                local grandchild_pids=$(pgrep -P "$child_pid" 2>/dev/null)
+                for grandchild_pid in $grandchild_pids; do
+                    local grandchild_cmd=$(ps -p "$grandchild_pid" -o cmd --no-headers 2>/dev/null)
+                    if [[ "$grandchild_cmd" == *"nexus-cli"* ]] && [[ "$grandchild_cmd" != *" -c "* ]]; then
+                        log "✅ 在Screen会话的子进程中发现nexus-cli: PID=$grandchild_pid, CMD: $grandchild_cmd"
+                        return 0
+                    fi
+                done
+            done
+        fi
+    fi
+    
+    log "❌ 未找到运行中的真正nexus-cli进程"
+    log "💡 提示：可能只有Screen管理进程存在，但nexus-cli本身未正常启动"
     return 1
 }
 
@@ -132,6 +181,7 @@ start_nexus() {
     
     # 检查依赖
     check_screen
+    check_nexus_cli
     
     # 执行启动流程
     if ! create_screen_and_start_nexus; then
@@ -186,6 +236,9 @@ get_screen_session_info() {
 create_screen_and_start_nexus() {
     log "第一步：创建Screen会话 '$SCREEN_SESSION'"
     
+    # 生成启动命令（包含动态读取的 Node ID）
+    get_start_command
+    
     # 如果会话已存在，先删除
     if check_screen_session; then
         log "发现已存在的会话，正在清理..."
@@ -193,9 +246,115 @@ create_screen_and_start_nexus() {
         sleep 2
     fi
     
-    # 创建新的screen会话，在后台运行nexus-cli
+    # 检测用户的默认shell
+    local user_shell="$SHELL"
+    if [ -z "$user_shell" ]; then
+        user_shell="/bin/bash"
+    fi
+    log "使用shell: $user_shell"
+    
+    # 检查 nexus-cli 的完整路径
+    local nexus_path=$(which nexus-cli 2>/dev/null)
+    if [ -z "$nexus_path" ]; then
+        log "❌ 无法找到 nexus-cli 的完整路径"
+        log "💡 尝试常见路径..."
+        
+        # 尝试更多可能的路径，包括 Nexus 官方安装路径
+        local possible_paths=(
+            "$HOME/.nexus/nexus-cli"
+            "$HOME/.nexus/bin/nexus-cli"
+            "/usr/local/bin/nexus-cli"
+            "$HOME/bin/nexus-cli"
+            "$HOME/.local/bin/nexus-cli"
+            # Nexus 官方安装路径
+            "$HOME/.nexus-cli/nexus-cli"
+            "$HOME/.nexus-network/nexus-cli"
+            # 检查是否安装为 nexus-network
+            "$HOME/.nexus/nexus-network"
+            "$HOME/nexus-network"
+            "/usr/local/bin/nexus-network"
+        )
+        
+        for path in "${possible_paths[@]}"; do
+            if [ -x "$path" ]; then
+                nexus_path="$path"
+                log "✅ 找到 nexus-cli: $nexus_path"
+                break
+            fi
+        done
+        
+        # 如果还是找不到，尝试手动搜索
+        if [ -z "$nexus_path" ]; then
+            log "🔍 在用户目录下搜索 nexus 相关文件..."
+            local found_files=$(find "$HOME" -name "*nexus*" -type f -executable 2>/dev/null | head -5)
+            if [ -n "$found_files" ]; then
+                log "📁 找到以下可能的文件:"
+                echo "$found_files" | while read -r file; do
+                    log "   $file"
+                done
+                # 选择第一个可能的文件
+                nexus_path=$(echo "$found_files" | head -1)
+                log "🎯 尝试使用: $nexus_path"
+            fi
+        fi
+        
+        if [ -z "$nexus_path" ]; then
+            log "❌ 仍无法找到 nexus-cli，请检查安装"
+            log "💡 建议步骤："
+            log "   1. 运行: source ~/.zshrc"
+            log "   2. 检查: nexus-cli --version"
+            log "   3. 或重新安装: curl https://cli.nexus.xyz/ | sh"
+            return 1
+        fi
+    else
+        log "✅ nexus-cli 路径: $nexus_path"
+    fi
+    
+    # 构建完整的启动命令
+    local full_start_cmd="$nexus_path start --node-id $NODE_ID"
+    log "🚀 完整启动命令: $full_start_cmd"
+    
+    # 创建启动脚本，包含环境变量和错误处理
+    local startup_script="
+# 加载 zsh 环境配置
+if [ -f ~/.zshrc ]; then
+    source ~/.zshrc
+fi
+
+# 设置环境变量
+export PATH=\$PATH:$HOME/.nexus:/usr/local/bin:$HOME/bin:$HOME/.local/bin
+cd $HOME
+echo '[INFO] 开始执行 nexus-cli 启动命令...'
+echo '[INFO] 当前目录: '\$(pwd)
+echo '[INFO] PATH: '\$PATH
+echo '[INFO] 执行命令: $full_start_cmd'
+
+# 检查 nexus-cli 是否可用
+if command -v nexus-cli >/dev/null 2>&1; then
+    echo '[INFO] nexus-cli 命令可用'
+    echo '[INFO] nexus-cli 版本: '\$(nexus-cli --version 2>/dev/null || echo 'unknown')
+    $full_start_cmd
+else
+    echo '[ERROR] nexus-cli 命令不可用，尝试使用完整路径'
+    if [ -x '$nexus_path' ]; then
+        echo '[INFO] 使用完整路径启动: $nexus_path'
+        $full_start_cmd
+    else
+        echo '[ERROR] nexus-cli 不存在或不可执行: $nexus_path'
+        echo '[ERROR] 请检查 nexus-cli 是否正确安装'
+        echo '[HELP] 建议执行: source ~/.zshrc'
+        echo '[HELP] 或重新安装: curl https://cli.nexus.xyz/ | sh'
+    fi
+fi
+
+echo '[INFO] nexus-cli 执行完成或退出'
+# 保持会话打开
+exec $user_shell
+"
+    
+    # 创建新的screen会话，使用用户的默认shell
     log "创建新会话并执行启动命令..."
-    screen -dmS "$SCREEN_SESSION" bash -c "$START_CMD; exec bash"
+    screen -dmS "$SCREEN_SESSION" "$user_shell" -c "$startup_script"
     
     # 等待一下让screen会话创建完成
     sleep 2
@@ -283,11 +442,11 @@ show_status() {
     if check_process; then
         log "✅ nexus进程运行中"
         
-        # 显示主要nexus-cli进程信息
-        local main_nexus_pids=$(ps aux | grep "nexus-cli start" | grep -v grep 2>/dev/null)
-        if [ -n "$main_nexus_pids" ]; then
-            log "📊 主要进程信息:"
-            echo "$main_nexus_pids" | while read -r line; do
+        # 显示真正的nexus-cli进程信息
+        local pure_nexus_pids=$(ps aux | grep "nexus-cli start --node-id" | grep -v "SCREEN" | grep -v " -c " | grep -v grep 2>/dev/null)
+        if [ -n "$pure_nexus_pids" ]; then
+            log "📊 真正的nexus-cli进程信息:"
+            echo "$pure_nexus_pids" | while read -r line; do
                 local pid=$(echo "$line" | awk '{print $2}')
                 local cmd=$(echo "$line" | awk '{for(i=11;i<=NF;i++) printf $i" "; print ""}')
                 local cpu=$(echo "$line" | awk '{print $3}')
@@ -296,20 +455,22 @@ show_status() {
             done
         fi
         
-        # 显示screen相关进程
-        local screen_nexus_pids=$(ps aux | grep "bash -c nexus-cli start" | grep -v grep 2>/dev/null)
-        if [ -n "$screen_nexus_pids" ]; then
-            log "📺 Screen会话进程:"
-            echo "$screen_nexus_pids" | while read -r line; do
-                local pid=$(echo "$line" | awk '{print $2}')
-                log "   PID $pid: bash -c nexus-cli start"
+        # 使用pgrep查找真正的nexus-cli进程
+        local nexus_pids=$(pgrep -f "^nexus-cli" 2>/dev/null)
+        if [ -n "$nexus_pids" ]; then
+            log "📊 pgrep找到的nexus-cli进程:"
+            for pid in $nexus_pids; do
+                local process_info=$(ps -p "$pid" -o pid,ppid,%cpu,%mem,cmd --no-headers 2>/dev/null)
+                if [ -n "$process_info" ]; then
+                    log "   $process_info"
+                fi
             done
         fi
         
-        # 显示SCREEN管理进程
+        # 显示Screen管理进程（仅作参考）
         local screen_manager_pids=$(ps aux | grep "SCREEN -dmS nexus" | grep -v grep 2>/dev/null)
         if [ -n "$screen_manager_pids" ]; then
-            log "🔧 Screen管理进程:"
+            log "🔧 Screen管理进程（仅作参考）:"
             echo "$screen_manager_pids" | while read -r line; do
                 local pid=$(echo "$line" | awk '{print $2}')
                 log "   PID $pid: SCREEN -dmS nexus"
@@ -317,6 +478,7 @@ show_status() {
         fi
     else
         log "❌ nexus进程未运行"
+        log "💡 提示：检查Screen会话是否正常启动了nexus-cli"
     fi
     
     # 检查screen会话
@@ -335,7 +497,9 @@ run_monitor() {
     log "🚀 开始监控Nexus节点..."
     log "进程名称: $PROCESS_NAME"
     log "Screen会话: $SCREEN_SESSION"
-    log "启动命令: $START_CMD"
+    
+    # 动态生成启动命令并显示
+    get_start_command
     log "监控间隔: ${CHECK_INTERVAL}秒"
     
     # 检查依赖

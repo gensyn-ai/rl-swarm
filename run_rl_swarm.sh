@@ -197,9 +197,17 @@ pip install --upgrade pip
 pip install gensyn-genrl==0.1.4
 pip install reasoning-gym>=0.1.20 # for reasoning gym env
 
-# 修复依赖冲突：强制重新安装特定版本的 transformers 和 trl
-echo_green ">> Fixing dependency conflicts..."
-pip install --force-reinstall transformers==4.51.3 trl==0.19.1
+# 检查依赖版本，只在需要时才重新安装
+echo_green ">> Checking dependency versions..."
+CURRENT_TRANSFORMERS=$(pip show transformers 2>/dev/null | grep Version | cut -d' ' -f2 || echo "not_installed")
+CURRENT_TRL=$(pip show trl 2>/dev/null | grep Version | cut -d' ' -f2 || echo "not_installed")
+
+if [ "$CURRENT_TRANSFORMERS" != "4.51.3" ] || [ "$CURRENT_TRL" != "0.19.1" ]; then
+    echo_green ">> Fixing dependency conflicts..."
+    pip install --force-reinstall transformers==4.51.3 trl==0.19.1
+else
+    echo_green ">> Dependencies are already at correct versions, skipping reinstall..."
+fi
 
 pip install hivemind@git+https://github.com/gensyn-ai/hivemind@639c964a8019de63135a2594663b5bec8e5356dd # We need the latest, 1.1.11 is broken
 
