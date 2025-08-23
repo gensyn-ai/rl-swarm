@@ -5,6 +5,8 @@ SESSION_NAME="gensyn"
 MAIN_CMD="./run_rl_swarm.sh"   # 必须与auto-screen.sh一致
 RESTART_COUNT=0
 MONITOR_INTERVAL=300  # 监控间隔300秒
+GENSYN_CHECK_INTERVAL=14400  # gensyncheck.py检查间隔4小时(14400秒)
+LAST_GENSYN_CHECK=0  # 上次执行gensyncheck.py的时间戳
 
 # 自动检查和创建screen会话
 setup_screen_session() {
@@ -239,8 +241,98 @@ check_main_process() {
     return 1  # 不存在
 }
 
+# 获取peerID
+get_peer_id() {
+    # 从logs/swarm_launcher.log文件中提取peerID
+    local log_file="logs/swarm_launcher.log"
+    
+    if [ -f "$log_file" ]; then
+        # 从日志中提取peerID，匹配"Peer ID [Qm...]"或"🐈 [Qm...]"格式
+        local peer_id=$(grep -E "Peer ID \[Qm[a-zA-Z0-9]{44}\]|🐈 \[Qm[a-zA-Z0-9]{44}\]" "$log_file" 2>/dev/null | grep -oE "Qm[a-zA-Z0-9]{44}" | tail -1)
+        
+        if [ -z "$peer_id" ]; then
+            # 如果上述格式找不到，尝试更通用的Qm开头的44字符ID
+            peer_id=$(grep -oE "Qm[a-zA-Z0-9]{44}" "$log_file" 2>/dev/null | tail -1)
+        fi
+        
+        if [ -n "$peer_id" ]; then
+            echo "$peer_id"
+        else
+            echo "[⚠️ 获取] 无法从 $log_file 中找到peerID" >&2
+            return 1
+        fi
+    else
+        echo "[❌ 获取] 日志文件 $log_file 不存在" >&2
+        return 1
+    fi
+}
+
+# 执行gensyncheck.py检查
+run_gensyn_check() {
+    echo "[🔍 检查] 开始执行gensyncheck.py检查..."
+    
+    local peer_id=$(get_peer_id)
+    local get_peer_result=$?
+    if [ $get_peer_result -ne 0 ] || [ -z "$peer_id" ]; then
+        echo "[⚠️ 检查] 无法获取peerID，跳过gensyncheck.py检查"
+        return 1
+    fi
+    
+    echo "[🔍 检查] 使用peerID: $peer_id"
+    
+    # 执行gensyncheck.py并捕获输出
+    local check_output
+    if [ -f "venv/bin/activate" ]; then
+        # 激活虚拟环境后执行
+        check_output=$(source venv/bin/activate && python gensyncheck.py "$peer_id" 2>&1)
+    else
+        # 直接执行
+        check_output=$(python gensyncheck.py "$peer_id" 2>&1)
+    fi
+    
+    local exit_code=$?
+    
+    echo "[📊 检查] gensyncheck.py输出:"
+    echo "$check_output"
+    
+    # 检查是否需要重启
+    if echo "$check_output" | grep -q "__NEED_RESTART__"; then
+        echo "[🚨 检查] gensyncheck.py检测到需要重启！"
+        return 0  # 需要重启
+    else
+        echo "[✅ 检查] gensyncheck.py检查通过，节点活跃正常"
+        return 1  # 不需要重启
+    fi
+}
+
+# 检查是否需要执行gensyncheck.py
+should_run_gensyn_check() {
+    local current_time=$(date +%s)
+    local time_since_last_check=$((current_time - LAST_GENSYN_CHECK))
+    
+    if [ $time_since_last_check -ge $GENSYN_CHECK_INTERVAL ]; then
+        return 0  # 需要检查
+    else
+        return 1  # 不需要检查
+    fi
+}
+
 # 检查主程序是否异常
 check_anomaly() {
+    # 首先检查是否需要进行gensyncheck.py检查
+    if should_run_gensyn_check; then
+        echo "[⏰ 检查] 到达gensyncheck.py检查时间（每4小时一次）"
+        if run_gensyn_check; then
+            ANOMALY_REASON="gensyncheck.py检测到节点超过4小时无链上活动"
+            LAST_GENSYN_CHECK=$(date +%s)  # 更新检查时间
+            return 0  # 需要重启
+        else
+            LAST_GENSYN_CHECK=$(date +%s)  # 更新检查时间
+            echo "[✅ 检查] gensyncheck.py检查通过，继续其他检查"
+        fi
+    fi
+    
+    # 原有的异常检查逻辑
     swarm_count=$(pgrep -f "swarm_launcher" | wc -l | awk '{print $1}')
     if [ -z "$swarm_count" ]; then swarm_count=0; fi
     if [ "$swarm_count" -ne 2 ]; then
@@ -264,6 +356,13 @@ check_anomaly() {
 }
 
 echo "[🚀 监控] 启动Gensyn训练监控脚本..."
+echo "[⚙️ 监控] 配置信息:"
+echo "  - 常规监控间隔: ${MONITOR_INTERVAL}秒"
+echo "  - gensyncheck.py检查间隔: ${GENSYN_CHECK_INTERVAL}秒 (4小时)"
+echo "  - gensyncheck.py功能: 检查节点链上活跃度，超过4小时无交易将触发重启"
+
+# 初始化gensyncheck检查时间戳
+LAST_GENSYN_CHECK=$(date +%s)
 
 # 设置screen会话
 setup_screen_session
