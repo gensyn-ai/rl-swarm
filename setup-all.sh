@@ -11,11 +11,7 @@ RED_TEXT="\033[1;31m"
 PURPLE_TEXT="\033[1;35m"
 RESET_TEXT="\033[0m"
 
-# 配置变量
-INSTALL_DIR="$HOME/rl-swarm-setup"
-NEXUS_CONFIG_DIR="$HOME/.nexus"
-NODE_ID_FILE="$NEXUS_CONFIG_DIR/node_id"
-
+# 颜色输出函数定义
 echo_green() {
     echo -e "$GREEN_TEXT$1$RESET_TEXT"
 }
@@ -35,6 +31,19 @@ echo_red() {
 echo_purple() {
     echo -e "$PURPLE_TEXT$1$RESET_TEXT"
 }
+
+# 配置变量
+# 检测现有的 rl-swarm 目录
+if [ -d "$HOME/rl-swarm" ]; then
+    INSTALL_DIR="$HOME"
+    SWARM_DIR="$HOME/rl-swarm"
+    echo_green "检测到现有的 rl-swarm 仓库: $SWARM_DIR"
+else
+    INSTALL_DIR="$HOME/rl-swarm-setup"
+    SWARM_DIR="$INSTALL_DIR/rl-swarm"
+fi
+NEXUS_CONFIG_DIR="$HOME/.nexus"
+NODE_ID_FILE="$NEXUS_CONFIG_DIR/node_id"
 
 # 显示标题
 clear
@@ -198,17 +207,23 @@ install_system_dependencies() {
 
 # 安装 Gensyn RL Swarm
 install_gensyn() {
-    echo_blue "\n🤖 安装 Gensyn RL Swarm..."
+    echo_blue "\n🤖 配置 Gensyn RL Swarm..."
     
-    # 克隆仓库
-    if [ ! -d "rl-swarm" ]; then
-        echo_yellow "克隆 RL Swarm 仓库..."
+    # 检查仓库是否存在
+    if [ ! -d "$SWARM_DIR" ]; then
+        echo_yellow "克隆 RL Swarm 仓库到 $SWARM_DIR..."
+        mkdir -p "$(dirname "$SWARM_DIR")"
+        cd "$(dirname "$SWARM_DIR")"
         git clone https://github.com/gensyn-ai/rl-swarm
     else
-        echo -e "[RL Swarm 仓库] 已存在 $CHECK_MARK"
+        echo -e "[RL Swarm 仓库] 使用现有仓库 $SWARM_DIR $CHECK_MARK"
+        # 更新现有仓库
+        cd "$SWARM_DIR"
+        echo_yellow "更新现有仓库..."
+        git pull origin main 2>/dev/null || echo_yellow "仓库更新跳过（可能有未提交的更改）"
     fi
     
-    cd rl-swarm
+    cd "$SWARM_DIR"
     
     # 创建虚拟环境
     if [ ! -d "venv" ]; then
@@ -316,9 +331,9 @@ create_launcher_scripts() {
     cd "$INSTALL_DIR"
     
     # 创建 Gensyn 启动脚本
-    cat > start-gensyn.sh << 'EOF'
+    cat > start-gensyn.sh << EOF
 #!/bin/bash
-cd "$HOME/rl-swarm-setup/rl-swarm"
+cd "$SWARM_DIR"
 source venv/bin/activate
 export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0
 export PYTORCH_ENABLE_MPS_FALLBACK=1
@@ -342,16 +357,16 @@ EOF
     fi
     
     # 创建监控脚本启动器
-    cat > start-monitoring.sh << 'EOF'
+    cat > start-monitoring.sh << EOF
 #!/bin/bash
-cd "$HOME/rl-swarm-setup/rl-swarm"
+cd "$SWARM_DIR"
 echo "📊 选择要启动的监控脚本："
 echo "1. RL Swarm 监控 (auto-run.sh)"
 echo "2. Nexus 监控 (auto-nexus.sh)"
 echo "3. 同时启动两个监控"
 read -p "请选择 (1-3): " choice
 
-case $choice in
+case \$choice in
     1)
         echo "启动 RL Swarm 监控..."
         ./auto-run.sh
@@ -388,7 +403,7 @@ show_completion_info() {
     echo_blue "启动 Gensyn RL Swarm："
     echo "  ./start-gensyn.sh"
     echo "  # 或者手动："
-    echo "  cd rl-swarm && source venv/bin/activate && ./run_rl_swarm.sh"
+    echo "  cd $SWARM_DIR && source venv/bin/activate && ./run_rl_swarm.sh"
     echo ""
     
     if [ -f "$NODE_ID_FILE" ]; then
@@ -417,9 +432,9 @@ show_completion_info() {
     echo ""
     
     echo_purple "=== 日志文件 ==="
-    echo "  RL Swarm 日志:     $INSTALL_DIR/rl-swarm/logs/swarm_launcher.log"
-    echo "  监控日志:         $INSTALL_DIR/rl-swarm/auto_monitor.log"
-    echo "  Nexus 监控日志:    $INSTALL_DIR/rl-swarm/nexus_monitor.log"
+    echo "  RL Swarm 日志:     $SWARM_DIR/logs/swarm_launcher.log"
+    echo "  监控日志:         $SWARM_DIR/auto_monitor.log"
+    echo "  Nexus 监控日志:    $SWARM_DIR/nexus_monitor.log"
     echo ""
     
     echo_yellow "💡 提示：首次运行 RL Swarm 时需要在浏览器中完成身份认证"

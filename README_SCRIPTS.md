@@ -2,12 +2,19 @@
 
 ## 概述
 
-本项目包含五个核心脚本，用于 RL Swarm 强化学习项目和 Nexus 网络项目的安装、配置和管理。这些脚本提供了完整的自动化解决方案，从环境搭建到持续监控。
+本项目包含多个核心脚本，用于 RL Swarm 强化学习项目和 Nexus 网络项目的安装、配置、管理和启动。这些脚本提供了完整的自动化解决方案，从环境搭建到持续监控，再到一键启动工作环境。
 
 ---
 
 ## 📁 脚本列表
 
+### 🚀 启动管理脚本
+6. **[launch-all.sh](#6-launch-allsh)** - 🌟 RL Swarm 完整工作环境一键启动脚本（推荐）
+7. **[quick-launch.sh](#7-quick-launchsh)** - 快速启动脚本，无确认直接启动4窗口
+8. **[workspace-layout.sh](#8-workspace-layoutsh)** - 智能多终端布局管理脚本
+9. **[LAUNCH_GUIDE.md](#9-launch_guidemd)** - 启动脚本详细使用指南
+
+### 🔧 核心管理脚本
 1. **[setup-all.sh](#1-setup-allsh)** - 🌟 Gensyn + Nexus 统一安装脚本（推荐）
 2. **[mac-install-gensyn.sh](#2-mac-install-gensynsh)** - macOS 环境 RL Swarm 一键安装脚本
 3. **[auto-run.sh](#3-auto-runsh)** - RL Swarm 自动监控和重启脚本
@@ -334,21 +341,26 @@ MAX_RESTARTS=999                    # 最大重启次数
 
 ## 🚀 快速开始
 
-### RL Swarm + Nexus 统一部署（推荐）
+### 方案一：RL Swarm + Nexus 统一部署（推荐）
 ```bash
 # 使用新的统一安装脚本（推荐）
 curl -O https://your-repo/setup-all.sh
 chmod +x setup-all.sh
 ./setup-all.sh
 
-# 安装后快捷启动
+# 安装后使用新的启动脚本
 cd ~/rl-swarm-setup
 ./start-gensyn.sh     # 启动 Gensyn
 ./start-nexus.sh      # 启动 Nexus
 ./start-monitoring.sh # 启动监控
+
+# 或者使用一键启动工作环境
+cd /Users/mrw/rl-swarm
+./launch-all.sh       # 完整启动（带说明）
+./quick-launch.sh     # 快速启动（日常使用）
 ```
 
-### RL Swarm 单独快速部署
+### 方案二：RL Swarm 单独快速部署
 ```bash
 # 1. 下载并运行 macOS 安装脚本
 curl -O https://your-repo/mac-install-gensyn.sh
@@ -359,7 +371,7 @@ chmod +x mac-install-gensyn.sh
 ./auto-run.sh
 ```
 
-### Nexus Network 单独快速部署
+### 方案三：Nexus Network 单独快速部署
 ```bash
 # 1. 安装 Nexus
 ./install-nexus.sh install
@@ -455,4 +467,136 @@ nexus_monitor.log                # Nexus 监控日志
 
 ---
 
-*最后更新：2024年8月*
+---
+
+## 6. launch-all.sh
+
+### 功能描述
+🌟 **最新推荐启动脚本** - RL Swarm 完整工作环境一键启动脚本，自动打开4个优化布局的终端窗口。
+
+### 主要功能
+- ✅ **一键启动**：自动启动完整的4窗口工作环境
+- ✅ **智能布局**：2x2网格布局，窗口位置和大小优化
+- ✅ **Screen管理**：自动创建或连接现有screen会话
+- ✅ **监控集成**：自动启动对应的监控脚本
+- ✅ **详细说明**：提供完整的使用指南和操作提示
+
+### 窗口布局
+```
+┌─────────────┬─────────────┐
+│ 🤖 Gensyn   │ 📊 Gensyn   │
+│    训练     │    监控     │
+├─────────────┼─────────────┤
+│ 🌐 Nexus    │ 📈 Nexus    │
+│   运行      │   监控      │
+└─────────────┴─────────────┘
+```
+
+### 使用方法
+```bash
+# 给脚本添加执行权限
+chmod +x launch-all.sh
+
+# 启动完整工作环境
+./launch-all.sh
+```
+
+---
+
+## 7. quick-launch.sh
+
+### 功能描述
+快速启动脚本，无确认提示直接启动4个终端窗口，适合日常使用。
+
+### 主要功能
+- ⚡ **极速启动**：无确认直接启动
+- 🎯 **4窗口布局**：训练+监控的完整环境
+- 🔄 **会话复用**：智能连接现有screen会话
+- 📊 **监控自启**：自动运行监控脚本
+
+### 使用方法
+```bash
+# 日常快速启动（推荐）
+./quick-launch.sh
+```
+
+---
+
+## 8. workspace-layout.sh
+
+### 功能描述
+智能多终端布局管理脚本，提供灵活的窗口布局选择和管理功能。
+
+### 主要功能
+- 🎨 **多种布局**：完整布局(4窗口)、精简布局(2窗口)、监控布局(2窗口)
+- 🖥️ **自适应**：自动识别屏幕分辨率并优化布局
+- 📺 **Screen管理**：完整的screen会话管理功能
+- 🔧 **自定义**：支持自定义窗口配置
+
+### 布局选项
+1. 🎯 完整布局 (4窗口) - 推荐
+2. 🚀 精简布局 (2窗口) - 仅主要功能
+3. 📊 监控布局 (2窗口) - 仅监控
+
+### 使用方法
+```bash
+# 交互式选择布局
+./workspace-layout.sh
+```
+
+---
+
+## 9. LAUNCH_GUIDE.md
+
+### 功能描述
+启动脚本的详细使用指南文档，包含完整的操作说明、故障排除和最佳实践。
+
+### 主要内容
+- 📋 **脚本概览**：所有启动脚本的功能对比
+- 🎯 **使用指南**：详细的操作步骤和命令
+- 🛠️ **故障排除**：常见问题和解决方案
+- 💡 **最佳实践**：会话管理和操作建议
+
+---
+
+## 🚀 启动脚本快速开始
+
+### 推荐使用流程
+
+#### 1. 首次使用
+```bash
+# 安装完整环境
+./setup-all.sh
+
+# 启动工作环境（带说明）
+./launch-all.sh
+```
+
+#### 2. 日常使用
+```bash
+# 快速启动（推荐）
+./quick-launch.sh
+```
+
+#### 3. 自定义布局
+```bash
+# 选择不同布局
+./workspace-layout.sh
+```
+
+### 会话管理
+```bash
+# 查看所有会话
+screen -list
+
+# 连接到训练会话
+screen -r gensyn
+screen -r nexus
+
+# 从会话中分离
+Ctrl+A, D
+```
+
+---
+
+*最后更新：2024年8月 - 新增启动脚本支持*
