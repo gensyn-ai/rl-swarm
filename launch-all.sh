@@ -11,8 +11,8 @@ RED="\033[1;31m"
 PURPLE="\033[1;35m"
 RESET="\033[0m"
 
-# 项目路径
-PROJECT_DIR="/Users/mrw/rl-swarm"
+# 项目路径 - 使用 HOME 环境变量自动适配用户
+PROJECT_DIR="$HOME/rl-swarm"
 
 echo -e "${BLUE}🚀 RL Swarm 一键启动脚本${RESET}"
 echo -e "${BLUE}=========================${RESET}"

@@ -1,7 +1,8 @@
 #!/bin/bash
 # RL Swarm 快速启动脚本 - 直接启动4个窗口
 
-PROJECT_DIR="/Users/mrw/rl-swarm"
+# 使用 HOME 环境变量自动适配用户
+PROJECT_DIR="$HOME/rl-swarm"
 cd "$PROJECT_DIR" || exit 1
 
 echo "🚀 快速启动 RL Swarm 工作环境..."
