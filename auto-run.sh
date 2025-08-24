@@ -290,6 +290,8 @@ should_run_wallet_check() {
     else
         return 1  # 不需要检查
     fi
+}
+
 # 检查主程序是否异常
 check_anomaly() {
     # 检查是否需要进行钱包活跃度检查
