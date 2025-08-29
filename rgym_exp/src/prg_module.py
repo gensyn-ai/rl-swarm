@@ -53,7 +53,7 @@ class PRGModule:
         if os.path.exists(self.prg_state_file):
             with open(self.prg_state_file, 'r') as f:
                 state = json.load(f)
-                self._prg_history_dict = state['prg_history_dict']
+                self._prg_history_dict = {int(k): v for k, v in state['prg_history_dict'].items()}
                 self.prg_last_game_claimed = state['prg_last_game_claimed']
                 self.prg_last_game_played = state['prg_last_game_played']
             get_logger().info(
