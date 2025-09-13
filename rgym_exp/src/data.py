@@ -265,12 +265,12 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
 
                 if received_states is None or received_actions is None or received_metadata is None:
                     self.logger.warning(f"Incomplete payload: {payload}")
-                    continue  # або raise / skip / return
+                    continue
                 world_state = received_states.environment_states
                 question = world_state.get("question")
                 if not question:
                     self.logger.warning(f"No 'question' found in world_state: {world_state}")
-                    continue  # або raise
+                    continue
                 payload_batch_id = generate_md5_hash_id(question)
                 assert payload_batch_id == batch_id
                 if (
