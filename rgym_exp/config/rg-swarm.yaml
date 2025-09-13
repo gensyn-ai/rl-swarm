@@ -17,7 +17,7 @@ training:
   num_generations: 2
   num_transplant_trees: 2
   seed: 42
-  dtype: 'float32'
+  dtype: 'bfloat16'
 
 blockchain:
   alchemy_url: "https://gensyn-testnet.g.alchemy.com/public"
@@ -76,6 +76,12 @@ game_manager:
       epsilon: 0.2
       epsilon_high: 0.28
       num_generations: ${training.num_generations}
+    # vLLM configuration - ENABLED by default
+    use_vllm: ${oc.env:USE_VLLM,true}  # Changed from false to true
+    gpu_memory_utilization: ${oc.env:GPU_MEMORY_UTIL,0.75}  # Reduced from 0.85 to 0.75 for shared machine
+    temperature: ${oc.env:VLLM_TEMPERATURE,0.7}
+    top_p: ${oc.env:VLLM_TOP_P,1.0}
+    max_tokens: ${oc.env:VLLM_MAX_TOKENS,512}
     log_with: wandb
     log_dir: ${log_dir}
     judge_base_url: ${eval.judge_base_url}
