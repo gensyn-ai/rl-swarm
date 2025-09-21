@@ -34,7 +34,7 @@ services:
       args:
         - BASE_IMAGE=ubuntu:24.04
     ports:
-      - 3000:3000
+      - 3010:3010
     volumes:
       - ./user/modal-login:/home/gensyn/rl_swarm/modal-login/temp-data
       - ./user/keys:/home/gensyn/rl_swarm/keys
@@ -57,7 +57,7 @@ services:
       args:
         - BASE_IMAGE=nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
     ports:
-      - 3000:3000
+      - 3010:3010
     volumes:
       - ./user/modal-login:/home/gensyn/rl_swarm/modal-login/temp-data
       - ./user/keys:/home/gensyn/rl_swarm/keys

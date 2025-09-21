@@ -41,13 +41,13 @@ root_logger.setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
-port = os.getenv("SWARM_UI_PORT", "8000")
+port = os.getenv("SWARM_UI_PORT", "8010")
 
 try:
     port = int(port)
 except ValueError:
-    logger.warning(f"invalid port {port}. Defaulting to 8000")
-    port = 8000
+    logger.warning(f"invalid port {port}. Defaulting to 8010")
+    port = 8010
 
 config = uvicorn.Config(
     app,

@@ -1,7 +1,7 @@
 FROM python:3.11 AS server
 
 # Port the web server runs on
-ENV SWARM_UI_PORT=8000
+ENV SWARM_UI_PORT=8010
 
 # List of peers to pair with (e.g., "/ip4/127.0.0.1/tcp/8001,/ip4/127.0.0.1/tcp/8002")
 ENV INITIAL_PEERS=""

@@ -92,7 +92,7 @@ To learn more about experimental mode, check out our [getting started guide](htt
 
 ### Login
 
-1. A browser window will pop open (you'll need to manually navigate to http://localhost:3000/ if you're on a VM).
+1. A browser window will pop open (you'll need to manually navigate to http://localhost:3010/ if you're on a VM).
 2. Click 'login'.
 3. Log in with your preferred method.
 
@@ -178,7 +178,7 @@ Therefore, you should do these actions in the following scenarios
 
 - **Issues on VMs/VPSs?**
 
-    - **How do I access the login screen if I'm running in a VM?**: port forwarding. Add this SSH flag: `-L 3000:localhost:3000` when connecting to your VM. E.g. `gcloud compute ssh --zone "us-central1-a" [your-vm] --project [your-project] -- -L 3000:localhost:3000`. Note, some VPSs may not work with `rl-swarm`. Check the Gensyn [discord](https://discord.gg/AdnyWNzXh5) for up-to-date information on this.
+    - **How do I access the login screen if I'm running in a VM?**: port forwarding. Add this SSH flag: `-L 3010:localhost:3010` when connecting to your VM. E.g. `gcloud compute ssh --zone "us-central1-a" [your-vm] --project [your-project] -- -L 3010:localhost:3010`. Note, some VPSs may not work with `rl-swarm`. Check the Gensyn [discord](https://discord.gg/AdnyWNzXh5) for up-to-date information on this.
     
     - **Disconnection/general issues**: If you are tunneling to a VM and suffer a broken pipe, you will likely encounter OOM errors or unexpected behaviour the first time you relaunch the script. If you `control + c` and kill the script it should spin down all background processes. Restart the script and everything should function normally.
 

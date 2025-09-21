@@ -19,7 +19,7 @@ the server will already be connected to the seed node, and will emit metrics to 
 Access your local server from `0.0.0.0:8080`
 
 **Environment variables**
-- `SWARM_UI_PORT` defaults to 8000. The port of the HTTP server.
+- `SWARM_UI_PORT` defaults to 8010. The port of the HTTP server.
 - `INITIAL_PEERS` defaults to "". A comma-separated list of multiaddrs.
 
 To only run the webserver, you can use the file Dockerfile.webserver from the root directory:
