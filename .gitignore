@@ -18,6 +18,7 @@ web/ui/dist/
 /bazel-*
 /external
 /tmp
+.tmp
 
 dist/
 MODULE.bazel.lock

@@ -53,7 +53,7 @@ ENV PATH="/home/gensyn/.pyenv/shims:/home/gensyn/.pyenv/bin:$NVM_DIR/versions/no
 COPY --chown=gensyn ./modal-login /home/gensyn/rl_swarm/modal-login
 RUN cd /home/gensyn/rl_swarm/modal-login && yarn install --immutable && yarn build
 
-RUN pip install gensyn-genrl==0.1.6
+RUN pip install gensyn-genrl==0.1.8
 RUN pip install reasoning-gym>=0.1.20 # for reasoning gym env
 RUN pip install hivemind@git+https://github.com/gensyn-ai/hivemind@639c964a8019de63135a2594663b5bec8e5356dd # We need the latest, 1.1.11 is broken
 

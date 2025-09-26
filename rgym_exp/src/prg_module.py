@@ -53,7 +53,7 @@ class PRGModule:
         if os.path.exists(self.prg_state_file):
             with open(self.prg_state_file, 'r') as f:
                 state = json.load(f)
-                self._prg_history_dict = state['prg_history_dict']
+                self._prg_history_dict = {int(k): v for k, v in state['prg_history_dict'].items()}
                 self.prg_last_game_claimed = state['prg_last_game_claimed']
                 self.prg_last_game_played = state['prg_last_game_played']
             get_logger().info(
@@ -85,7 +85,7 @@ class PRGModule:
 
                     # only update if we successfully played this round
                     self._prg_history_dict[current_game] = results_dict["clue_idx"]
-                    log_str = f'Game {current_game} Round {results_dict["clue_idx"]}: Agent {peer_id} placed bet of {bet_amt / 1e18:.2f} tokens on choice - {results_dict["choice"]}\n'
+                    log_str = f'Game {current_game} Round {results_dict["clue_idx"]}: Peer {peer_id} placed bet of {bet_amt / 1e18:.2f} tokens on choice - {results_dict["choice"]}\n'
                     get_logger().info(log_str)
                     with open(self.prg_record, 'a') as f:
                         f.write(log_str)
