@@ -294,16 +294,19 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
         transplants = {}
         for agent in swarm_states:
             if agent not in current_state.trees:
-                for batch_id in swarm_states[agent]:
-                    for payload in swarm_states[agent][batch_id]:
-                        if (
-                            self.num_generations
-                            and hasattr(payload, "actions")
-                            and payload.actions is not None
-                            and isinstance(payload.actions, list)
-                            and len(payload.actions) == self.num_generations
-                        ):
-                            transplants[(agent, batch_id)] = payload
+                if not isinstance(swarm_states[agent], Dict):
+                    continue
+                else:
+                    for batch_id in swarm_states[agent]:
+                        for payload in swarm_states[agent][batch_id]:
+                            if (
+                                self.num_generations
+                                and hasattr(payload, "actions")
+                                and payload.actions is not None
+                                and isinstance(payload.actions, list)
+                                and len(payload.actions) == self.num_generations
+                            ):
+                                transplants[(agent, batch_id)] = payload
         if len(transplants) >= num_transplants:
             keepers = random.sample(list(transplants), num_transplants)
         else:
