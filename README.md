@@ -5,11 +5,12 @@ RL Swarm is a peer-to-peer system for reinforcement learning. It allows you to t
 Currently, we are running the [reasoning-gym](https://github.com/open-thought/reasoning-gym/tree/main) swarm on the Testnet. This swarm is designed to train models to solve a diverse set of reasoning tasks using the reasoning-gym dataset. The current list of default models includes:
 
 Models:
-   - Gensyn/Qwen2.5-0.5B-Instruct
-   - Qwen/Qwen3-0.6B
-   - nvidia/AceInstruct-1.5B
-   - dnotitia/Smoothie-Qwen3-1.7B
-   - Gensyn/Qwen2.5-1.5B-Instruct
+
+| Your RAM | Recommended Model | Download Size |
+|----------|------------------|---------------|
+| 4-8GB    | Qwen2.5-0.5B     | ~1GB         |
+| 8-16GB   | Qwen2.5-1.5B     | ~4GB         |
+| 16GB+    | Qwen2.5-7B+      | ~15GB+       |
 
 This iteration of rl-swarm is powered by the [GenRL](https://github.com/gensyn-ai/genrl) library.  It is a fully composable framework for decentralized reinforcement learning which enables users to create and customize their own swarms for reinforcement learning with multi-agent multi-stage environments.
 
