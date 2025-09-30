@@ -6,7 +6,7 @@ import uuid
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any, Optional, Dict, Tuple
 from .game_tree import Payload, from_bytes
 
 from hivemind.dht import DHT
@@ -63,6 +63,12 @@ class BaseDHTPublisher(ABC):
         self.last_polled = None
         self.poll_id = None
 
+        # Performance optimization: DHT result caching
+        self._cache_ttl = 60  # Cache TTL in seconds
+        self._rewards_cache: Dict[str, Tuple[float, Any]] = {}
+        self._outputs_cache: Dict[str, Tuple[float, Any]] = {}
+        self._peer_name_cache: Dict[str, str] = {}
+
         # Store the class name for use in logging
         self.class_name = self.__class__.__name__
 
@@ -96,22 +102,76 @@ class BaseDHTPublisher(ABC):
         """Get the time of the last poll."""
         return self.last_polled
 
+    def _is_cache_valid(self, cache_time: float) -> bool:
+        """Check if cache entry is still valid based on TTL."""
+        return (time.time() - cache_time) < self._cache_ttl
+
     def _get_rewards_data(
         self, round_num: int, stage_num: int
     ) -> dict[str, Any] | None:
         rewards_key_str = rewards_key(round_num, stage_num)
+
+        # Check cache first
+        if rewards_key_str in self._rewards_cache:
+            cache_time, cached_data = self._rewards_cache[rewards_key_str]
+            if self._is_cache_valid(cache_time):
+                return cached_data
+
+        # Cache miss or expired - fetch from DHT
         rewards_data = get_dht_value(self.dht, key=rewards_key_str, beam_size=500)
+
+        # Cache the result
+        self._rewards_cache[rewards_key_str] = (time.time(), rewards_data)
+
+        # Clean old cache entries periodically
+        if len(self._rewards_cache) > 100:  # Arbitrary limit
+            self._cleanup_cache(self._rewards_cache)
+
         return rewards_data
 
     def _get_outputs_data(
         self, node_key: str, round_num: int, stage_num: int
     ) -> dict[str, Any] | None:
         outputs_key_str = outputs_key(node_key, round_num, stage_num)
+
+        # Check cache first
+        if outputs_key_str in self._outputs_cache:
+            cache_time, cached_data = self._outputs_cache[outputs_key_str]
+            if self._is_cache_valid(cache_time):
+                return cached_data
+
+        # Cache miss or expired - fetch from DHT
         outputs_data = get_dht_value(self.dht, key=outputs_key_str)
+
+        # Cache the result
+        self._outputs_cache[outputs_key_str] = (time.time(), outputs_data)
+
+        # Clean old cache entries periodically
+        if len(self._outputs_cache) > 100:  # Arbitrary limit
+            self._cleanup_cache(self._outputs_cache)
+
         return outputs_data
 
     def _get_peer_name_from_id(self, peer_id: str) -> str:
-        return get_name_from_peer_id(peer_id) or peer_id
+        # Check cache first for peer names (these rarely change)
+        if peer_id in self._peer_name_cache:
+            return self._peer_name_cache[peer_id]
+
+        # Cache miss - fetch from utils
+        peer_name = get_name_from_peer_id(peer_id) or peer_id
+        self._peer_name_cache[peer_id] = peer_name
+
+        return peer_name
+
+    def _cleanup_cache(self, cache: Dict[str, Tuple[float, Any]]) -> None:
+        """Remove expired entries from cache."""
+        current_time = time.time()
+        expired_keys = [
+            key for key, (cache_time, _) in cache.items()
+            if (current_time - cache_time) > self._cache_ttl
+        ]
+        for key in expired_keys:
+            del cache[key]
 
     def _poll_loop(self):
         """Main polling loop."""
@@ -203,34 +263,50 @@ class GossipDHTPublisher(BaseDHTPublisher):
                 bytes = value_with_expiration.value
                 payload_dict = from_bytes(bytes)
 
-                # Flatten the payloads into a list of payloads.
+                # Optimized batch processing of payloads
                 all_payloads = []
                 for _, payload_list in payload_dict.items():
                     all_payloads.extend(payload_list)
 
-                # For each payload, generate a gossip message.
-                for payload in all_payloads:
-                    world_state_tuple = payload.world_state
-                    question = world_state_tuple.environment_states["question"]
-                    actions = payload.actions
-                    source_dataset = world_state_tuple.environment_states["metadata"]["source_dataset"]
-                    action = random.choice(actions) if actions else ""
+                # Process payloads in batches for better performance
+                batch_size = min(50, len(all_payloads))  # Process up to 50 at a time
+                now_utc = datetime.now(timezone.utc)
+                ts = int(now_utc.timestamp())
 
-                    # Stamp the message with the current time.
-                    now_utc = datetime.now(timezone.utc)
-                    ts = int(now_utc.timestamp())
+                # Pre-compute peer name once
+                peer_name = self._get_peer_name_from_id(peer_id)
 
-                    # Generate a unique ID for the gossip message.
-                    gossip_id = hashlib.md5(f"{question}-{peer_id}-{self.current_round}-{action}-{source_dataset}".encode()).hexdigest()
-                    round_gossip.append((
-                        ts, {
-                            "id": gossip_id,
-                            "message": f"{question}...{action}",
-                            "node": get_name_from_peer_id(peer_id),
-                            "nodeId": peer_id,
-                            "dataset": source_dataset,
-                        }
-                    ))
+                for i in range(0, len(all_payloads), batch_size):
+                    batch_payloads = all_payloads[i:i + batch_size]
+
+                    # Process batch efficiently
+                    batch_gossip = []
+                    for payload in batch_payloads:
+                        try:
+                            world_state_tuple = payload.world_state
+                            question = world_state_tuple.environment_states["question"]
+                            actions = payload.actions
+                            source_dataset = world_state_tuple.environment_states["metadata"]["source_dataset"]
+                            action = random.choice(actions) if actions else ""
+
+                            # Generate unique ID more efficiently
+                            id_string = f"{question}-{peer_id}-{self.current_round}-{action}-{source_dataset}"
+                            gossip_id = hashlib.md5(id_string.encode()).hexdigest()
+
+                            batch_gossip.append((
+                                ts, {
+                                    "id": gossip_id,
+                                    "message": f"{question}...{action}",
+                                    "node": peer_name,  # Use pre-computed name
+                                    "nodeId": peer_id,
+                                    "dataset": source_dataset,
+                                }
+                            ))
+                        except (KeyError, AttributeError) as e:
+                            self.logger.debug(f"Skipping malformed payload: {e}")
+                            continue
+
+                    round_gossip.extend(batch_gossip)
 
             self.logger.info("Got gossip messages", extra={
                 "message_count": len(round_gossip),

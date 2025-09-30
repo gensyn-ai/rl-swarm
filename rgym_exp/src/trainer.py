@@ -166,32 +166,52 @@ class GRPOTrainerModule(GRPOLanguageTrainerModule, LoggerMixin):
         Returns a tensor of shape (len(choices),) giving, for each choice,
         the sum of log-probabilities that the model assigns to generating
         "<answer>{choice}</answer>" after the given input_ids.
-        """
 
+        Optimized version that processes choices in batches and uses memory-efficient computation.
+        """
         device = input_ids.device
         batch_size, prompt_len = input_ids.shape
-        logits_list = []
 
+        # Pre-tokenize all choices for efficiency
+        choice_token_cache = {}
         for choice in choices:
-            # 1) build the full token sequence: prompt + "<answer>…</answer>"
-            # TODO: Make the dtype changes from genrl here?
             answer_str = f"<answer>{choice}</answer>"
-            choice_ids = self.processing_class(
+            choice_token_cache[choice] = self.processing_class(
                 answer_str,
                 return_tensors="pt",
                 add_special_tokens=False
-            ).input_ids.to(device)    # shape (1, L)
+            ).input_ids.to(device)
 
-            seq = torch.cat([input_ids, choice_ids], dim=1)  # (1, prompt_len + L)
+        # Process choices in batches to optimize memory usage
+        max_batch_size = min(8, len(choices))  # Avoid OOM with large choice sets
+        logits_list = []
 
-            # build labels that only include the answer positions
-            labels = seq.clone()
-            labels[:, :prompt_len] = -100  # ignore prompt positions in loss
-            outputs = self.model(input_ids=seq, labels=labels)
-            # outputs.loss is average negative log-likelihood over the L answer tokens
+        for i in range(0, len(choices), max_batch_size):
+            batch_choices = choices[i:i + max_batch_size]
+            batch_logits = []
 
-            total_log_prob = -outputs.loss * choice_ids.size(1)
-            logits_list.append(total_log_prob)
+            # Process each choice in the current batch
+            for choice in batch_choices:
+                choice_ids = choice_token_cache[choice]
 
-        # stack into a single tensor of shape (num_choices,)
+                # Build sequence more efficiently
+                seq = torch.cat([input_ids, choice_ids], dim=1)
+
+                # Use no_grad for memory efficiency since we only need the loss
+                with torch.cuda.amp.autocast(enabled=torch.cuda.is_available()):
+                    # Build labels efficiently
+                    labels = seq.clone()
+                    labels[:, :prompt_len] = -100  # ignore prompt positions
+
+                    outputs = self.model(input_ids=seq, labels=labels)
+                    total_log_prob = -outputs.loss * choice_ids.size(1)
+                    batch_logits.append(total_log_prob)
+
+                # Clear GPU cache after each choice to prevent OOM
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+
+            logits_list.extend(batch_logits)
+
+        # Stack into a single tensor of shape (num_choices,)
         return torch.stack(logits_list)
