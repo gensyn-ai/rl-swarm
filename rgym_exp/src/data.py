@@ -3,6 +3,7 @@ import random
 from typing import Any, Dict, List, Optional, Tuple
 
 from datasets import Dataset
+from genrl.communication import Payload
 from genrl.data import LocalMemoryTextDataManager
 from genrl.logging_utils.global_defs import get_logger
 from genrl.misc_utils.utils import generate_md5_hash_id
@@ -293,20 +294,26 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
         # Loop through and return a set of num_transplant transplants to add
         transplants = {}
         for agent in swarm_states:
+            if not isinstance(agent, str):
+                continue
             if agent not in current_state.trees:
+                if not isinstance(swarm_states[agent], dict) or swarm_states[agent] is None:
+                    continue
                 for batch_id in swarm_states[agent]:
+                    if not isinstance(batch_id, int) or not isinstance(swarm_states[agent][batch_id], list):
+                        continue
                     for payload in swarm_states[agent][batch_id]:
                         if (
                             self.num_generations
+                            and isinstance(payload, Payload)
                             and hasattr(payload, "actions")
                             and payload.actions is not None
                             and isinstance(payload.actions, list)
                             and len(payload.actions) == self.num_generations
+                            and all([isinstance(action, str) for action in payload.actions])
                         ):
                             transplants[(agent, batch_id)] = payload
-        if len(transplants) >= num_transplants:
-            keepers = random.sample(list(transplants), num_transplants)
-        else:
-            keepers = list(transplants)
+                            if len(transplants) >= num_transplants:
+                                return transplants
 
-        return {key: transplants[key] for key in keepers}
+        return transplants
