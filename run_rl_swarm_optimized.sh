@@ -79,8 +79,8 @@ monitor_memory() {
 setup_memory_management() {
     echo "🔧 Setting up macOS memory management..."
     
-    # Set memory limits
-    ulimit -v 8388608  # 8GB virtual memory limit
+    # Set memory limits (macOS compatible)
+    # ulimit -v 8388608  # 8GB virtual memory limit - disabled for macOS compatibility
     
     # Configure memory management
     sudo sysctl vm.swappiness=10 2>/dev/null || true
@@ -89,12 +89,24 @@ setup_memory_management() {
     # Enable memory compression
     sudo sysctl vm.compressor=1 2>/dev/null || true
     
+    # Start Gensyn memory optimizer in background
+    echo "🚀 Starting Gensyn memory optimizer..."
+    python3 scripts/gensyn_memory_optimizer.py &
+    GENSYN_OPTIMIZER_PID=$!
+    echo "✅ Gensyn memory optimizer started (PID: $GENSYN_OPTIMIZER_PID)"
+    
     echo "✅ Memory management configured"
 }
 
 # Signal handlers for graceful shutdown
 cleanup_on_exit() {
     echo "🛑 Shutting down gracefully..."
+    
+    # Stop Gensyn memory optimizer
+    if [ ! -z "$GENSYN_OPTIMIZER_PID" ]; then
+        echo "🛑 Stopping Gensyn memory optimizer (PID: $GENSYN_OPTIMIZER_PID)..."
+        kill $GENSYN_OPTIMIZER_PID 2>/dev/null || true
+    fi
     cleanup_memory
     exit 0
 }

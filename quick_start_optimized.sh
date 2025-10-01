@@ -71,8 +71,8 @@ setup_memory_optimizations() {
 optimize_system_settings() {
     print_status $BLUE "🔧 Optimizing system settings..."
     
-    # Set memory limits
-    ulimit -v 8388608  # 8GB virtual memory limit
+    # Set memory limits (macOS compatible)
+    # ulimit -v 8388608  # 8GB virtual memory limit - disabled for macOS compatibility
     
     # Configure memory management
     sudo sysctl vm.swappiness=10 2>/dev/null || print_status $YELLOW "Could not set swappiness"

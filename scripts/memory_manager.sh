@@ -85,8 +85,8 @@ print('Python garbage collection completed')
 optimize_memory_settings() {
     print_status $BLUE "⚙️ Optimizing memory settings..."
     
-    # Set memory limits
-    ulimit -v 8388608  # 8GB virtual memory limit
+    # Set memory limits (macOS compatible)
+    # ulimit -v 8388608  # 8GB virtual memory limit - disabled for macOS compatibility
     
     # Configure memory management
     print_status $YELLOW "Configuring memory management..."
