@@ -1,0 +1,112 @@
+Collecting reasoning-gym
+  Using cached reasoning_gym-0.1.24-py3-none-any.whl.metadata (9.5 kB)
+Collecting arckit==0.1.0 (from reasoning-gym)
+  Using cached arckit-0.1.0-py3-none-any.whl.metadata (503 bytes)
+Collecting bfi==1.0.4 (from reasoning-gym)
+  Using cached bfi-1.0.4-py3-none-any.whl.metadata (12 kB)
+Collecting cellpylib==2.4.0 (from reasoning-gym)
+  Using cached cellpylib-2.4.0.tar.gz (38 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting magiccube==0.3.0 (from reasoning-gym)
+  Using cached magiccube-0.3.0-py3-none-any.whl.metadata (3.9 kB)
+Collecting pycosat==0.6.6 (from reasoning-gym)
+  Using cached pycosat-0.6.6.tar.gz (71 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting pyfiglet==1.0.2 (from reasoning-gym)
+  Using cached pyfiglet-1.0.2-py3-none-any.whl.metadata (7.1 kB)
+Requirement already satisfied: pytz>=2024.1 in ./.venv/lib/python3.10/site-packages (from reasoning-gym) (2025.2)
+Requirement already satisfied: pyyaml>=6.0.2 in ./.venv/lib/python3.10/site-packages (from reasoning-gym) (6.0.3)
+Requirement already satisfied: sympy>=1.13.1 in ./.venv/lib/python3.10/site-packages (from reasoning-gym) (1.14.0)
+Collecting tabulate==0.9.0 (from reasoning-gym)
+  Using cached tabulate-0.9.0-py3-none-any.whl.metadata (34 kB)
+Collecting zss>=1.2.0 (from reasoning-gym)
+  Using cached zss-1.2.0.tar.gz (9.8 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: numpy in ./.venv/lib/python3.10/site-packages (from arckit==0.1.0->reasoning-gym) (2.2.6)
+Collecting rich (from arckit==0.1.0->reasoning-gym)
+  Using cached rich-14.1.0-py3-none-any.whl.metadata (18 kB)
+Collecting drawsvg (from arckit==0.1.0->reasoning-gym)
+  Using cached drawsvg-2.4.0-py3-none-any.whl.metadata (19 kB)
+Collecting matplotlib>=3.0.2 (from cellpylib==2.4.0->reasoning-gym)
+  Using cached matplotlib-3.10.6-cp310-cp310-macosx_11_0_arm64.whl.metadata (11 kB)
+Collecting contourpy>=1.0.1 (from matplotlib>=3.0.2->cellpylib==2.4.0->reasoning-gym)
+  Using cached contourpy-1.3.2-cp310-cp310-macosx_11_0_arm64.whl.metadata (5.5 kB)
+Collecting cycler>=0.10 (from matplotlib>=3.0.2->cellpylib==2.4.0->reasoning-gym)
+  Using cached cycler-0.12.1-py3-none-any.whl.metadata (3.8 kB)
+Collecting fonttools>=4.22.0 (from matplotlib>=3.0.2->cellpylib==2.4.0->reasoning-gym)
+  Using cached fonttools-4.60.1-cp310-cp310-macosx_10_9_universal2.whl.metadata (112 kB)
+Collecting kiwisolver>=1.3.1 (from matplotlib>=3.0.2->cellpylib==2.4.0->reasoning-gym)
+  Using cached kiwisolver-1.4.9-cp310-cp310-macosx_11_0_arm64.whl.metadata (6.3 kB)
+Requirement already satisfied: packaging>=20.0 in ./.venv/lib/python3.10/site-packages (from matplotlib>=3.0.2->cellpylib==2.4.0->reasoning-gym) (25.0)
+Requirement already satisfied: pillow>=8 in ./.venv/lib/python3.10/site-packages (from matplotlib>=3.0.2->cellpylib==2.4.0->reasoning-gym) (11.3.0)
+Collecting pyparsing>=2.3.1 (from matplotlib>=3.0.2->cellpylib==2.4.0->reasoning-gym)
+  Using cached pyparsing-3.2.5-py3-none-any.whl.metadata (5.0 kB)
+Requirement already satisfied: python-dateutil>=2.7 in ./.venv/lib/python3.10/site-packages (from matplotlib>=3.0.2->cellpylib==2.4.0->reasoning-gym) (2.9.0.post0)
+Requirement already satisfied: six>=1.5 in ./.venv/lib/python3.10/site-packages (from python-dateutil>=2.7->matplotlib>=3.0.2->cellpylib==2.4.0->reasoning-gym) (1.17.0)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in ./.venv/lib/python3.10/site-packages (from sympy>=1.13.1->reasoning-gym) (1.3.0)
+Collecting markdown-it-py>=2.2.0 (from rich->arckit==0.1.0->reasoning-gym)
+  Using cached markdown_it_py-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+Collecting pygments<3.0.0,>=2.13.0 (from rich->arckit==0.1.0->reasoning-gym)
+  Using cached pygments-2.19.2-py3-none-any.whl.metadata (2.5 kB)
+Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich->arckit==0.1.0->reasoning-gym)
+  Using cached mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+Using cached reasoning_gym-0.1.24-py3-none-any.whl (7.0 MB)
+Using cached arckit-0.1.0-py3-none-any.whl (730 kB)
+Using cached bfi-1.0.4-py3-none-any.whl (159 kB)
+Using cached magiccube-0.3.0-py3-none-any.whl (16 kB)
+Using cached pyfiglet-1.0.2-py3-none-any.whl (1.1 MB)
+Using cached tabulate-0.9.0-py3-none-any.whl (35 kB)
+Using cached matplotlib-3.10.6-cp310-cp310-macosx_11_0_arm64.whl (8.1 MB)
+Using cached contourpy-1.3.2-cp310-cp310-macosx_11_0_arm64.whl (253 kB)
+Using cached cycler-0.12.1-py3-none-any.whl (8.3 kB)
+Using cached fonttools-4.60.1-cp310-cp310-macosx_10_9_universal2.whl (2.8 MB)
+Using cached kiwisolver-1.4.9-cp310-cp310-macosx_11_0_arm64.whl (65 kB)
+Using cached pyparsing-3.2.5-py3-none-any.whl (113 kB)
+Using cached drawsvg-2.4.0-py3-none-any.whl (44 kB)
+Using cached rich-14.1.0-py3-none-any.whl (243 kB)
+Using cached pygments-2.19.2-py3-none-any.whl (1.2 MB)
+Using cached markdown_it_py-4.0.0-py3-none-any.whl (87 kB)
+Using cached mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Building wheels for collected packages: cellpylib, pycosat, zss
+  Building wheel for cellpylib (pyproject.toml): started
+  Building wheel for cellpylib (pyproject.toml): finished with status 'done'
+  Created wheel for cellpylib: filename=cellpylib-2.4.0-py3-none-any.whl size=38009 sha256=72b2553e3dcac1cf112e0802d88177d0a5abb4a950afe53ca44db9836bc36c50
+  Stored in directory: /Users/seher/Library/Caches/pip/wheels/44/bc/c4/4730d328071b164c25d392c2d932b513e56ff0857da63d17e7
+  Building wheel for pycosat (pyproject.toml): started
+  Building wheel for pycosat (pyproject.toml): finished with status 'done'
+  Created wheel for pycosat: filename=pycosat-0.6.6-cp310-cp310-macosx_15_0_arm64.whl size=55692 sha256=9a60e19aaa99e0b69372fd0c09eca68c9ee97af372e766f6f0f14977e53e44b4
+  Stored in directory: /Users/seher/Library/Caches/pip/wheels/63/29/df/b8c22ca5812e2d7b342269a53add280b5bad42a540f34c3dc1
+  Building wheel for zss (pyproject.toml): started
+  Building wheel for zss (pyproject.toml): finished with status 'done'
+  Created wheel for zss: filename=zss-1.2.0-py3-none-any.whl size=6792 sha256=2c15a4637e59ca38554c2ee72b0d57c86de3bdd768c5b58495a1be1c3c74ee24
+  Stored in directory: /Users/seher/Library/Caches/pip/wheels/f6/61/2a/cf33ab7301cc318a13418d9a805c1832be561b46e7d9337625
+Successfully built cellpylib pycosat zss
+Installing collected packages: pycosat, drawsvg, bfi, zss, tabulate, pyparsing, pygments, pyfiglet, mdurl, magiccube, kiwisolver, fonttools, cycler, contourpy, matplotlib, markdown-it-py, rich, cellpylib, arckit, reasoning-gym
+
+Successfully installed arckit-0.1.0 bfi-1.0.4 cellpylib-2.4.0 contourpy-1.3.2 cycler-0.12.1 drawsvg-2.4.0 fonttools-4.60.1 kiwisolver-1.4.9 magiccube-0.3.0 markdown-it-py-4.0.0 matplotlib-3.10.6 mdurl-0.1.2 pycosat-0.6.6 pyfiglet-1.0.2 pygments-2.19.2 pyparsing-3.2.5 reasoning-gym-0.1.24 rich-14.1.0 tabulate-0.9.0 zss-1.2.0
+5e87bab1edb10144a68f064685aa69dceb5aba59c1191fd
+  Stored in directory: /Users/seher/Library/Caches/pip/wheels/63/29/df/b8c22ca5812e2d7b342269a53add280b5bad42a540f34c3dc1
+  Building wheel for zss (pyproject.toml): started
+  Building wheel for zss (pyproject.toml): finished with status 'done'
+  Created wheel for zss: filename=zss-1.2.0-py3-none-any.whl size=6792 sha256=fc619bb93ad4c0d730fc15fc7460697b16616028695de3c9b4a0d2c68f29788f
+  Stored in directory: /Users/seher/Library/Caches/pip/wheels/f6/61/2a/cf33ab7301cc318a13418d9a805c1832be561b46e7d9337625
+Successfully built cellpylib pycosat zss
+Installing collected packages: pycosat, drawsvg, bfi, zss, tabulate, pyparsing, pygments, pyfiglet, mdurl, magiccube, kiwisolver, fonttools, cycler, contourpy, matplotlib, markdown-it-py, rich, cellpylib, arckit, reasoning-gym
+
+
+Successfully installed arckit-0.1.0 bfi-1.0.4 cellpylib-2.4.0 contourpy-1.3.2 cycler-0.12.1 drawsvg-2.4.0 fonttools-4.60.1 kiwisolver-1.4.9 magiccube-0.3.0 markdown-it-py-4.0.0 matplotlib-3.10.6 mdurl-0.1.2 pycosat-0.6.6 pyfiglet-1.0.2 pygments-2.19.2 pyparsing-3.2.5 reasoning-gym-0.1.24 rich-14.1.0 tabulate-0.9.0 zss-1.2.0
