@@ -33,19 +33,19 @@ def main(cfg: DictConfig):
         node_id = os.environ.get('NODE_ID', str(uuid.uuid4())[:8])
 
         # Get retention config from config file
+        comm_cfg = cfg.game_manager.communication
         retention_config = {
-            'cleanup_enabled': cfg.communication.get('rollout_retention', {}).get('cleanup_enabled', False),
-            'keep_last_n_rounds': cfg.communication.get('rollout_retention', {}).get('keep_last_n_rounds', 5),
-            'archive_old_rollouts': cfg.communication.get('rollout_retention', {}).get('archive_old_rollouts', False),
-            'archive_path': cfg.communication.get('rollout_retention', {}).get('archive_path',
-                f"{gdrive_base_path}/archives/{experiment_name}/")
+            'cleanup_enabled': comm_cfg.rollout_retention.cleanup_enabled,
+            'keep_last_n_rounds': comm_cfg.rollout_retention.keep_last_n_rounds,
+            'archive_old_rollouts': comm_cfg.rollout_retention.archive_old_rollouts,
+            'archive_path': comm_cfg.rollout_retention.archive_path
         }
 
         # Create rollout sharing instance
         rollout_sharing = GDriveRolloutSharing(
             gdrive_path=gdrive_base_path,
             experiment_name=experiment_name,
-            publish_frequency=cfg.communication.get('rollout_publish_frequency', 'stage'),
+            publish_frequency=comm_cfg.rollout_publish_frequency,
             retention_config=retention_config
         )
 
@@ -53,12 +53,12 @@ def main(cfg: DictConfig):
         Communication.set_backend(GDriveCommunicationBackend)
 
         # Store in config for game_manager initialization
-        cfg.communication.gdrive_rollout_sharing = rollout_sharing
-        cfg.communication.node_id = node_id
-        cfg.communication.experiment_name = experiment_name
+        cfg.game_manager.communication.gdrive_rollout_sharing = rollout_sharing
+        cfg.game_manager.communication.node_id = node_id
+        cfg.game_manager.communication.experiment_name = experiment_name
 
         get_logger().info(f"Node ID: {node_id}")
-        get_logger().info(f"Rollout publish frequency: {cfg.communication.get('rollout_publish_frequency', 'stage')}")
+        get_logger().info(f"Rollout publish frequency: {comm_cfg.rollout_publish_frequency}")
         get_logger().info(f"Rollout retention: cleanup={retention_config['cleanup_enabled']}, keep_last_n={retention_config['keep_last_n_rounds']}")
 
     else:
