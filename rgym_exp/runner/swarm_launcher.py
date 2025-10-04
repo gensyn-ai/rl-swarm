@@ -16,7 +16,7 @@ from rgym_exp.src.utils.omega_gpu_resolver import (
 )  # necessary for gpu_model_choice resolver in hydra config
 
 
-@hydra.main(version_base=None)
+@hydra.main(version_base=None, config_path="../config", config_name="colab-gdrive")
 def main(cfg: DictConfig):
     # Check if running in GDrive mode
     gdrive_mode = cfg.get('gdrive', {}).get('base_path') is not None

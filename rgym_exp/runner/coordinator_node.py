@@ -182,7 +182,7 @@ def main():
     from omegaconf import DictConfig, OmegaConf
     from hydra.utils import instantiate
 
-    @hydra.main(version_base=None, config_path="../config", config_name="colab-gdrive.yaml")
+    @hydra.main(version_base=None, config_path="../config", config_name="colab-gdrive")
     def run_coordinator(cfg: DictConfig):
         get_logger().info("Starting Coordinator Node")
         get_logger().info(f"Config:\n{OmegaConf.to_yaml(cfg)}")
