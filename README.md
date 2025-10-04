@@ -33,50 +33,140 @@ This fork adds a **Google Drive-only mode** that uses Google Drive for all coord
 - ✅ Local caching for performance
 - ✅ Simplified Colab notebooks
 
-### Quick Start on Google Colab
+### Quick Start on Google Colab (Recommended)
 
-#### 1. Open Coordinator Notebook
+#### Option A: Single-Node Training (Easiest)
 
-**[Open Coordinator Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_coordinator.ipynb)**
+Perfect for testing and learning. Runs one training node on a free Colab GPU.
 
-Or manually:
-1. Go to [Google Colab](https://colab.research.google.com/)
-2. File > Open notebook > GitHub tab
-3. Enter: `Elrashid/rl-swarm`
-4. Select: `notebooks/colab_coordinator.ipynb`
+1. **Open the Coordinator Notebook**
 
-#### 2. Configure Your Experiment
+   Click here: **[Open Coordinator Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_coordinator.ipynb)**
 
-```python
-# In the first cell of colab_coordinator.ipynb
-EXPERIMENT_NAME = 'my_experiment'  # Choose a unique name
-NODE_ID = 'coordinator_0'
-MODEL_NAME = 'Gensyn/Qwen2.5-0.5B-Instruct'
-SEED = 42
+   Or manually:
+   - Go to [Google Colab](https://colab.research.google.com/)
+   - File > Open notebook > GitHub tab
+   - Enter: `Elrashid/rl-swarm`
+   - Select: `notebooks/colab_coordinator.ipynb`
 
-# Rollout Configuration
-ROLLOUT_PUBLISH_FREQUENCY = 'stage'  # 'generation', 'stage', or 'round'
-ROLLOUT_CLEANUP_ENABLED = False      # Set True to enable cleanup
+2. **Configure Your Experiment**
+
+   In Cell 2, set your configuration:
+   ```python
+   # Experiment Configuration
+   EXPERIMENT_NAME = 'my_first_experiment'  # Choose any unique name
+   NODE_ID = 'coordinator_0'                 # Keep as-is for single node
+   MODEL_NAME = 'Gensyn/Qwen2.5-0.5B-Instruct'
+   SEED = 42
+
+   # Rollout Configuration (optional, defaults work fine)
+   ROLLOUT_PUBLISH_FREQUENCY = 'stage'      # How often to save rollouts
+   ROLLOUT_CLEANUP_ENABLED = False          # Keep all rollouts
+   ```
+
+3. **Run the Notebook**
+
+   Click **Runtime > Run all** (or Ctrl+F9)
+
+   The notebook will:
+   - ✓ Mount your Google Drive (requires permission)
+   - ✓ Install dependencies (~3-5 minutes)
+   - ✓ Initialize the experiment in `/MyDrive/rl-swarm/`
+   - ✓ Start training
+
+   You'll see training progress in the output. Training runs until you stop it or reach max rounds.
+
+4. **Monitor Progress**
+
+   While training, you can run Cell 17 (Monitor Progress) to see:
+   - Current round/stage
+   - Number of active peers
+   - Recent rewards
+
+#### Option B: Multi-Node Training (Advanced)
+
+Run multiple nodes to simulate swarm training. Each node learns from the others.
+
+**Prerequisites:**
+- Complete Option A (coordinator running)
+- Multiple browser tabs or Google accounts
+
+**Steps:**
+
+1. **Keep Coordinator Running**
+
+   From Option A above, keep the coordinator notebook running in one tab.
+
+2. **Open Worker Notebook**
+
+   In a **new tab/window**: **[Open Worker Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_worker.ipynb)**
+
+3. **Configure Worker**
+
+   In Cell 2, use **SAME experiment name** but **DIFFERENT node ID**:
+   ```python
+   EXPERIMENT_NAME = 'my_first_experiment'  # MUST MATCH coordinator
+   NODE_ID = 'worker_1'                     # MUST BE UNIQUE
+   MODEL_NAME = 'Gensyn/Qwen2.5-0.5B-Instruct'  # Same model
+   SEED = 42                                # Same seed
+   ```
+
+4. **Run Worker Notebook**
+
+   Click **Runtime > Run all**
+
+   The worker will:
+   - ✓ Mount Google Drive (same account as coordinator)
+   - ✓ Verify experiment exists
+   - ✓ Install dependencies
+   - ✓ Join the experiment and start training
+
+5. **Add More Workers (Optional)**
+
+   Repeat steps 2-4 with different `NODE_ID`:
+   - Worker 2: `NODE_ID = 'worker_2'`
+   - Worker 3: `NODE_ID = 'worker_3'`
+   - etc.
+
+   Each worker will share rollouts with all other nodes!
+
+### Local Testing (Advanced)
+
+For development and testing without Colab:
+
+```bash
+# Clone repository
+git clone https://github.com/Elrashid/rl-swarm
+cd rl-swarm
+
+# Install dependencies
+pip install -r requirements.txt
+pip install gensyn-genrl==0.1.9
+
+# Terminal 1 - Start Coordinator
+export GDRIVE_PATH="/path/to/shared/folder"
+export EXPERIMENT_NAME="test_experiment"
+export NODE_ROLE="coordinator"
+export NODE_ID="coordinator_0"
+export MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"
+export ROLLOUT_PUBLISH_FREQUENCY="stage"
+export ROLLOUT_CLEANUP_ENABLED="False"
+
+python -m rgym_exp.runner.swarm_launcher --config-name colab-gdrive
+
+# Terminal 2 - Start Worker (optional)
+export GDRIVE_PATH="/path/to/shared/folder"  # SAME path
+export EXPERIMENT_NAME="test_experiment"      # SAME name
+export NODE_ROLE="worker"
+export NODE_ID="worker_1"                     # DIFFERENT ID
+export MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"
+export ROLLOUT_PUBLISH_FREQUENCY="stage"
+export ROLLOUT_CLEANUP_ENABLED="False"
+
+python -m rgym_exp.runner.swarm_launcher --config-name colab-gdrive
 ```
 
-#### 3. Run All Cells
-
-Click **Runtime > Run all** and wait for training to start.
-
-### Add Worker Nodes (Optional)
-
-**[Open Worker Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_worker.ipynb)**
-
-Configure with **same EXPERIMENT_NAME** but unique NODE_ID:
-
-```python
-EXPERIMENT_NAME = 'my_experiment'  # MUST MATCH coordinator
-NODE_ID = 'worker_1'               # MUST BE UNIQUE
-MODEL_NAME = 'Gensyn/Qwen2.5-0.5B-Instruct'
-SEED = 42
-```
-
-Run all cells. Repeat for additional workers (worker_2, worker_3, etc.)
+**Note:** Use a shared folder (network drive, Dropbox, etc.) for `GDRIVE_PATH` to test multi-node locally.
 
 ### Google Drive Structure
 
