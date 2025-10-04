@@ -2,9 +2,7 @@ import os
 import time
 from collections import defaultdict
 
-from genrl.blockchain import SwarmCoordinator
 from genrl.communication import Communication
-from genrl.communication.hivemind.hivemind_backend import HivemindBackend
 from genrl.data import DataManager
 from genrl.game import BaseGameManager
 from genrl.game.game_manager import DefaultGameManagerMixin
@@ -17,16 +15,15 @@ from genrl.trainer import TrainerModule
 from huggingface_hub import login, whoami
 
 from rgym_exp.src.utils.name_utils import get_name_from_peer_id
-from rgym_exp.src.prg_module import PRGModule
 from rgym_exp.communication.gdrive_backend import GDriveCommunicationBackend
 
 
 class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
-    """GameManager that orchestrates a game using a SwarmCoordinator."""
+    """GameManager that orchestrates RL Swarm training using Google Drive coordination."""
 
     def __init__(
         self,
-        coordinator: SwarmCoordinator | None = None,
+        coordinator=None,  # GDriveSwarmCoordinator or None
         max_stage: int = 1,
         max_round: int = 1000000,
         game_state: GameState = None,
@@ -54,8 +51,8 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
             run_mode=run_mode,
         )
 
-        # Support both HivemindBackend and GDriveCommunicationBackend
-        assert isinstance(self.communication, (HivemindBackend, GDriveCommunicationBackend))
+        # Google Drive mode only - validate communication backend
+        assert isinstance(self.communication, GDriveCommunicationBackend)
         self.train_timeout = 60 * 60 * 24 * 31  # 1 month
 
         # Logging Setup
@@ -276,9 +273,6 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         )
         while time.monotonic() - start_time < self.train_timeout:
             curr_time = time.monotonic()
-            # Only call DHT methods if using Hivemind backend
-            if isinstance(self.communication, HivemindBackend):
-                _ = self.communication.dht.get_visible_maddrs(latest=True)
 
             # Retrieve current round and stage.
             try:
