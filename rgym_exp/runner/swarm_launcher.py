@@ -1,81 +1,214 @@
+"""
+Google Drive-Only Swarm Launcher
+
+Simple launcher for RL Swarm using Google Drive for coordination.
+No Hydra, no Hivemind, no blockchain - just environment variables and direct instantiation.
+"""
+
 import os
 import uuid
 
-import hydra
+from transformers import AutoModelForCausalLM
 from genrl.communication.communication import Communication
-from genrl.communication.hivemind.hivemind_backend import (
-    HivemindBackend,
-    HivemindRendezvouz,
-)
 from genrl.logging_utils.global_defs import get_logger
-from hydra.utils import instantiate
-from omegaconf import DictConfig, OmegaConf
+from genrl.state.game_state import GameState
+from genrl.rewards import DefaultRewardManager
+from genrl.rewards.reward_store import RewardFnStore, RoundRewardFnStore
+from genrl.trainer.grpo_trainer import GRPOTrainerConfig
 
-from rgym_exp.src.utils.omega_gpu_resolver import (
-    gpu_model_choice_resolver,
-)  # necessary for gpu_model_choice resolver in hydra config
+from rgym_exp.src.trainer import GRPOTrainerModule
+from rgym_exp.src.data import ReasoningGymDataManager
+from rgym_exp.src.rewards import RGRewards
+from rgym_exp.src.manager import SwarmGameManager
+from rgym_exp.src.gdrive_coordinator import GDriveSwarmCoordinator
+from rgym_exp.src.gdrive_rollout_sharing import GDriveRolloutSharing
+from rgym_exp.communication.gdrive_backend import GDriveCommunicationBackend
 
 
-@hydra.main(version_base=None, config_path="../config", config_name="colab-gdrive")
-def main(cfg: DictConfig):
-    # Check if running in GDrive mode
-    gdrive_mode = cfg.get('gdrive', {}).get('base_path') is not None
+def main():
+    """Main entry point for Google Drive swarm training."""
 
-    if gdrive_mode:
-        get_logger().info("Running in Google Drive mode (no Hivemind)")
+    # =======================
+    # 1. Read Environment Variables
+    # =======================
+    gdrive_path = os.environ.get('GDRIVE_PATH', '/content/drive/MyDrive/rl-swarm')
+    experiment_name = os.environ.get('EXPERIMENT_NAME', 'default_experiment')
+    node_role = os.environ.get('NODE_ROLE', 'worker')  # 'coordinator' or 'worker'
+    node_id = os.environ.get('NODE_ID', f'node_{uuid.uuid4().hex[:8]}')
+    model_name = os.environ.get('MODEL_NAME', 'Gensyn/Qwen2.5-0.5B-Instruct')
+    seed = int(os.environ.get('SEED', '42'))
 
-        # Initialize GDrive communication backend
-        from rgym_exp.src.gdrive_rollout_sharing import GDriveRolloutSharing
-        from rgym_exp.communication.gdrive_backend import GDriveCommunicationBackend
+    # Optional env vars
+    hf_token = os.environ.get('HUGGINGFACE_ACCESS_TOKEN')
 
-        gdrive_base_path = cfg.gdrive.base_path
-        experiment_name = os.environ.get('EXPERIMENT_NAME', 'default')
-        node_id = os.environ.get('NODE_ID', str(uuid.uuid4())[:8])
+    # Training config
+    max_round = 1000000
+    max_stage = 1
+    num_generations = 2
+    num_transplant_trees = 2
+    dtype = 'float32'
 
-        # Get retention config from config file
-        comm_cfg = cfg.game_manager.communication
-        retention_config = {
-            'cleanup_enabled': comm_cfg.rollout_retention.cleanup_enabled,
-            'keep_last_n_rounds': comm_cfg.rollout_retention.keep_last_n_rounds,
-            'archive_old_rollouts': comm_cfg.rollout_retention.archive_old_rollouts,
-            'archive_path': comm_cfg.rollout_retention.archive_path
-        }
+    # Rollout sharing config
+    rollout_publish_frequency = os.environ.get('ROLLOUT_PUBLISH_FREQUENCY', 'stage')
+    rollout_cleanup_enabled = os.environ.get('ROLLOUT_CLEANUP_ENABLED', 'False').lower() == 'true'
+    rollout_keep_last_n_rounds = int(os.environ.get('ROLLOUT_KEEP_LAST_N_ROUNDS', '10'))
+    rollout_archive_old = os.environ.get('ROLLOUT_ARCHIVE_OLD', 'False').lower() == 'true'
 
-        # Create rollout sharing instance
-        rollout_sharing = GDriveRolloutSharing(
-            gdrive_path=gdrive_base_path,
-            experiment_name=experiment_name,
-            publish_frequency=comm_cfg.rollout_publish_frequency,
-            retention_config=retention_config
+    # Paths
+    log_dir = f"{gdrive_path}/experiments/{experiment_name}/logs/{node_id}"
+    judge_base_url = "https://swarm-judge.internal-apps-central1.clusters.gensyn.ai"
+
+    get_logger().info("="*60)
+    get_logger().info("Starting RL Swarm (Google Drive Mode)")
+    get_logger().info("="*60)
+    get_logger().info(f"Experiment: {experiment_name}")
+    get_logger().info(f"Node Role: {node_role}")
+    get_logger().info(f"Node ID: {node_id}")
+    get_logger().info(f"Model: {model_name}")
+    get_logger().info(f"GDrive Path: {gdrive_path}")
+    get_logger().info(f"Rollout Frequency: {rollout_publish_frequency}")
+    get_logger().info("="*60)
+
+    # =======================
+    # 2. Create Rollout Sharing
+    # =======================
+    retention_config = {
+        'cleanup_enabled': rollout_cleanup_enabled,
+        'keep_last_n_rounds': rollout_keep_last_n_rounds,
+        'archive_old_rollouts': rollout_archive_old,
+        'archive_path': f"{gdrive_path}/archives/{experiment_name}/"
+    }
+
+    rollout_sharing = GDriveRolloutSharing(
+        gdrive_path=gdrive_path,
+        experiment_name=experiment_name,
+        publish_frequency=rollout_publish_frequency,
+        retention_config=retention_config
+    )
+
+    get_logger().info(f"✓ Created rollout sharing (cleanup={rollout_cleanup_enabled})")
+
+    # =======================
+    # 3. Create Communication Backend
+    # =======================
+    Communication.set_backend(GDriveCommunicationBackend)
+
+    communication = GDriveCommunicationBackend(
+        gdrive_rollout_sharing=rollout_sharing,
+        node_id=node_id,
+        experiment_name=experiment_name,
+        rollout_publish_frequency=rollout_publish_frequency,
+        fetch_max_peers=10,
+        fetch_timeout_seconds=30,
+        cache_rollouts=True
+    )
+
+    get_logger().info("✓ Created GDrive communication backend")
+
+    # =======================
+    # 4. Create Game State
+    # =======================
+    game_state = GameState(round=0, stage=0)
+    get_logger().info("✓ Created game state")
+
+    # =======================
+    # 5. Create Reward Manager
+    # =======================
+    rg_rewards = RGRewards()
+    round_reward_fn_store = RoundRewardFnStore(
+        num_stages=max_stage,
+        reward_fns=[rg_rewards]
+    )
+    reward_fn_store = RewardFnStore(
+        max_rounds=max_round,
+        reward_fn_stores=[round_reward_fn_store]
+    )
+    reward_manager = DefaultRewardManager(reward_fn_store=reward_fn_store)
+    get_logger().info("✓ Created reward manager")
+
+    # =======================
+    # 6. Load Model
+    # =======================
+    get_logger().info(f"Loading model: {model_name}...")
+    model = AutoModelForCausalLM.from_pretrained(model_name)
+    get_logger().info("✓ Model loaded")
+
+    # =======================
+    # 7. Create Trainer
+    # =======================
+    trainer_config = GRPOTrainerConfig(
+        dtype=dtype,
+        epsilon=0.2,
+        epsilon_high=0.28,
+        num_generations=num_generations
+    )
+
+    trainer = GRPOTrainerModule(
+        models=[model],
+        config=trainer_config,
+        log_with='wandb',
+        log_dir=log_dir,
+        judge_base_url=judge_base_url
+    )
+    get_logger().info("✓ Created trainer")
+
+    # =======================
+    # 8. Create Data Manager
+    # =======================
+    data_manager = ReasoningGymDataManager(
+        yaml_config_path="rgym_exp/src/datasets.yaml",
+        num_train_samples=2,
+        num_evaluation_samples=0,
+        num_generations=num_generations,
+        system_prompt_id='default',
+        seed=seed,
+        num_transplant_trees=num_transplant_trees
+    )
+    get_logger().info("✓ Created data manager")
+
+    # =======================
+    # 9. Create Coordinator (if coordinator role)
+    # =======================
+    coordinator = None
+    if node_role == 'coordinator':
+        coordinator = GDriveSwarmCoordinator(
+            gdrive_path=f"{gdrive_path}/experiments/{experiment_name}",
+            node_role=node_role,
+            round_check_interval=30
         )
-
-        # Set communication backend to GDrive
-        Communication.set_backend(GDriveCommunicationBackend)
-
-        # Store in config for game_manager initialization
-        # Use OmegaConf.set_struct to allow adding Python objects
-        OmegaConf.set_struct(cfg, False)
-        cfg.game_manager.communication.gdrive_rollout_sharing = rollout_sharing
-        cfg.game_manager.communication.node_id = node_id
-        cfg.game_manager.communication.experiment_name = experiment_name
-        OmegaConf.set_struct(cfg, True)
-
-        get_logger().info(f"Node ID: {node_id}")
-        get_logger().info(f"Rollout publish frequency: {comm_cfg.rollout_publish_frequency}")
-        get_logger().info(f"Rollout retention: cleanup={retention_config['cleanup_enabled']}, keep_last_n={retention_config['keep_last_n_rounds']}")
-
+        get_logger().info("✓ Created GDrive coordinator")
     else:
-        # Original Hivemind mode
-        get_logger().info("Running in Hivemind mode")
-        Communication.set_backend(HivemindBackend)
-        is_master = False
-        HivemindRendezvouz.init(is_master=is_master)
+        get_logger().info("⊘ Running as worker (no coordinator)")
 
-    game_manager = instantiate(cfg.game_manager)
+    # =======================
+    # 10. Create Game Manager
+    # =======================
+    game_manager = SwarmGameManager(
+        coordinator=coordinator,
+        max_stage=max_stage,
+        max_round=max_round,
+        game_state=game_state,
+        reward_manager=reward_manager,
+        trainer=trainer,
+        data_manager=data_manager,
+        communication=communication,
+        role_manager=None,
+        run_mode="train_and_evaluate",
+        log_dir=log_dir,
+        hf_token=hf_token,
+        hf_push_frequency=20
+    )
+
+    get_logger().info("✓ Created game manager")
+    get_logger().info("="*60)
+    get_logger().info("Starting training...")
+    get_logger().info("="*60)
+
+    # =======================
+    # 11. Run Game
+    # =======================
     game_manager.run_game()
 
 
 if __name__ == "__main__":
-    os.environ["HYDRA_FULL_ERROR"] = "1"
-    Communication.set_backend(HivemindBackend)
     main()
