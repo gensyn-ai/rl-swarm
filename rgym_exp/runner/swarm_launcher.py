@@ -53,9 +53,12 @@ def main(cfg: DictConfig):
         Communication.set_backend(GDriveCommunicationBackend)
 
         # Store in config for game_manager initialization
+        # Use OmegaConf.set_struct to allow adding Python objects
+        OmegaConf.set_struct(cfg, False)
         cfg.game_manager.communication.gdrive_rollout_sharing = rollout_sharing
         cfg.game_manager.communication.node_id = node_id
         cfg.game_manager.communication.experiment_name = experiment_name
+        OmegaConf.set_struct(cfg, True)
 
         get_logger().info(f"Node ID: {node_id}")
         get_logger().info(f"Rollout publish frequency: {comm_cfg.rollout_publish_frequency}")
