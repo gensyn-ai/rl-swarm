@@ -178,12 +178,15 @@ Your experiment data will be organized in Google Drive:
 │   └── my_experiment/
 │       ├── state/current_state.json           # Current round/stage
 │       ├── peers/*.json                       # Peer registrations
+│       ├── rewards/round_X/stage_Y/*.json     # Reward submissions
+│       ├── winners/round_X/*.json             # Winner votes
 │       ├── rollouts/round_X/stage_Y/*.json    # Rollout sharing
 │       ├── checkpoints/round_X/*.pt           # Model checkpoints
 │       └── logs/{node_id}/
 │           ├── metrics.jsonl                  # Training metrics
 │           └── training_events.jsonl          # Events
-└── archives/                                  # Archived rollouts
+└── archives/                                  # Archived rollouts (optional)
+    └── my_experiment/rollouts/
 ```
 
 ### Features

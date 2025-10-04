@@ -25,7 +25,6 @@ This fork has **two operational modes**:
    - `src/data.py`: `ReasoningGymDataManager` manages datasets from reasoning-gym
    - `src/gdrive_coordinator.py`: File-based coordinator (replaces blockchain)
    - `src/gdrive_logger.py`: Persistent logging to Google Drive
-   - `src/gdrive_discovery.py`: Peer discovery via shared files
    - `src/gdrive_rollout_sharing.py`: Core rollout publishing/fetching
    - `communication/gdrive_backend.py`: GenRL-compatible communication backend
    - `config/colab-gdrive.yaml`: Google Drive configuration
