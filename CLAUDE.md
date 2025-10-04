@@ -4,175 +4,338 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-RL Swarm is a peer-to-peer system for decentralized reinforcement learning, powered by the [GenRL](https://github.com/gensyn-ai/genrl) library. The system enables collaborative model training through a distributed swarm that coordinates via blockchain and communicates through libp2p/hivemind.
+**This is a fork of [Gensyn RL Swarm](https://github.com/gensyn-ai/rl-swarm)** modified to support **Google Drive-only mode** without blockchain, Docker, or authentication requirements.
 
-The current implementation trains models on the [reasoning-gym](https://github.com/open-thought/reasoning-gym) dataset with optional participation in an AI Prediction Market game.
+RL Swarm is a system for decentralized reinforcement learning, powered by the [GenRL](https://github.com/gensyn-ai/genrl) library. This fork enables collaborative model training through Google Drive file-based coordination instead of blockchain and P2P networking.
+
+The current implementation trains models on the [reasoning-gym](https://github.com/open-thought/reasoning-gym) dataset.
 
 ## Architecture
 
 ### Core Components
 
-The system has three main parts:
+This fork has **two operational modes**:
 
-1. **Training Infrastructure (`rgym_exp/`)**: Main RL training pipeline
-   - `runner/swarm_launcher.py`: Entry point using Hydra for configuration
+#### 1. Google Drive-Only Mode (Primary/Recommended)
+
+**Training Infrastructure (`rgym_exp/`)**:
+   - `runner/swarm_launcher.py`: Entry point with Google Drive mode detection
    - `src/manager.py`: `SwarmGameManager` orchestrates training rounds/stages
    - `src/trainer.py`: `GRPOTrainerModule` implements Group Relative Policy Optimization
    - `src/data.py`: `ReasoningGymDataManager` manages datasets from reasoning-gym
-   - `src/coordinator.py`: `ModalSwarmCoordinator` handles blockchain coordination via Alchemy Modal
-   - `src/prg_module.py`: `PRGModule` manages Prediction Market game participation
-   - `config/rg-swarm.yaml`: Main configuration file with Hydra/OmegaConf
+   - `src/gdrive_coordinator.py`: File-based coordinator (replaces blockchain)
+   - `src/gdrive_logger.py`: Persistent logging to Google Drive
+   - `src/gdrive_discovery.py`: Peer discovery via shared files
+   - `src/gdrive_rollout_sharing.py`: Core rollout publishing/fetching
+   - `communication/gdrive_backend.py`: GenRL-compatible communication backend
+   - `config/colab-gdrive.yaml`: Google Drive configuration
+   - `utils/experiment_manager.py`: Experiment management utilities
 
-2. **Identity & Authentication (`modal-login/`)**: Next.js app for user authentication
-   - Creates Alchemy-hosted EOA wallets linked to email addresses
-   - Generates and registers `swarm.pem` peer identity files
-   - Exposes API at `http://localhost:3000` for authentication flow
+**Colab Notebooks**:
+   - `notebooks/colab_coordinator.ipynb`: Coordinator setup for Colab
+   - `notebooks/colab_worker.ipynb`: Worker setup for Colab
 
-3. **Web API (`web/`)**: FastAPI server for metrics and gossip
-   - `api/server.py`: Main FastAPI application
-   - Uses OpenTelemetry for observability
-   - Connects to DHT for swarm communication
+#### 2. Original Blockchain Mode (Legacy/Reference)
+
+The original blockchain-based mode components have been **removed** in this fork:
+   - ❌ `modal-login/`: Authentication system (removed)
+   - ❌ `web/`: FastAPI metrics server (removed)
+   - ❌ `hivemind_exp/`: Hivemind experiments (removed)
+   - ❌ `containerfiles/`: Docker containers (removed)
+   - ❌ `run_rl_swarm.sh`: Shell launcher (removed)
 
 ### Key Protocols
 
-- **Communication**: Hivemind DHT (distributed hash table) via libp2p for peer discovery and model sharing
-- **Coordination**: Ethereum smart contracts (`SwarmCoordinator_0.4.2.json`) on Gensyn Testnet for round/stage synchronization and reward submission
-- **Authentication**: Alchemy Modal for managed wallet creation and transaction signing
+**Google Drive Mode (Current):**
+- **Communication**: File-based rollout sharing via Google Drive
+- **Coordination**: Google Drive state files (JSON) instead of blockchain
 - **Training**: GRPO (Group Relative Policy Optimization) for policy updates
+- **Rollout Sharing**: Configurable frequency (generation/stage/round)
+- **Retention**: Configurable cleanup and archiving policies
+
+**Original Blockchain Mode (Removed):**
+- ~~Hivemind DHT for peer discovery~~
+- ~~Ethereum smart contracts for coordination~~
+- ~~Alchemy Modal for authentication~~
+- ~~P2P networking via libp2p~~
 
 ### Configuration System
 
-Hydra configuration in `rgym_exp/config/rg-swarm.yaml`:
-- Custom resolver `gpu_model_choice` automatically selects models based on hardware (large pool for GPU, small pool for CPU)
+**Google Drive Mode (`colab-gdrive.yaml`):**
+- `gdrive.base_path`: Path to Google Drive folder
+- `gdrive.experiment_name`: Unique experiment identifier
+- `gdrive.node_role`: 'coordinator' or 'worker'
+- `gdrive.node_id`: Unique node identifier
+- `communication.rollout_publish_frequency`: 'generation', 'stage', or 'round'
+- `communication.rollout_retention`: Cleanup policies
 - Environment variable interpolation via `${oc.env:VAR_NAME,default}`
-- Configuration is copied to `configs/rg-swarm.yaml` for user customization
+
+**Legacy Mode (`rg-swarm.yaml`):**
+- Still exists for reference but blockchain components removed
+- Custom resolver `gpu_model_choice` for hardware-based model selection
 
 ## Development Commands
 
-### Running the Swarm
+### Running the Swarm (Google Drive Mode)
 
-**Docker (recommended):**
-```bash
-# CPU-only
-docker-compose run --rm --build -Pit swarm-cpu
+**Google Colab (Recommended):**
 
-# GPU-enabled (requires NVIDIA drivers >=525.60.13 and nvidia-container-toolkit)
-docker-compose run --rm --build -Pit swarm-gpu
-```
+See [`README.md`](README.md) for detailed Colab instructions.
 
-**Shell script (advanced/experimental):**
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-./run_rl_swarm.sh
-```
+Quick summary:
+1. Open `notebooks/colab_coordinator.ipynb` in Colab
+2. Configure experiment name and model
+3. Run all cells
+4. (Optional) Add workers with `notebooks/colab_worker.ipynb`
 
-The script:
-1. Installs Node.js/Yarn if needed
-2. Starts modal-login server on port 3000
-3. Waits for authentication (creates `modal-login/temp-data/userData.json`)
-4. Installs GenRL library (version specified by `GENRL_TAG` in script)
-5. Prompts for HuggingFace token and model selection
-6. Launches training via `python -m rgym_exp.runner.swarm_launcher`
-
-### Web Server
+**Local Testing:**
 
 ```bash
-# Build and run web server + OpenTelemetry
-docker-compose build --no-cache
-docker-compose up
+# Clone repository
+git clone https://github.com/Elrashid/rl-swarm
+cd rl-swarm
 
-# Access at http://0.0.0.0:8080
+# Install dependencies
+pip install -r requirements.txt
+pip install gensyn-genrl==0.1.9
+
+# Terminal 1 - Coordinator
+export GDRIVE_PATH="/path/to/shared/folder"
+export EXPERIMENT_NAME="test_experiment"
+export NODE_ROLE="coordinator"
+export NODE_ID="coordinator_0"
+export MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"
+export ROLLOUT_PUBLISH_FREQUENCY="stage"
+export ROLLOUT_CLEANUP_ENABLED="False"
+
+python -m rgym_exp.runner.swarm_launcher --config-name colab-gdrive
+
+# Terminal 2 - Worker (optional)
+export GDRIVE_PATH="/path/to/shared/folder"  # SAME
+export EXPERIMENT_NAME="test_experiment"      # SAME
+export NODE_ROLE="worker"
+export NODE_ID="worker_1"                     # DIFFERENT
+export MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"
+export ROLLOUT_PUBLISH_FREQUENCY="stage"
+export ROLLOUT_CLEANUP_ENABLED="False"
+
+python -m rgym_exp.runner.swarm_launcher --config-name colab-gdrive
 ```
 
-### Modal Login Development
-
-```bash
-cd modal-login
-yarn install
-yarn build
-yarn start  # Runs on port 3000
-```
+**Original Docker/Shell Methods (Removed):**
+- ~~Docker compose commands~~ (removed, no longer available)
+- ~~`run_rl_swarm.sh` script~~ (removed, no longer available)
+- ~~Modal login server~~ (removed, no longer available)
 
 ## Important Files and Paths
 
-- `swarm.pem`: Peer identity (RSA key). Delete to generate new peer ID. Must match the email used for authentication.
-- `modal-login/temp-data/userData.json`: Contains org_id from authentication
-- `configs/rg-swarm.yaml`: User-editable config (backed up as `.bak` on version changes)
-- `logs/swarm.log`: Main swarm logs
-- `logs/yarn.log`: Modal login server logs
-- `logs/prg_record.txt`: Prediction Market game history
+**Google Drive Mode:**
+- `/MyDrive/rl-swarm/experiments/{EXPERIMENT_NAME}/`: Experiment root
+  - `state/current_state.json`: Current round/stage state
+  - `peers/*.json`: Peer registrations
+  - `rewards/round_X/stage_Y/*.json`: Reward submissions
+  - `rollouts/round_X/stage_Y/*.json`: Rollout sharing files
+  - `checkpoints/round_X/*.pt`: Model checkpoints
+  - `logs/{NODE_ID}/metrics.jsonl`: Training metrics (JSONL format)
+  - `logs/{NODE_ID}/training_events.jsonl`: Event logs
+- `/MyDrive/rl-swarm/archives/`: Archived rollouts (if archiving enabled)
+
+**Local Files:**
+- `rgym_exp/config/colab-gdrive.yaml`: Google Drive mode configuration
+- `rgym_exp/src/gdrive_rollout_sharing.py`: Rollout sharing implementation
+- `rgym_exp/communication/gdrive_backend.py`: Communication backend
+- `GDRIVE_IMPLEMENTATION.md`: Complete Google Drive mode documentation
+
+**Removed Files (No Longer Available):**
+- ~~`swarm.pem`: Peer identity~~ (no longer needed)
+- ~~`modal-login/temp-data/userData.json`~~ (removed with modal-login)
+- ~~`logs/swarm.log`~~ (now in Google Drive)
+- ~~`logs/yarn.log`~~ (removed with modal-login)
+- ~~`logs/prg_record.txt`~~ (PRG game removed)
 
 ## Environment Variables
 
-Set in `run_rl_swarm.sh` or Docker:
-- `IDENTITY_PATH`: Path to peer identity file (default: `./swarm.pem`)
-- `SWARM_CONTRACT`: SwarmCoordinator contract address
-- `PRG_CONTRACT`: Prediction Market contract address
-- `CONNECT_TO_TESTNET`: Enable blockchain integration (default: true)
-- `MODEL_NAME`: Override model selection (HuggingFace format: `repo/name`)
-- `HUGGINGFACE_ACCESS_TOKEN`: For pushing trained models
-- `PRG_GAME`: Enable Prediction Market participation (default: true)
-- `CPU_ONLY`: Force CPU mode even if GPU available
-- `GENSYN_RESET_CONFIG`: Reset config to defaults
-- `HF_TOKEN`: HuggingFace token (Docker only)
+**Google Drive Mode:**
+- `GDRIVE_PATH`: Path to Google Drive base folder (required)
+- `EXPERIMENT_NAME`: Unique experiment identifier (required)
+- `NODE_ROLE`: 'coordinator' or 'worker' (default: worker)
+- `NODE_ID`: Unique node identifier (default: auto-generated UUID)
+- `MODEL_NAME`: HuggingFace model (default: Gensyn/Qwen2.5-0.5B-Instruct)
+- `SEED`: Random seed (default: 42)
+- `ROLLOUT_PUBLISH_FREQUENCY`: 'generation', 'stage', or 'round' (default: stage)
+- `ROLLOUT_CLEANUP_ENABLED`: 'True' or 'False' (default: False)
+- `ROLLOUT_KEEP_LAST_N_ROUNDS`: Number of rounds to keep (default: 10)
+- `ROLLOUT_ARCHIVE_OLD`: 'True' or 'False' (default: False)
+- `HUGGINGFACE_ACCESS_TOKEN`: For pushing trained models (optional)
+- `WANDB_API_KEY`: Weights & Biases logging (optional)
+- `WANDB_PROJECT`: W&B project name (optional)
+
+**Removed Variables (No Longer Used):**
+- ~~`IDENTITY_PATH`~~ (no peer identities needed)
+- ~~`SWARM_CONTRACT`~~ (no blockchain)
+- ~~`PRG_CONTRACT`~~ (no blockchain)
+- ~~`CONNECT_TO_TESTNET`~~ (no blockchain)
+- ~~`PRG_GAME`~~ (game removed)
 
 ## GenRL Integration
 
 This codebase extends GenRL base classes:
-- `BaseGameManager` → `SwarmGameManager`: Adds HuggingFace pushing, PRG game support
-- `SwarmCoordinator` → `ModalSwarmCoordinator`: Uses Alchemy Modal API instead of direct wallet
-- `GRPOLanguageTrainerModule` → `GRPOTrainerModule`: Adds judge evaluation endpoint
-- `LocalMemoryTextDataManager` → `ReasoningGymDataManager`: Integrates reasoning-gym datasets
+
+**Google Drive Mode:**
+- `Communication` → `GDriveCommunicationBackend`: File-based communication
+  - `get_id()`: Returns node_id
+  - `publish_state()`: Publishes rollouts to Google Drive
+  - `get_swarm_states()`: Fetches rollouts from peers
+  - `advance_stage()`: Hook for stage advancement
+  - `advance_round()`: Hook for round advancement + cleanup
+
+**Common (Both Modes):**
+- `BaseGameManager` → `SwarmGameManager`: Orchestrates training
+- `GRPOLanguageTrainerModule` → `GRPOTrainerModule`: GRPO training
+- `LocalMemoryTextDataManager` → `ReasoningGymDataManager`: Dataset management
 
 Key GenRL concepts:
 - **GameState**: Tracks current round/stage
-- **WorldState**: Synchronized state across peers via DHT
+- **WorldState**: Synchronized state across peers (via Google Drive or DHT)
 - **RewardManager**: Computes rewards using `RGRewards` (accuracy-based)
-- **Communication**: Abstracted via `HivemindBackend`
+- **Communication**: Abstracted via `GDriveCommunicationBackend` or `HivemindBackend`
 
-## Identity Management Critical Rules
+## Google Drive Mode Details
 
-**Working scenarios:**
-1. First run: New email + generates new `swarm.pem` ✓
-2. Re-run: Same email + keep same `swarm.pem` ✓
+### Rollout Sharing
 
-**Broken scenarios:**
-1. Keep `swarm.pem` but use different email ✗
-2. Use same email but delete `swarm.pem` (creates new peer, still works but different identity)
+The `GDriveRolloutSharing` class handles all file operations:
+- **Publish**: Writes rollouts to `/rollouts/round_X/stage_Y/{peer_id}.json`
+- **Fetch**: Reads rollouts from other peers in same round/stage
+- **Cleanup**: Deletes/archives old rollouts based on retention policy
+- **Buffering**: Aggregates rollouts before writing (for stage/round frequencies)
 
-**To run multiple nodes:** Use same email for each, each gets unique `swarm.pem`
+### Communication Backend
+
+The `GDriveCommunicationBackend` implements GenRL's `Communication` interface:
+- Compatible with existing GenRL code (drop-in replacement)
+- Local caching to reduce Google Drive API calls
+- Retry logic with exponential backoff for API rate limits
+- Hooks for stage/round advancement
+
+### File Format
+
+Rollout files are JSON:
+```json
+{
+  "peer_id": "coordinator_0",
+  "round": 5,
+  "stage": 0,
+  "timestamp": 1696800000.0,
+  "rollouts": {
+    "0": [{"prompt": "...", "response": "...", "reward": 0.85}],
+    "1": [...]
+  }
+}
+```
+
+### Performance
+
+- **API Calls**: ~16 per stage (4 nodes, frequency='stage')
+- **Latency**: +1-2 seconds per stage vs Hivemind
+- **Storage**: ~8 MB per 100 rounds (4 nodes, 2 stages/round)
+- **Caching**: Reduces redundant API reads by ~60%
+
+## Identity Management
+
+**Google Drive Mode (Current):**
+- **No peer identities needed** - nodes identified by `NODE_ID` config
+- **No authentication** - just Google Drive access
+- **Multi-node setup**: Use different `NODE_ID` for each node
+- **Simple**: Just configure `NODE_ID` environment variable
+
+**Original Mode (Removed):**
+- ~~`swarm.pem` RSA keys~~ (no longer used)
+- ~~Email-based authentication~~ (removed)
+- ~~Alchemy Modal wallets~~ (removed)
 
 ## Testing
 
-No test framework currently configured in the repository. The codebase includes some test files:
-- `web/api/dht_pub_test.py`
-- `web/api/kinesis_test.py`
+**Google Drive Mode Testing:**
+
+See `GDRIVE_IMPLEMENTATION.md` for complete testing guide.
+
+Quick tests:
+1. Single node: Run coordinator only, verify rollout files created
+2. Multi-node: Run coordinator + worker, verify rollout sharing
+3. Retention: Enable cleanup, verify old rollouts deleted/archived
+4. Resume: Stop and restart, verify checkpoint loading works
+
+**Legacy Tests (Removed):**
+- ~~`web/api/dht_pub_test.py`~~ (removed with web/)
+- ~~`web/api/kinesis_test.py`~~ (removed with web/)
 
 ## Common Issues
 
-- **Port 3000 not accessible on VM**: Use SSH port forwarding: `ssh -L 3000:localhost:3000 user@host`
+**Google Drive Mode:**
+- **No rollout files created**: Check `GDRIVE_PATH` and experiment name match
+- **Rate limit errors**: Reduce publish frequency to 'round', enable caching
+- **Out of storage**: Enable cleanup with `cleanup_enabled: true`
+- **Worker can't find coordinator**: Verify `EXPERIMENT_NAME` matches exactly
+- **Slow training**: Enable caching, reduce `fetch_max_peers`
+
+**General:**
 - **OOM on MacBook**: Set `export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0`
-- **Peer skips rounds**: Device too slow for swarm pace, it will catch up
-- **Viem package issues**: Update in `modal-login/package.json` to `"viem": "2.25.0"`
-- **Protobuf warnings**: Can be ignored (yanked version warning is expected)
+- **Peer skips rounds**: Device too slow for swarm pace (normal behavior)
+- **Protobuf warnings**: Can be ignored (expected)
 
-## Contract Interaction
+**Removed Issues (No Longer Applicable):**
+- ~~Port 3000 not accessible~~ (modal-login removed)
+- ~~Viem package issues~~ (modal-login removed)
+- ~~Blockchain connection issues~~ (blockchain removed)
 
-Smart contract ABIs located in:
-- `rgym_exp/contracts/SwarmCoordinator_0.4.2.json`
-- `hivemind_exp/contracts/SwarmCoordinator_0.4.2.json`
+## Documentation
 
-Main contract functions (via Modal API proxy):
-- `register-peer`: Register peer_id on-chain (idempotent)
-- `submit-reward`: Submit round/stage rewards
-- `get-current-round`: Query active round
-- `get-current-stage`: Query active stage
+**Primary Documentation:**
+- `README.md`: Quick start guide for Google Drive mode
+- `GDRIVE_IMPLEMENTATION.md`: Complete technical documentation
+- `CLAUDE.md`: This file - architecture and development guide
+
+**Configuration Examples:**
+- `rgym_exp/config/colab-gdrive.yaml`: Annotated configuration file
+- `notebooks/colab_coordinator.ipynb`: Working Colab example
+- `notebooks/colab_worker.ipynb`: Worker setup example
+
+**Removed Documentation:**
+- ~~`CONTRIBUTING.md`~~ (removed)
+- ~~`technical_report.pdf`~~ (removed)
+- ~~Contract interaction guides~~ (blockchain removed)
 
 ## Contributing
 
-Contributions are managed via private repo with copybara:
-- One feature per branch
-- Clear commit messages
-- Link to relevant issues
-- Include logs (not screenshots) for bug reports
+This is a fork of the original Gensyn RL Swarm project. Contributions should:
+- Focus on Google Drive-only mode improvements
+- Maintain backward compatibility where possible
+- Include clear documentation
+- Test on Google Colab
+- Follow existing code style
+- Update GDRIVE_IMPLEMENTATION.md for significant changes
+
+For issues or feature requests, use GitHub issues:
+https://github.com/Elrashid/rl-swarm/issues
+
+## Migration from Original
+
+If you have code using the original blockchain mode:
+
+1. **Update config**: Use `colab-gdrive.yaml` instead of `rg-swarm.yaml`
+2. **Remove authentication**: No modal-login needed
+3. **Remove Docker**: Run directly in Colab or locally
+4. **Remove peer identities**: Use `NODE_ID` environment variable
+5. **Update communication**: Uses `GDriveCommunicationBackend` automatically
+
+See `GDRIVE_IMPLEMENTATION.md` for complete migration guide.
+
+---
+
+# important-instruction-reminders
+
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
