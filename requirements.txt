@@ -4,28 +4,23 @@ transformers>=4.30.0
 accelerate>=0.20.0
 datasets>=2.14.0
 
-# Configuration Management
-hydra-core>=1.3.0
-omegaconf>=2.3.0
+# GenRL Framework
+gensyn-genrl==0.1.9
+
+# Reasoning Tasks
+reasoning-gym
 
 # Data Processing
 pandas>=1.5.0
 pyyaml>=6.0
 
-# Web Server (for API mode)
-fastapi>=0.100.0
-uvicorn>=0.23.0
-
-# Networking (for P2P mode - optional in GDrive mode)
-hivemind>=1.1.0
-
 # Logging and Monitoring
 wandb>=0.15.0
 
-# Blockchain/Web3 (for original mode - optional in GDrive mode)
-web3>=6.0.0
-requests>=2.31.0
+# HuggingFace Integration
+huggingface-hub>=0.16.0
 
 # Utilities
+requests>=2.31.0
 python-dotenv>=1.0.0
 tqdm>=4.65.0
