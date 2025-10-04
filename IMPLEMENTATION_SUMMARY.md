@@ -343,4 +343,4 @@ df.groupby('round')['reward'].mean().plot()
 For questions about this implementation:
 - Refer to: `GDRIVE_COLAB_IMPLEMENTATION_PLAN.md` (detailed)
 - Refer to: `CLAUDE.md` (original codebase documentation)
-- Check: GitHub issues at https://github.com/gensyn-ai/rl-swarm
+- Check: GitHub issues at https://github.com/Elrashid/rl-swarm
