@@ -235,7 +235,23 @@ class GDriveCommunicationBackend(Communication):
             self.rollout_cache.clear()
             get_logger().debug(f"Invalidated rollout cache ({old_size} entries)")
 
-    # Compatibility methods for HivemindBackend interface
+    # Compatibility methods for Communication base class
+    def all_gather_object(self, obj: Any) -> List[Any]:
+        """
+        Gather objects from all peers.
+
+        In GDrive mode, this is not used since we fetch rollouts directly
+        from Google Drive files instead of using collective operations.
+
+        Args:
+            obj: Object to gather
+
+        Returns:
+            List containing just this node's object (no actual gathering)
+        """
+        get_logger().debug("all_gather_object called but not used in GDrive mode")
+        return [obj]
+
     @property
     def dht(self):
         """Return mock DHT object for compatibility with existing code."""
