@@ -324,19 +324,89 @@ plt.show()
 
 ## Troubleshooting
 
+### Common Colab Issues
+
+#### "Current Round: 0, Active Peers: 0" - Training not starting
+
+**Symptoms:** All cells run successfully, folders created, but training never starts.
+
+**Cause:** The training cell is missing or didn't run.
+
+**Solution:**
+1. Make sure you're using the **latest notebooks** from GitHub
+2. **Coordinator**: Run cell 15 "Start Training & Coordination"
+3. **Worker**: Run cell 14 "Start Training"
+4. Wait 2-5 minutes for model download on first run
+5. Check cell output for error messages
+
+**Verify training started:**
+```python
+import os
+exp_path = "/content/drive/MyDrive/rl-swarm/experiments/YOUR_EXPERIMENT_NAME"
+print("Peers:", os.listdir(f"{exp_path}/peers") if os.path.exists(f"{exp_path}/peers") else "None")
+print("Logs:", os.listdir(f"{exp_path}/logs") if os.path.exists(f"{exp_path}/logs") else "None")
+```
+
+#### "requirements.txt not found" during install
+
+**Cause:** Repository clone failed or directory is corrupted.
+
+**Solution:**
+1. The notebook now **automatically removes old directory** before cloning
+2. If error persists, manually run:
+   ```python
+   !rm -rf /content/rl-swarm
+   !git clone https://github.com/Elrashid/rl-swarm.git /content/rl-swarm
+   %cd /content/rl-swarm
+   ```
+
+#### "KeyError: 'active_peers'" in monitor cell
+
+**Cause:** Old version of notebook trying to access missing dict keys.
+
+**Solution:**
+- Use the latest notebooks from GitHub (updated to use `.get()` method)
+- Or manually change `status['active_peers']` to `status.get('active_peers', 0)`
+
+#### Model download taking forever
+
+**Normal:** First run downloads ~500MB model (2-5 minutes on Colab)
+
+**If stuck >10 minutes:**
+1. Check Colab GPU allocation (Runtime > Change runtime type)
+2. Restart runtime and try again
+3. Try a smaller model: `MODEL_NAME = 'Qwen/Qwen3-0.6B'`
+
+#### Worker can't find coordinator
+
+**Checklist:**
+- [ ] `EXPERIMENT_NAME` **exactly** matches coordinator (check for typos, spaces)
+- [ ] Coordinator notebook is **still running** (didn't disconnect)
+- [ ] Coordinator reached cell 15 (training cell)
+- [ ] Using **same Google Drive account**
+
+**Verify coordinator is running:**
+```python
+import os
+exp_path = "/content/drive/MyDrive/rl-swarm/experiments/YOUR_EXPERIMENT_NAME"
+state_file = f"{exp_path}/state/current_state.json"
+
+if os.path.exists(state_file):
+    import json
+    with open(state_file) as f:
+        state = json.load(f)
+    print(f"Coordinator status: Round {state['round']}, Stage {state['stage']}")
+else:
+    print("❌ Coordinator not initialized!")
+```
+
 ### Google Drive Mode Issues
 
 #### No rollout files created
 - Check `GDRIVE_PATH` is correct
 - Verify `EXPERIMENT_NAME` matches across all nodes
+- Training must actually start (check cell 15 output)
 - Check permissions on Google Drive directory
-- Look for errors in logs
-
-#### Worker can't find coordinator rollouts
-- Ensure `EXPERIMENT_NAME` is identical
-- Check rollout files exist: `/rollouts/round_X/stage_Y/coordinator_*.json`
-- Verify no typos in experiment name
-- Check Google Drive sync status
 
 #### Rate limit errors
 - Reduce publish frequency: `'stage'` → `'round'`
@@ -359,7 +429,9 @@ plt.show()
 - **My peer 'skipped a round'**: This occurs when your device isn't fast enough to keep up with the pace of the swarm. This is normal behavior.
 
 - **My model doesn't seem to be training?**
-    - If you're using a consumer device (e.g. a MacBook), it is likely just running slowly - check back in 20 minutes.
+    - First run takes 2-5 minutes for model download
+    - Check training cell output for progress
+    - Consumer devices (MacBook) are slow - wait 20 minutes
 
 - **OOM errors on MacBook?**
     - Try this (experimental) fix to increase memory:
@@ -367,9 +439,6 @@ plt.show()
         export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0
         ```
 
-- **I want to use a bigger and/or different model, can I do that?**: Yes - just change the `MODEL_NAME` configuration variable to any HuggingFace model.
-
-- **I am running a model on my CPU and training seems frozen**: Wait longer than a single training iteration has previously taken. If actually frozen, try:
-    - Set: `export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0`
+- **I want to use a bigger and/or different model**: Change `MODEL_NAME` to any HuggingFace model ID
 
 For more troubleshooting, see [`GDRIVE_IMPLEMENTATION.md`](GDRIVE_IMPLEMENTATION.md).
