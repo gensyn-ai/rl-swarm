@@ -25,14 +25,14 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
 
     def __init__(
         self,
-        coordinator: SwarmCoordinator,
-        max_stage: int,
-        max_round: int,
-        game_state: GameState,
-        reward_manager: RewardManager,
-        trainer: TrainerModule,
-        data_manager: DataManager,
-        communication: Communication,
+        coordinator: SwarmCoordinator | None = None,
+        max_stage: int = 1,
+        max_round: int = 1000000,
+        game_state: GameState = None,
+        reward_manager: RewardManager = None,
+        trainer: TrainerModule = None,
+        data_manager: DataManager = None,
+        communication: Communication = None,
         role_manager: RoleManager | None = None,
         run_mode: str = "train",
         log_dir: str = "logs",
@@ -61,15 +61,39 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         self.state.peer_id = self.peer_id
         self.animal_name = get_name_from_peer_id(self.peer_id, True)
 
-        # Register peer_id and get current round from the chain
+        # Register peer_id and get current round from the coordinator (if available)
         self.coordinator = coordinator
-        self.coordinator.register_peer(self.peer_id)
-        round, _ = self.coordinator.get_round_and_stage()
-        self.state.round = round
+        if self.coordinator is not None:
+            try:
+                self.coordinator.register_peer(self.peer_id)
+                round, _ = self.coordinator.get_round_and_stage()
+                self.state.round = round
+                get_logger().info(f"Registered with coordinator at round {round}")
+            except Exception as e:
+                get_logger().warning(f"Failed to register with coordinator: {e}")
+                self.state.round = 0
+        else:
+            get_logger().info("Running without coordinator (standalone mode)")
+            self.state.round = 0
 
         self.communication.step_ = (
             self.state.round
         )  # initialize communication module to contract's round
+
+        # Initialize GDrive logger if in GDrive mode
+        self.gdrive_logger = None
+        if log_dir and '/drive/' in log_dir:
+            try:
+                from rgym_exp.src.gdrive_logger import GDriveLogger
+                import os
+                self.gdrive_logger = GDriveLogger(
+                    gdrive_log_path=log_dir,
+                    node_id=os.environ.get('NODE_ID', self.peer_id[:8]),
+                    experiment_name=os.environ.get('EXPERIMENT_NAME', 'default')
+                )
+                get_logger().info("Initialized GDrive logger")
+            except Exception as e:
+                get_logger().warning(f"Failed to initialize GDrive logger: {e}")
 
         # enable push to HF if token was provided
         self.hf_token = hf_token
@@ -115,9 +139,28 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         else:
             my_signal = 0
         my_signal = (my_signal + 1) * (my_signal > 0) + my_signal * (my_signal <= 0)
+
+        # Log metrics to GDrive
+        if self.gdrive_logger:
+            try:
+                self.gdrive_logger.log_metrics(
+                    self.state.round,
+                    self.state.stage,
+                    {
+                        'my_reward': my_signal,
+                        'total_agents': len(signal_by_agent),
+                        'peer_id': self.peer_id
+                    }
+                )
+            except Exception as e:
+                get_logger().debug(f"Failed to log metrics: {e}")
+
         return my_signal
 
     def _try_submit_to_chain(self, signal_by_agent):
+        if self.coordinator is None:
+            return  # Skip if no coordinator
+
         elapsed_time_hours = (time.time() - self.time_since_submit) / 3600
         if elapsed_time_hours > self.submit_period:
             try:
@@ -138,7 +181,7 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                 self.time_since_submit = time.time()
                 self.submitted_this_round = True
             except Exception as e:
-                get_logger().debug(str(e))
+                get_logger().error(f"Failed to submit to coordinator: {e}")
 
     def _hook_after_rewards_updated(self):
         signal_by_agent = self._get_total_rewards_by_agent()
@@ -168,6 +211,17 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
 
     def _hook_after_game(self):
         self._save_to_hf()
+
+        # Save checkpoint to GDrive if enabled
+        if self.gdrive_logger and self.state.round % 10 == 0:
+            try:
+                self.gdrive_logger.log_checkpoint(
+                    self.state.round,
+                    self.trainer.model,
+                    self.trainer.optimizer if hasattr(self.trainer, 'optimizer') else None
+                )
+            except Exception as e:
+                get_logger().error(f"Failed to save checkpoint: {e}")
 
     def _configure_hf_hub(self, hf_push_frequency):
         username = whoami(token=self.hf_token)["name"]
@@ -220,7 +274,11 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
 
             # Retrieve current round and stage.
             try:
-                round_num, stage = self.coordinator.get_round_and_stage()
+                if self.coordinator is not None:
+                    round_num, stage = self.coordinator.get_round_and_stage()
+                else:
+                    # In standalone mode, just use current state
+                    round_num, stage = self.state.round, self.state.stage
             except Exception as e:
                 if curr_time - fetch_log_time > log_timeout:
                     get_logger().debug(

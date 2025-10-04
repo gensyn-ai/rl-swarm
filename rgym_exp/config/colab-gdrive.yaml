@@ -1,0 +1,133 @@
+# Google Drive + Colab Configuration for RL Swarm
+# No blockchain, Docker, or authentication required
+
+# Google Drive Configuration
+gdrive:
+  base_path: ${oc.env:GDRIVE_PATH,/content/drive/MyDrive/rl-swarm}
+  experiment_name: ${oc.env:EXPERIMENT_NAME,default_experiment}
+  node_role: ${oc.env:NODE_ROLE,worker}  # 'coordinator' or 'worker'
+  node_id: ${oc.env:NODE_ID,node_0}
+
+# Logs go to Google Drive (persistent across Colab sessions)
+log_dir: ${gdrive.base_path}/experiments/${gdrive.experiment_name}/logs/${gdrive.node_id}
+
+# Hydra configuration
+hydra:
+  run:
+    dir: ${log_dir}
+  job_logging:
+    handlers:
+      console:
+        level: INFO
+    root:
+      level: DEBUG
+
+# Training configuration
+training:
+  max_round: 1000000
+  max_stage: 1
+  num_generations: 2
+  num_transplant_trees: 2
+  seed: ${oc.env:SEED,42}
+  dtype: 'float32'
+  checkpoint_frequency: 10  # Save checkpoint every N rounds
+
+# Evaluation configuration
+eval:
+  judge_base_url: "https://swarm-judge.internal-apps-central1.clusters.gensyn.ai"
+
+# Communication configuration (Hivemind P2P)
+communications:
+  use_gdrive_discovery: true
+  discovery_path: ${gdrive.base_path}/discovery
+  initial_peers: []  # Will be discovered via Google Drive
+  heartbeat_interval: 60  # Update heartbeat every 60 seconds
+
+# Coordinator Manager (for coordinator node only)
+coordinator_manager:
+  advancement_strategy: hybrid  # 'time_based', 'completion_based', or 'hybrid'
+  round_duration_minutes: 10
+  min_submission_percent: 0.5
+  max_round_duration_minutes: 20
+
+# Game Manager configuration
+game_manager:
+  _target_: rgym_exp.src.manager.SwarmGameManager
+  max_stage: ${training.max_stage}
+  max_round: ${training.max_round}
+  log_dir: ${log_dir}
+  hf_token: ${oc.env:HUGGINGFACE_ACCESS_TOKEN,null}
+  hf_push_frequency: 20
+  run_mode: "train_and_evaluate"
+  bootnodes: ${communications.initial_peers}
+  prg_game_config: null  # PRG game disabled in GDrive mode
+
+  # Game state
+  game_state:
+    _target_: genrl.state.game_state.GameState
+    round: 0
+    stage: 0
+
+  # Reward manager
+  reward_manager:
+    _target_: genrl.rewards.DefaultRewardManager
+    reward_fn_store:
+      _target_: genrl.rewards.reward_store.RewardFnStore
+      max_rounds: ${training.max_round}
+      reward_fn_stores:
+        - _target_: genrl.rewards.reward_store.RoundRewardFnStore
+          num_stages: ${training.max_stage}
+          reward_fns:
+            - _target_: rgym_exp.src.rewards.RGRewards
+
+  # Trainer configuration
+  trainer:
+    _target_: rgym_exp.src.trainer.GRPOTrainerModule
+    models:
+      - _target_: transformers.AutoModelForCausalLM.from_pretrained
+        pretrained_model_name_or_path: ${oc.env:MODEL_NAME,Gensyn/Qwen2.5-0.5B-Instruct}
+    config:
+      _target_: genrl.trainer.grpo_trainer.GRPOTrainerConfig
+      dtype: ${training.dtype}
+      epsilon: 0.2
+      epsilon_high: 0.28
+      num_generations: ${training.num_generations}
+    log_with: wandb
+    log_dir: ${log_dir}
+    judge_base_url: ${eval.judge_base_url}
+
+  # Data manager
+  data_manager:
+    _target_: rgym_exp.src.data.ReasoningGymDataManager
+    yaml_config_path: "rgym_exp/src/datasets.yaml"
+    num_train_samples: 2
+    num_evaluation_samples: 0
+    num_generations: ${training.num_generations}
+    system_prompt_id: 'default'
+    seed: ${training.seed}
+    num_transplant_trees: ${training.num_transplant_trees}
+
+  # Communication (Hivemind)
+  communication:
+    _target_: genrl.communication.hivemind.hivemind_backend.HivemindBackend
+    initial_peers: ${communications.initial_peers}
+    identity_path: ${oc.env:IDENTITY_PATH,/tmp/swarm.pem}
+    startup_timeout: 120
+    beam_size: 50
+
+  # Google Drive Coordinator (replaces blockchain)
+  coordinator:
+    _target_: rgym_exp.src.gdrive_coordinator.GDriveSwarmCoordinator
+    gdrive_path: ${gdrive.base_path}/experiments/${gdrive.experiment_name}
+    node_role: ${gdrive.node_role}
+    round_check_interval: 30
+
+# Model pools (for auto-selection based on hardware)
+default_large_model_pool:
+  - nvidia/AceInstruct-1.5B
+  - dnotitia/Smoothie-Qwen3-1.7B
+  - Gensyn/Qwen2.5-1.5B-Instruct
+
+default_small_model_pool:
+  - Gensyn/Qwen2.5-0.5B-Instruct
+  - Qwen/Qwen3-0.6B
