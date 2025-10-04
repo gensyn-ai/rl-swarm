@@ -24,6 +24,8 @@ This fork adds a **Google Drive-only mode** that uses Google Drive for all coord
 - ❌ P2P networking (Hivemind DHT)
 - ❌ Peer identity files (swarm.pem)
 - ❌ Web server/API
+- ❌ Configuration frameworks (Hydra/OmegaConf)
+- ❌ Config files (all config via environment variables)
 
 **Added:**
 - ✅ Google Drive-based rollout sharing

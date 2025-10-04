@@ -150,6 +150,10 @@ python -m rgym_exp.runner.swarm_launcher
 - ~~`modal-login/temp-data/userData.json`~~ (removed with modal-login)
 - ~~`rgym_exp/config/*.yaml`~~: Config files (replaced with env vars)
 - ~~`rgym_exp/contracts/*.json`~~: Smart contract ABIs (removed)
+- ~~`rgym_exp/src/coordinator.py`~~: Blockchain coordinator (ModalSwarmCoordinator)
+- ~~`rgym_exp/src/prg_module.py`~~: Prediction Game module
+- ~~`rgym_exp/runner/coordinator_node.py`~~: Legacy Hydra launcher
+- ~~`rgym_exp/src/utils/omega_gpu_resolver.py`~~: Hydra/OmegaConf resolver
 - ~~`logs/swarm.log`~~ (now in Google Drive)
 - ~~`logs/yarn.log`~~ (removed with modal-login)
 - ~~`logs/prg_record.txt`~~ (PRG game removed)
