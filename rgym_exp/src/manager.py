@@ -77,7 +77,7 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
 
         self.communication.step_ = (
             self.state.round
-        )  # initialize communication module to contract's round
+        )  # initialize communication module to current round
 
         # Initialize GDrive logger if in GDrive mode
         self.gdrive_logger = None
@@ -112,10 +112,6 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         self.time_since_submit = time.time()  # seconds
         self.submit_period = 3.0  # hours
         self.submitted_this_round = False
-
-        # PRG Game
-        self.prg_module = PRGModule(log_dir, **kwargs)
-        self.prg_game = self.prg_module.prg_game
 
     def _get_total_rewards_by_agent(self):
         rewards_by_agent = defaultdict(int)
@@ -188,13 +184,6 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         self._try_submit_to_chain(signal_by_agent)
 
     def _hook_after_round_advanced(self):
-        if self.prg_game:
-            # TODO: Ideally I think the judge client request question bit should come in the manager and the trainer should be doing only PyTorch-y stuff,
-            # but I have kept it consistent with the evaluate function for now.
-            prg_history_dict = self.prg_module.prg_history_dict
-            results_dict = self.trainer.play_prg_game_logits(prg_history_dict)
-            self.prg_module.play_prg_game(results_dict, self.peer_id)
-
         self._save_to_hf()
 
         # Try to submit to chain again if necessary, but don't update our signal twice
