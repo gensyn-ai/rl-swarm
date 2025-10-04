@@ -152,7 +152,7 @@ export MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"
 export ROLLOUT_PUBLISH_FREQUENCY="stage"
 export ROLLOUT_CLEANUP_ENABLED="False"
 
-python -m rgym_exp.runner.swarm_launcher --config-name colab-gdrive
+python -m rgym_exp.runner.swarm_launcher
 
 # Terminal 2 - Start Worker (optional)
 export GDRIVE_PATH="/path/to/shared/folder"  # SAME path
@@ -163,7 +163,7 @@ export MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"
 export ROLLOUT_PUBLISH_FREQUENCY="stage"
 export ROLLOUT_CLEANUP_ENABLED="False"
 
-python -m rgym_exp.runner.swarm_launcher --config-name colab-gdrive
+python -m rgym_exp.runner.swarm_launcher
 ```
 
 **Note:** Use a shared folder (network drive, Dropbox, etc.) for `GDRIVE_PATH` to test multi-node locally.
