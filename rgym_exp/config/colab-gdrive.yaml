@@ -36,12 +36,23 @@ training:
 eval:
   judge_base_url: "https://swarm-judge.internal-apps-central1.clusters.gensyn.ai"
 
-# Communication configuration (Hivemind P2P)
-communications:
-  use_gdrive_discovery: true
-  discovery_path: ${gdrive.base_path}/discovery
-  initial_peers: []  # Will be discovered via Google Drive
-  heartbeat_interval: 60  # Update heartbeat every 60 seconds
+# Rollout Sharing Configuration Guide:
+#
+# rollout_publish_frequency:
+#   - 'generation': Publish after each generation (most frequent, highest API usage)
+#   - 'stage': Publish after each stage (recommended, balanced)
+#   - 'round': Publish after each round (least frequent, lowest API usage)
+#
+# rollout_retention:
+#   cleanup_enabled: false = Keep all rollouts forever (good for debugging)
+#   cleanup_enabled: true = Enable automatic cleanup
+#     keep_last_n_rounds: N = Keep only last N rounds
+#     archive_old_rollouts: true = Move old rollouts to archive instead of deleting
+#
+# Storage estimates (4 nodes, 2 stages/round):
+#   - 100 rounds: ~8 MB
+#   - 1000 rounds: ~80 MB
+#   - Google Drive free tier: 15 GB (can store ~187,500 rounds)
 
 # Coordinator Manager (for coordinator node only)
 coordinator_manager:
@@ -59,7 +70,7 @@ game_manager:
   hf_token: ${oc.env:HUGGINGFACE_ACCESS_TOKEN,null}
   hf_push_frequency: 20
   run_mode: "train_and_evaluate"
-  bootnodes: ${communications.initial_peers}
+  bootnodes: []  # No bootnodes needed in GDrive mode
   prg_game_config: null  # PRG game disabled in GDrive mode
 
   # Game state
@@ -107,13 +118,27 @@ game_manager:
     seed: ${training.seed}
     num_transplant_trees: ${training.num_transplant_trees}
 
-  # Communication (Hivemind)
+  # Communication (Google Drive)
   communication:
-    _target_: genrl.communication.hivemind.hivemind_backend.HivemindBackend
-    initial_peers: ${communications.initial_peers}
-    identity_path: ${oc.env:IDENTITY_PATH,/tmp/swarm.pem}
-    startup_timeout: 120
-    beam_size: 50
+    _target_: rgym_exp.communication.gdrive_backend.GDriveCommunicationBackend
+    gdrive_rollout_sharing: null  # Will be injected by swarm_launcher
+    node_id: null  # Will be injected by swarm_launcher
+    experiment_name: ${gdrive.experiment_name}
+
+    # Rollout sharing configuration
+    rollout_publish_frequency: 'stage'  # Options: 'generation', 'stage', 'round'
+
+    # Fetching behavior
+    fetch_max_peers: 10  # How many peers to fetch from
+    fetch_timeout_seconds: 30  # How long to wait for Drive API
+    cache_rollouts: true  # Enable local caching
+
+    # Retention policy
+    rollout_retention:
+      cleanup_enabled: false  # Set to true to enable cleanup
+      keep_last_n_rounds: 10  # Keep 10 most recent rounds
+      archive_old_rollouts: false  # Set to true to archive instead of delete
+      archive_path: ${gdrive.base_path}/archives/${gdrive.experiment_name}/
 
   # Google Drive Coordinator (replaces blockchain)
   coordinator:

@@ -18,6 +18,7 @@ from huggingface_hub import login, whoami
 
 from rgym_exp.src.utils.name_utils import get_name_from_peer_id
 from rgym_exp.src.prg_module import PRGModule
+from rgym_exp.communication.gdrive_backend import GDriveCommunicationBackend
 
 
 class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
@@ -53,7 +54,8 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
             run_mode=run_mode,
         )
 
-        assert isinstance(self.communication, HivemindBackend)
+        # Support both HivemindBackend and GDriveCommunicationBackend
+        assert isinstance(self.communication, (HivemindBackend, GDriveCommunicationBackend))
         self.train_timeout = 60 * 60 * 24 * 31  # 1 month
 
         # Logging Setup
@@ -190,7 +192,7 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
 
     def _hook_after_round_advanced(self):
         if self.prg_game:
-            # TODO: Ideally I think the judge client request question bit should come in the manager and the trainer should be doing only PyTorch-y stuff, 
+            # TODO: Ideally I think the judge client request question bit should come in the manager and the trainer should be doing only PyTorch-y stuff,
             # but I have kept it consistent with the evaluate function for now.
             prg_history_dict = self.prg_module.prg_history_dict
             results_dict = self.trainer.play_prg_game_logits(prg_history_dict)
@@ -205,6 +207,10 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
 
         # Reset flag for next round
         self.submitted_this_round = False
+
+        # Notify GDrive backend that round has advanced (triggers cleanup & buffered publish)
+        if isinstance(self.communication, GDriveCommunicationBackend):
+            self.communication.advance_round()
 
         # Block until swarm round advances
         self.agent_block()
@@ -270,7 +276,9 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         )
         while time.monotonic() - start_time < self.train_timeout:
             curr_time = time.monotonic()
-            _ = self.communication.dht.get_visible_maddrs(latest=True)
+            # Only call DHT methods if using Hivemind backend
+            if isinstance(self.communication, HivemindBackend):
+                _ = self.communication.dht.get_visible_maddrs(latest=True)
 
             # Retrieve current round and stage.
             try:
