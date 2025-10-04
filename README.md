@@ -51,7 +51,7 @@ The easiest way to run RL Swarm is using Docker. This ensures a consistent setup
 #### 1. Clone this repo
 
 ```sh
-git clone https://github.com/gensyn-ai/rl-swarm
+git clone https://github.com/Elrashid/rl-swarm
 ```
 
 #### 2. Install Docker
@@ -89,6 +89,174 @@ source .venv/bin/activate
 ./run_rl_swarm.sh
 ```  
 To learn more about experimental mode, check out our [getting started guide](https://github.com/gensyn-ai/genrl/blob/main/getting_started.ipynb).
+
+---
+
+## 🆕 Google Colab Mode (No Blockchain Required)
+
+**NEW**: Run RL Swarm on Google Colab without blockchain, Docker, or authentication!
+
+This mode uses **Google Drive** for coordination instead of blockchain, making it perfect for:
+- Testing and experimentation
+- Running on free Google Colab GPUs
+- Multi-node training without infrastructure setup
+- Checkpoint persistence across Colab sessions
+
+### Quick Start on Colab
+
+#### 1. Open Coordinator Notebook
+
+Click this link to open the coordinator notebook in Google Colab:
+
+**[Open Coordinator Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_coordinator.ipynb)**
+
+Or manually:
+1. Go to [Google Colab](https://colab.research.google.com/)
+2. File > Open notebook > GitHub tab
+3. Enter: `Elrashid/rl-swarm`
+4. Select: `notebooks/colab_coordinator.ipynb`
+
+#### 2. Configure Your Experiment
+
+In the first cell, set your experiment configuration:
+
+```python
+EXPERIMENT_NAME = 'my_experiment'  # Choose a unique name
+NODE_ID = 'coordinator_0'
+MODEL_NAME = 'Gensyn/Qwen2.5-0.5B-Instruct'
+SEED = 42
+```
+
+#### 3. Run All Cells
+
+Click **Runtime > Run all** and wait for:
+- ✓ Google Drive mounted
+- ✓ Dependencies installed
+- ✓ Experiment initialized
+- ✓ Training started
+
+### Add Worker Nodes (Optional)
+
+To run multi-node training:
+
+**[Open Worker Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_worker.ipynb)**
+
+Configure with **same EXPERIMENT_NAME** but unique NODE_ID:
+
+```python
+EXPERIMENT_NAME = 'my_experiment'  # MUST MATCH coordinator
+NODE_ID = 'worker_1'               # MUST BE UNIQUE
+MODEL_NAME = 'Gensyn/Qwen2.5-0.5B-Instruct'
+SEED = 42
+```
+
+Run all cells. Repeat for additional workers (worker_2, worker_3, etc.)
+
+### Features
+
+- ✅ **No blockchain** - Uses Google Drive for state management
+- ✅ **No Docker** - Runs directly in Colab
+- ✅ **No authentication** - Just mount Google Drive
+- ✅ **Resumable** - Checkpoints saved every 10 rounds
+- ✅ **Multi-experiment** - Run different experiments simultaneously
+- ✅ **Full logging** - Metrics and checkpoints in Google Drive
+
+### Monitor Progress
+
+Add a monitoring cell to any notebook:
+
+```python
+from rgym_exp.utils.experiment_manager import get_experiment_status
+
+status = get_experiment_status(
+    '/content/drive/MyDrive/rl-swarm',
+    'my_experiment'
+)
+
+print(f"Round: {status['current_round']}")
+print(f"Active Peers: {status['num_active_peers']}")
+```
+
+### Google Drive Structure
+
+Your experiment data will be organized in Google Drive:
+
+```
+/MyDrive/rl-swarm/
+├── experiments/
+│   └── my_experiment/
+│       ├── state/current_state.json     # Current round/stage
+│       ├── peers/*.json                 # Peer registrations
+│       ├── checkpoints/round_X/*.pt     # Model checkpoints
+│       └── logs/node_id/
+│           ├── metrics.jsonl            # Training metrics
+│           └── training_events.jsonl    # Events
+└── discovery/*.json                     # Peer multiaddrs
+```
+
+### Testing Locally
+
+You can also test the Google Drive coordinator locally before deploying to Colab:
+
+```bash
+# Terminal 1 - Coordinator
+export GDRIVE_PATH="/path/to/shared/folder"
+export EXPERIMENT_NAME="test_experiment"
+export NODE_ROLE="coordinator"
+export NODE_ID="coordinator_0"
+export MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"
+export IDENTITY_PATH="/path/to/coordinator.pem"
+
+python -m rgym_exp.runner.swarm_launcher --config-name colab-gdrive
+
+# Terminal 2 - Worker
+export GDRIVE_PATH="/path/to/shared/folder"  # SAME
+export EXPERIMENT_NAME="test_experiment"      # SAME
+export NODE_ROLE="worker"
+export NODE_ID="worker_1"                     # DIFFERENT
+export MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct"
+export IDENTITY_PATH="/path/to/worker1.pem"
+
+python -m rgym_exp.runner.swarm_launcher --config-name colab-gdrive
+```
+
+### Analyze Results
+
+Aggregate and visualize metrics across all nodes:
+
+```python
+from rgym_exp.utils.experiment_manager import get_experiment_metrics
+import matplotlib.pyplot as plt
+
+# Load metrics
+df = get_experiment_metrics(
+    '/content/drive/MyDrive/rl-swarm',
+    'my_experiment'
+)
+
+# Plot average reward per round
+df.groupby('round')['my_reward'].mean().plot(
+    title='Average Reward per Round'
+)
+plt.xlabel('Round')
+plt.ylabel('Reward')
+plt.show()
+
+# Compare performance across nodes
+df.groupby('node_id')['my_reward'].mean().plot(
+    kind='bar',
+    title='Average Reward by Node'
+)
+plt.show()
+```
+
+### Documentation
+
+- **Quick Reference**: See `IMPLEMENTATION_SUMMARY.md`
+- **Detailed Guide**: See `GDRIVE_COLAB_IMPLEMENTATION_PLAN.md`
+- **Architecture**: See `CLAUDE.md`
+
+---
 
 ### Login
 
