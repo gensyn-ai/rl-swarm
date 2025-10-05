@@ -38,7 +38,11 @@ This fork is **Google Drive-only**. All blockchain, Hivemind, and Hydra dependen
    - `notebooks/EX12.11.SAPO_Experiment_6loc2ext.ipynb`: Config 1 (6/2, +52% improvement)
    - `notebooks/EX12.12.SAPO_Experiment_4loc4ext.ipynb`: Config 2 (4/4, +94% improvement, BEST)
    - `notebooks/EX12.13.SAPO_Experiment_2loc6ext.ipynb`: Config 3 (2/6, +68% improvement)
-   - `notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb`: **NEW** - 8 GPT-2 nodes on single A100 80GB GPU (most cost-effective, tests weaker model hypothesis)
+   - `notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb`: Multi-node template (8 GPT-2 nodes on single A100 80GB)
+   - `notebooks/EX12.14a.SAPO_gpt2_Baseline_8loc0ext.ipynb`: **NEW** - Pre-configured baseline (8/0)
+   - `notebooks/EX12.14b.SAPO_gpt2_Config1_6loc2ext.ipynb`: **NEW** - Pre-configured Config 1 (6/2)
+   - `notebooks/EX12.14c.SAPO_gpt2_Config2_4loc4ext.ipynb`: **NEW** - Pre-configured Config 2 (4/4) **BEST**
+   - `notebooks/EX12.14d.SAPO_gpt2_Config3_2loc6ext.ipynb`: **NEW** - Pre-configured Config 3 (2/6)
    - `notebooks/EX12.20.SAPO_Results_Analysis.ipynb`: Compare all SAPO experiment results
 
 **Configuration**: All configuration via **environment variables only** (no YAML files)
@@ -189,8 +193,8 @@ python -m rgym_exp.runner.swarm_launcher
 - `NUM_GENERATIONS`: Number of completions per question (G parameter, default: 8)
 - `MAX_ROUNDS`: Maximum training rounds (default: 2000)
 
-**Multi-Node Single-GPU Setup (EX12.14):**
-The new `EX12.14` notebook enables running 8 GPT-2 nodes on a single A100 80GB GPU:
+**Multi-Node Single-GPU Setup (EX12.14 series):**
+The new `EX12.14` series notebooks enable running 8 GPT-2 nodes on a single A100 80GB GPU. Use the pre-configured variants (EX12.14a-d) for each SAPO configuration, or the template (EX12.14) to manually adjust parameters:
 - Model choice: GPT-2 (124M params) instead of Qwen2.5-0.5B (500M params)
 - Memory: 8 nodes × 6.5 GB = 52 GB total (fits A100 80GB with 28 GB margin)
 - GPU sharing: Modified `swarm_launcher.py` uses `.to('cuda:0')` instead of `device_map` to allow multiple processes
@@ -364,7 +368,11 @@ Quick tests:
 - `notebooks/EX12.11.SAPO_Experiment_6loc2ext.ipynb`: Config 1 (6 local / 2 external)
 - `notebooks/EX12.12.SAPO_Experiment_4loc4ext.ipynb`: Config 2 (4/4, optimal, +94%)
 - `notebooks/EX12.13.SAPO_Experiment_2loc6ext.ipynb`: Config 3 (2 local / 6 external)
-- `notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb`: **NEW** - 8 GPT-2 nodes on single A100 80GB
+- `notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb`: Multi-node template (8 GPT-2 nodes on single A100 80GB)
+- `notebooks/EX12.14a.SAPO_gpt2_Baseline_8loc0ext.ipynb`: **NEW** - Pre-configured baseline (8/0)
+- `notebooks/EX12.14b.SAPO_gpt2_Config1_6loc2ext.ipynb`: **NEW** - Pre-configured Config 1 (6/2)
+- `notebooks/EX12.14c.SAPO_gpt2_Config2_4loc4ext.ipynb`: **NEW** - Pre-configured Config 2 (4/4, BEST)
+- `notebooks/EX12.14d.SAPO_gpt2_Config3_2loc6ext.ipynb`: **NEW** - Pre-configured Config 3 (2/6)
 - `notebooks/EX12.20.SAPO_Results_Analysis.ipynb`: Results analysis and visualization
 - `SAPO_PAPER_EXPLAINED.md`: Comprehensive SAPO algorithm explanation
 - `EXPERIMENTAL_DESIGN_JUSTIFICATION.md`: **NEW** - Scientific justification for GPT-2 and single-GPU setup

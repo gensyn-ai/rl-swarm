@@ -178,7 +178,11 @@ We provide 5 notebooks to replicate all configurations from the paper:
 | **[EX12.11](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.11.SAPO_Experiment_6loc2ext.ipynb)** | Config 1 | 6 / 2 | +52% | Light collaboration |
 | **[EX12.12](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.12.SAPO_Experiment_4loc4ext.ipynb)** | Config 2 ⭐ | 4 / 4 | +94% | **BEST - Optimal balance** |
 | **[EX12.13](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.13.SAPO_Experiment_2loc6ext.ipynb)** | Config 3 | 2 / 6 | +68% | Heavy dependence |
-| **[EX12.14](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb)** 🆕 | Multi-Node | All | Variable | **8 nodes on 1 GPU!** |
+| **[EX12.14](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb)** | Multi-Node (template) | All | Variable | **8 nodes on 1 GPU!** |
+| **[EX12.14a](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14a.SAPO_gpt2_Baseline_8loc0ext.ipynb)** 🆕 | Baseline (8/0) | 8 / 0 | — | Pre-configured baseline |
+| **[EX12.14b](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14b.SAPO_gpt2_Config1_6loc2ext.ipynb)** 🆕 | Config 1 (6/2) | 6 / 2 | +60-80% | Pre-configured light |
+| **[EX12.14c](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14c.SAPO_gpt2_Config2_4loc4ext.ipynb)** 🆕⭐ | Config 2 (4/4) | 4 / 4 | +110-150% | **Pre-configured BEST** |
+| **[EX12.14d](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14d.SAPO_gpt2_Config3_2loc6ext.ipynb)** 🆕 | Config 3 (2/6) | 2 / 6 | +100-130% | Pre-configured heavy |
 | **[EX12.20](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.20.SAPO_Results_Analysis.ipynb)** | Analysis | - | - | Compare all results |
 
 #### 🆕 NEW: Full Swarm on Single GPU (Recommended for Colab Pro+)
@@ -187,7 +191,13 @@ We provide 5 notebooks to replicate all configurations from the paper:
 
 Instead of running 8 separate Colab sessions (8× $50/month = $400), you can now run all 8 nodes on a single A100 80GB GPU using GPT-2.
 
-**[🔗 Open Multi-Node Single-GPU Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb)**
+**Pre-configured notebooks (just click and run!):**
+- **[EX12.14a - Baseline (8/0)](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14a.SAPO_gpt2_Baseline_8loc0ext.ipynb)** - No swarm sharing
+- **[EX12.14b - Config 1 (6/2)](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14b.SAPO_gpt2_Config1_6loc2ext.ipynb)** - Light collaboration (25%)
+- **[EX12.14c - Config 2 (4/4)](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14c.SAPO_gpt2_Config2_4loc4ext.ipynb)** ⭐ - **BEST** (50%)
+- **[EX12.14d - Config 3 (2/6)](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14d.SAPO_gpt2_Config3_2loc6ext.ipynb)** - Heavy collaboration (75%)
+
+Or use the **[template notebook (EX12.14)](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb)** to manually configure parameters.
 
 **Why this works:**
 - **GPT-2 (124M params)** uses only ~6.5 GB per node
