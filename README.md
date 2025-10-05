@@ -78,9 +78,18 @@ Perfect for testing and learning. Runs one training node on a free Colab GPU.
 
    You'll see training progress in the output. Training runs until you stop it or reach max rounds.
 
-4. **Monitor Progress**
+4. **Monitor Progress** (Optional)
 
-   While training, you can run Cell 17 (Monitor Progress) to see:
+   While training is running, open a **new browser tab** and use the monitoring notebook:
+
+   **[🔗 Open Monitoring Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_monitoring.ipynb)**
+
+   Quick monitoring steps:
+   - Mount Google Drive (same account)
+   - Set `EXPERIMENT_NAME = 'my_first_experiment'` (match your experiment)
+   - Run all cells to see charts and metrics
+
+   Or use Cell 17 in the coordinator notebook for quick status:
    - Current round/stage
    - Number of active peers
    - Recent rewards
@@ -131,6 +140,20 @@ Run multiple nodes to simulate swarm training. Each node learns from the others.
    - etc.
 
    Each worker will share rollouts with all other nodes!
+
+6. **Monitor Multi-Node Training**
+
+   Use the monitoring notebook to see all nodes working together:
+
+   **[🔗 Open Monitoring Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_monitoring.ipynb)**
+
+   The dashboard will show:
+   - All registered peers (coordinator + workers)
+   - Reward comparison across nodes
+   - Per-node training metrics
+   - Rollout sharing activity
+
+   **Tip:** Keep the monitoring notebook open in a separate tab for real-time updates!
 
 ### Local Testing (Advanced)
 
@@ -282,17 +305,80 @@ If you encounter issues, please first check [Troubleshooting](#troubleshooting).
 
 ### Option A: Monitoring Notebook (Recommended)
 
-Use the dedicated monitoring notebook with charts and live updates:
+The monitoring notebook provides a comprehensive dashboard to track your experiment's progress with visualizations and diagnostics.
 
-**[Open Monitoring Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_monitoring.ipynb)**
+**[🔗 Open Monitoring Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_monitoring.ipynb)**
 
-Features:
-- 📊 Real-time experiment status
-- 📈 Training metrics visualization
-- 👥 Peer activity monitoring
-- 🔍 Rollout inspection
-- ⚠️ Error detection
-- 🔄 Auto-refresh mode
+**Quick Start:**
+
+1. **Open the notebook** using the link above
+2. **Mount Google Drive** (run Cell 1)
+3. **Install dependencies** (run Cell 2)
+4. **Configure experiment name** (Cell 3):
+   ```python
+   EXPERIMENT_NAME = 'my_first_experiment'  # Must match your running experiment
+   ```
+5. **Run all monitoring cells** (Cell 4 onwards)
+
+**Available Dashboards:**
+
+- **📊 Experiment Status** (Cell 4)
+  - Current round and stage
+  - Number of active peers
+  - Last activity timestamp
+  - List of registered nodes
+
+- **📈 Training Metrics** (Cells 5-6)
+  - Average reward per round (line plot with std dev)
+  - Reward comparison by node (bar chart)
+  - Active agents over time
+  - Reward distribution histogram
+  - Per-node reward trends
+
+- **📁 Rollout Inspection** (Cell 7-8)
+  - Rollout file counts by round
+  - View latest rollout content
+  - Batch and generation breakdown
+
+- **⚠️ Health Checks** (Cell 9)
+  - Automatic issue detection
+  - Missing files warnings
+  - Stale activity alerts
+
+- **📉 Summary Statistics** (Cell 10)
+  - Training duration
+  - Per-node statistics
+  - Overall reward metrics
+
+- **🔄 Auto-Refresh Mode** (Cell 11)
+  - Live status updates every 30 seconds
+  - Real-time round progression
+  - Press ■ (stop button) to exit
+
+**Example Output:**
+
+After running the status cell, you'll see:
+```
+===========================================================
+📊 EXPERIMENT STATUS: my_first_experiment
+===========================================================
+Current Round:  15
+Current Stage:  0
+Active Peers:   3
+Last Updated:   2025-10-05 14:23:45
+
+👥 Registered Peers:
+  - coordinator_0 (registered: 2025-10-05 12:00:15)
+  - worker_1 (registered: 2025-10-05 12:05:32)
+  - worker_2 (registered: 2025-10-05 12:10:48)
+===========================================================
+```
+
+**Tips:**
+- Run Cell 4 periodically to check current status
+- Cell 11 (auto-refresh) is useful for monitoring long training runs
+- Use Cell 9 to diagnose if training appears stuck
+- Charts in Cells 5-6 update as you re-run them
 
 ### Option B: Quick Status Check
 
