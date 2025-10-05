@@ -5,13 +5,13 @@ accelerate>=0.20.0
 datasets>=2.14.0
 
 # Protobuf version constraint (TensorFlow/Transformers compatibility)
-protobuf>=3.20.0,<5.0
+protobuf>=4.25.0,<5.0
 
 # GenRL Framework
 gensyn-genrl==0.1.9
 
-# Reasoning Tasks
-reasoning-gym
+# Reasoning Tasks (GitHub-only package)
+git+https://github.com/open-thought/reasoning-gym.git
 
 # Data Processing
 pandas>=1.5.0
