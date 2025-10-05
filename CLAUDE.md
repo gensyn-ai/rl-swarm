@@ -30,6 +30,7 @@ This fork is **Google Drive-only**. All blockchain, Hivemind, and Hydra dependen
 **Colab Notebooks**:
    - `notebooks/colab_coordinator.ipynb`: Coordinator setup for Colab
    - `notebooks/colab_worker.ipynb`: Worker setup for Colab
+   - `notebooks/colab_monitoring.ipynb`: Experiment monitoring dashboard
 
 **Configuration**: All configuration via **environment variables only** (no YAML files)
 
@@ -304,6 +305,7 @@ Quick tests:
 **Working Examples:**
 - `notebooks/colab_coordinator.ipynb`: Working Colab example for coordinator
 - `notebooks/colab_worker.ipynb`: Working Colab example for worker
+- `notebooks/colab_monitoring.ipynb`: Working Colab example for monitoring
 - `rgym_exp/runner/swarm_launcher.py`: Simple entry point showing all components
 
 **Removed Documentation:**

@@ -280,6 +280,22 @@ If you encounter issues, please first check [Troubleshooting](#troubleshooting).
 
 ## Monitor Progress
 
+### Option A: Monitoring Notebook (Recommended)
+
+Use the dedicated monitoring notebook with charts and live updates:
+
+**[Open Monitoring Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_monitoring.ipynb)**
+
+Features:
+- 📊 Real-time experiment status
+- 📈 Training metrics visualization
+- 👥 Peer activity monitoring
+- 🔍 Rollout inspection
+- ⚠️ Error detection
+- 🔄 Auto-refresh mode
+
+### Option B: Quick Status Check
+
 Add a monitoring cell to any notebook:
 
 ```python
