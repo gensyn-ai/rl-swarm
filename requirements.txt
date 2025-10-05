@@ -4,6 +4,9 @@ transformers>=4.30.0
 accelerate>=0.20.0
 datasets>=2.14.0
 
+# Protobuf version constraint (TensorFlow/Transformers compatibility)
+protobuf>=3.20.0,<5.0
+
 # GenRL Framework
 gensyn-genrl==0.1.9
 

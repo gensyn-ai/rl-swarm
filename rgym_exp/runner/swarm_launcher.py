@@ -133,6 +133,16 @@ def main():
     # =======================
     get_logger().info(f"Loading model: {model_name}...")
     model = AutoModelForCausalLM.from_pretrained(model_name)
+
+    # Explicitly place model on GPU for multi-process sharing
+    # (using manual .to() instead of device_map allows multiple processes on same GPU)
+    import torch
+    if torch.cuda.is_available():
+        model = model.to('cuda:0')
+        get_logger().info(f"✓ Model placed on GPU (CUDA available)")
+    else:
+        get_logger().info("✓ Model on CPU (no CUDA)")
+
     get_logger().info("✓ Model loaded")
 
     # =======================

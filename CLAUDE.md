@@ -38,6 +38,7 @@ This fork is **Google Drive-only**. All blockchain, Hivemind, and Hydra dependen
    - `notebooks/EX12.11.SAPO_Experiment_6loc2ext.ipynb`: Config 1 (6/2, +52% improvement)
    - `notebooks/EX12.12.SAPO_Experiment_4loc4ext.ipynb`: Config 2 (4/4, +94% improvement, BEST)
    - `notebooks/EX12.13.SAPO_Experiment_2loc6ext.ipynb`: Config 3 (2/6, +68% improvement)
+   - `notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb`: **NEW** - 8 GPT-2 nodes on single A100 80GB GPU (most cost-effective, tests weaker model hypothesis)
    - `notebooks/EX12.20.SAPO_Results_Analysis.ipynb`: Compare all SAPO experiment results
 
 **Configuration**: All configuration via **environment variables only** (no YAML files)
@@ -187,6 +188,17 @@ python -m rgym_exp.runner.swarm_launcher
 - `NUM_TRANSPLANT_TREES`: Number of external rollouts from swarm (J parameter, default: 0)
 - `NUM_GENERATIONS`: Number of completions per question (G parameter, default: 8)
 - `MAX_ROUNDS`: Maximum training rounds (default: 2000)
+
+**Multi-Node Single-GPU Setup (EX12.14):**
+The new `EX12.14` notebook enables running 8 GPT-2 nodes on a single A100 80GB GPU:
+- Model choice: GPT-2 (124M params) instead of Qwen2.5-0.5B (500M params)
+- Memory: 8 nodes × 6.5 GB = 52 GB total (fits A100 80GB with 28 GB margin)
+- GPU sharing: Modified `swarm_launcher.py` uses `.to('cuda:0')` instead of `device_map` to allow multiple processes
+- Scientific rationale: Paper shows weaker models benefit MORE from swarm (Section 5.2)
+- Expected results: >94% improvement (higher than paper's 94% with Qwen2.5)
+- Cost: $50/month (Colab Pro+) vs $400-500 for 8 separate GPUs (90% savings)
+
+See `EXPERIMENTAL_DESIGN_JUSTIFICATION.md` for full scientific justification and `GPU_MEMORY_GUIDE.md` for setup instructions.
 
 **Removed Variables (No Longer Used):**
 - ~~`IDENTITY_PATH`~~ (no peer identities needed)
@@ -352,8 +364,11 @@ Quick tests:
 - `notebooks/EX12.11.SAPO_Experiment_6loc2ext.ipynb`: Config 1 (6 local / 2 external)
 - `notebooks/EX12.12.SAPO_Experiment_4loc4ext.ipynb`: Config 2 (4/4, optimal, +94%)
 - `notebooks/EX12.13.SAPO_Experiment_2loc6ext.ipynb`: Config 3 (2 local / 6 external)
+- `notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb`: **NEW** - 8 GPT-2 nodes on single A100 80GB
 - `notebooks/EX12.20.SAPO_Results_Analysis.ipynb`: Results analysis and visualization
 - `SAPO_PAPER_EXPLAINED.md`: Comprehensive SAPO algorithm explanation
+- `EXPERIMENTAL_DESIGN_JUSTIFICATION.md`: **NEW** - Scientific justification for GPT-2 and single-GPU setup
+- `GPU_MEMORY_GUIDE.md`: **NEW** - GPU memory requirements and troubleshooting guide
 - `rgym_exp/runner/swarm_launcher.py`: Simple entry point showing all components
 
 **Removed Documentation:**
