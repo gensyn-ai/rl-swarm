@@ -174,11 +174,11 @@ We provide 5 notebooks to replicate all configurations from the paper:
 
 | Notebook | Config | Local/External | Expected Improvement | Description |
 |----------|--------|----------------|---------------------|-------------|
-| **[EX12.10](notebooks/EX12.10.SAPO_Experiment_8loc0ext.ipynb)** | Baseline | 8 / 0 | - | Control (no sharing) |
-| **[EX12.11](notebooks/EX12.11.SAPO_Experiment_6loc2ext.ipynb)** | Config 1 | 6 / 2 | +52% | Light collaboration |
-| **[EX12.12](notebooks/EX12.12.SAPO_Experiment_4loc4ext.ipynb)** | Config 2 ⭐ | 4 / 4 | +94% | **BEST - Optimal balance** |
-| **[EX12.13](notebooks/EX12.13.SAPO_Experiment_2loc6ext.ipynb)** | Config 3 | 2 / 6 | +68% | Heavy dependence |
-| **[EX12.20](notebooks/EX12.20.SAPO_Results_Analysis.ipynb)** | Analysis | - | - | Compare all results |
+| **[EX12.10](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.10.SAPO_Experiment_8loc0ext.ipynb)** | Baseline | 8 / 0 | - | Control (no sharing) |
+| **[EX12.11](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.11.SAPO_Experiment_6loc2ext.ipynb)** | Config 1 | 6 / 2 | +52% | Light collaboration |
+| **[EX12.12](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.12.SAPO_Experiment_4loc4ext.ipynb)** | Config 2 ⭐ | 4 / 4 | +94% | **BEST - Optimal balance** |
+| **[EX12.13](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.13.SAPO_Experiment_2loc6ext.ipynb)** | Config 3 | 2 / 6 | +68% | Heavy dependence |
+| **[EX12.20](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.20.SAPO_Results_Analysis.ipynb)** | Analysis | - | - | Compare all results |
 
 #### Quick Start: Run Baseline Experiment
 
