@@ -33,7 +33,8 @@ This fork adds a **Google Drive-only mode** that uses Google Drive for all coord
 - ✅ Configurable retention policies
 - ✅ Automatic cleanup/archiving
 - ✅ Local caching for performance
-- ✅ Simplified Colab notebooks
+- ✅ Simplified Colab notebooks with live output streaming
+- ✅ Comprehensive monitoring dashboard
 
 ### Quick Start on Google Colab (Recommended)
 
@@ -74,9 +75,9 @@ Perfect for testing and learning. Runs one training node on a free Colab GPU.
    - ✓ Mount your Google Drive (requires permission)
    - ✓ Install dependencies (~3-5 minutes)
    - ✓ Initialize the experiment in `/MyDrive/rl-swarm/`
-   - ✓ Start training
+   - ✓ Start training with **live output streaming**
 
-   You'll see training progress in the output. Training runs until you stop it or reach max rounds.
+   You'll see training logs appear in **real-time** as training progresses. Training runs until you stop it (press ■ stop button) or reach max rounds.
 
 4. **Monitor Progress** (Optional)
 
@@ -130,7 +131,7 @@ Run multiple nodes to simulate swarm training. Each node learns from the others.
    - ✓ Mount Google Drive (same account as coordinator)
    - ✓ Verify experiment exists
    - ✓ Install dependencies
-   - ✓ Join the experiment and start training
+   - ✓ Join the experiment and start training with **live output**
 
 5. **Add More Workers (Optional)**
 

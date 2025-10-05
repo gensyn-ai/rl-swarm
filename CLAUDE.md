@@ -26,11 +26,12 @@ This fork is **Google Drive-only**. All blockchain, Hivemind, and Hydra dependen
    - `src/gdrive_rollout_sharing.py`: Core rollout publishing/fetching
    - `communication/gdrive_backend.py`: GenRL-compatible communication backend
    - `utils/experiment_manager.py`: Experiment management utilities
+   - `utils/notebook_utils.py`: Live output streaming for Jupyter/Colab notebooks
 
 **Colab Notebooks**:
-   - `notebooks/colab_coordinator.ipynb`: Coordinator setup for Colab
-   - `notebooks/colab_worker.ipynb`: Worker setup for Colab
-   - `notebooks/colab_monitoring.ipynb`: Experiment monitoring dashboard
+   - `notebooks/colab_coordinator.ipynb`: Coordinator setup with live training output
+   - `notebooks/colab_worker.ipynb`: Worker setup with live training output
+   - `notebooks/colab_monitoring.ipynb`: Real-time experiment monitoring dashboard
 
 **Configuration**: All configuration via **environment variables only** (no YAML files)
 
@@ -246,6 +247,34 @@ Rollout files are JSON:
 - **Latency**: +1-2 seconds per stage vs Hivemind
 - **Storage**: ~8 MB per 100 rounds (4 nodes, 2 stages/round)
 - **Caching**: Reduces redundant API reads by ~60%
+
+### Notebook Utilities
+
+The `rgym_exp/utils/notebook_utils.py` module provides utilities for Jupyter/Colab notebooks:
+
+**`run_with_live_output(command, cwd=None, env=None)`**
+- Runs subprocess commands with real-time output streaming
+- Uses `subprocess.Popen` with line buffering for immediate display
+- Merges stderr into stdout for unified output
+- Handles KeyboardInterrupt gracefully (allows stopping with ■ button)
+- Returns exit code for error handling
+
+**Usage in notebooks:**
+```python
+from rgym_exp.utils.notebook_utils import run_with_live_output
+import sys
+
+# Training logs will stream in real-time
+exit_code = run_with_live_output([
+    sys.executable, '-m', 'rgym_exp.runner.swarm_launcher'
+])
+```
+
+**Benefits:**
+- Users see training progress immediately (no waiting for subprocess to complete)
+- Better debugging (errors appear as they happen)
+- Works in both Jupyter and Colab environments
+- Proper signal handling for clean shutdowns
 
 ## Identity Management
 
