@@ -1,0 +1,210 @@
+\begin{thebibliography}{38}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Chen et~al.(2024)Chen, Deng, Yuan, Ji, and Gu]{chen2024selfplayfinetuningconvertsweak}
+Zixiang Chen, Yihe Deng, Huizhuo Yuan, Kaixuan Ji, and Quanquan Gu.
+\newblock Self-play fine-tuning converts weak language models to strong language models, 2024.
+\newblock URL \url{https://arxiv.org/abs/2401.01335}.
+
+\bibitem[DeepSeek-AI et~al.(2025)DeepSeek-AI, Guo, Yang, Zhang, Song, Zhang, Xu, Zhu, Ma, Wang, Bi, Zhang, Yu, Wu, Wu, Gou, Shao, Li, Gao, Liu, Xue, Wang, Wu, Feng, Lu, Zhao, Deng, Zhang, Ruan, Dai, Chen, Ji, Li, Lin, Dai, Luo, Hao, Chen, Li, Zhang, Bao, Xu, Wang, Ding, Xin, Gao, Qu, Li, Guo, Li, Wang, Chen, Yuan, Qiu, Li, Cai, Ni, Liang, Chen, Dong, Hu, Gao, Guan, Huang, Yu, Wang, Zhang, Zhao, Wang, Zhang, Xu, Xia, Zhang, Zhang, Tang, Li, Wang, Li, Tian, Huang, Zhang, Wang, Chen, Du, Ge, Zhang, Pan, Wang, Chen, Jin, Chen, Lu, Zhou, Chen, Ye, Wang, Yu, Zhou, Pan, Li, Zhou, Wu, Ye, Yun, Pei, Sun, Wang, Zeng, Zhao, Liu, Liang, Gao, Yu, Zhang, Xiao, An, Liu, Wang, Chen, Nie, Cheng, Liu, Xie, Liu, Yang, Li, Su, Lin, Li, Jin, Shen, Chen, Sun, Wang, Song, Zhou, Wang, Shan, Li, Wang, Wei, Zhang, Xu, Li, Zhao, Sun, Wang, Yu, Zhang, Shi, Xiong, He, Piao, Wang, Tan, Ma, Liu, Guo, Ou, Wang, Gong, Zou, He, Xiong, Luo, You, Liu, Zhou, Zhu, Xu, Huang, Li, Zheng, Zhu, Ma, Tang, Zha, Yan, Ren, Ren, Sha, Fu, Xu, Xie, Zhang,
+  Hao, Ma, Yan, Wu, Gu, Zhu, Liu, Li, Xie, Song, Pan, Huang, Xu, Zhang, and Zhang]{deepseekai2025deepseekr1incentivizingreasoningcapability}
+DeepSeek-AI, Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, Xiaokang Zhang, Xingkai Yu, Yu~Wu, Z.~F. Wu, Zhibin Gou, Zhihong Shao, Zhuoshu Li, Ziyi Gao, Aixin Liu, Bing Xue, Bingxuan Wang, Bochao Wu, Bei Feng, Chengda Lu, Chenggang Zhao, Chengqi Deng, Chenyu Zhang, Chong Ruan, Damai Dai, Deli Chen, Dongjie Ji, Erhang Li, Fangyun Lin, Fucong Dai, Fuli Luo, Guangbo Hao, Guanting Chen, Guowei Li, H.~Zhang, Han Bao, Hanwei Xu, Haocheng Wang, Honghui Ding, Huajian Xin, Huazuo Gao, Hui Qu, Hui Li, Jianzhong Guo, Jiashi Li, Jiawei Wang, Jingchang Chen, Jingyang Yuan, Junjie Qiu, Junlong Li, J.~L. Cai, Jiaqi Ni, Jian Liang, Jin Chen, Kai Dong, Kai Hu, Kaige Gao, Kang Guan, Kexin Huang, Kuai Yu, Lean Wang, Lecong Zhang, Liang Zhao, Litong Wang, Liyue Zhang, Lei Xu, Leyi Xia, Mingchuan Zhang, Minghua Zhang, Minghui Tang, Meng Li, Miaojun Wang, Mingming Li, Ning Tian, Panpan Huang, Peng Zhang, Qiancheng Wang, Qinyu Chen, Qiushi Du, Ruiqi Ge, Ruisong
+  Zhang, Ruizhe Pan, Runji Wang, R.~J. Chen, R.~L. Jin, Ruyi Chen, Shanghao Lu, Shangyan Zhou, Shanhuang Chen, Shengfeng Ye, Shiyu Wang, Shuiping Yu, Shunfeng Zhou, Shuting Pan, S.~S. Li, Shuang Zhou, Shaoqing Wu, Shengfeng Ye, Tao Yun, Tian Pei, Tianyu Sun, T.~Wang, Wangding Zeng, Wanjia Zhao, Wen Liu, Wenfeng Liang, Wenjun Gao, Wenqin Yu, Wentao Zhang, W.~L. Xiao, Wei An, Xiaodong Liu, Xiaohan Wang, Xiaokang Chen, Xiaotao Nie, Xin Cheng, Xin Liu, Xin Xie, Xingchao Liu, Xinyu Yang, Xinyuan Li, Xuecheng Su, Xuheng Lin, X.~Q. Li, Xiangyue Jin, Xiaojin Shen, Xiaosha Chen, Xiaowen Sun, Xiaoxiang Wang, Xinnan Song, Xinyi Zhou, Xianzu Wang, Xinxia Shan, Y.~K. Li, Y.~Q. Wang, Y.~X. Wei, Yang Zhang, Yanhong Xu, Yao Li, Yao Zhao, Yaofeng Sun, Yaohui Wang, Yi~Yu, Yichao Zhang, Yifan Shi, Yiliang Xiong, Ying He, Yishi Piao, Yisong Wang, Yixuan Tan, Yiyang Ma, Yiyuan Liu, Yongqiang Guo, Yuan Ou, Yuduan Wang, Yue Gong, Yuheng Zou, Yujia He, Yunfan Xiong, Yuxiang Luo, Yuxiang You, Yuxuan Liu, Yuyang Zhou, Y.~X. Zhu,
+  Yanhong Xu, Yanping Huang, Yaohui Li, Yi~Zheng, Yuchen Zhu, Yunxian Ma, Ying Tang, Yukun Zha, Yuting Yan, Z.~Z. Ren, Zehui Ren, Zhangli Sha, Zhe Fu, Zhean Xu, Zhenda Xie, Zhengyan Zhang, Zhewen Hao, Zhicheng Ma, Zhigang Yan, Zhiyu Wu, Zihui Gu, Zijia Zhu, Zijun Liu, Zilin Li, Ziwei Xie, Ziyang Song, Zizheng Pan, Zhen Huang, Zhipeng Xu, Zhongyu Zhang, and Zhen Zhang.
+\newblock Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning, 2025.
+\newblock URL \url{https://arxiv.org/abs/2501.12948}.
+
+\bibitem[Du et~al.(2023)Du, Li, Torralba, Tenenbaum, and Mordatch]{du2023improvingfactualityreasoninglanguage}
+Yilun Du, Shuang Li, Antonio Torralba, Joshua~B. Tenenbaum, and Igor Mordatch.
+\newblock Improving factuality and reasoning in language models through multiagent debate, 2023.
+\newblock URL \url{https://arxiv.org/abs/2305.14325}.
+
+\bibitem[Fu et~al.(2025)Fu, Gao, Shen, Zhu, Mei, He, Xu, Wei, Mei, Wang, Yang, Yuan, and Wu]{fu2025areallargescaleasynchronousreinforcement}
+Wei Fu, Jiaxuan Gao, Xujie Shen, Chen Zhu, Zhiyu Mei, Chuyi He, Shusheng Xu, Guo Wei, Jun Mei, Jiashu Wang, Tongkai Yang, Binhang Yuan, and Yi~Wu.
+\newblock Areal: A large-scale asynchronous reinforcement learning system for language reasoning, 2025.
+\newblock URL \url{https://arxiv.org/abs/2505.24298}.
+
+\bibitem[Gao et~al.(2024)Gao, Xu, Ye, Liu, He, Fu, Mei, Wang, and Wu]{gao2024designingeffectiverlreward}
+Jiaxuan Gao, Shusheng Xu, Wenjie Ye, Weilin Liu, Chuyi He, Wei Fu, Zhiyu Mei, Guangju Wang, and Yi~Wu.
+\newblock On designing effective rl reward at training time for llm reasoning, 2024.
+\newblock URL \url{https://arxiv.org/abs/2410.15115}.
+
+\bibitem[{Gensyn}(2025)]{gensyn2025genrl}
+{Gensyn}.
+\newblock Introducing rl swarm’s new backend: Genrl.
+\newblock \url{https://www.gensyn.ai/articles/genrl}, 2025.
+\newblock Accessed: 2025-08-28.
+
+\bibitem[Gensyn(2025)]{gensyn2025rlswarm}
+Gensyn.
+\newblock Gensyn rl swarm.
+\newblock \url{https://github.com/gensyn-ai/rl-swarm}, 2025.
+\newblock Accessed: 2025-08-20.
+
+\bibitem[Hessel et~al.(2022)Hessel, Holtzman, Forbes, Bras, and Choi]{hessel2022clipscorereferencefreeevaluationmetric}
+Jack Hessel, Ari Holtzman, Maxwell Forbes, Ronan~Le Bras, and Yejin Choi.
+\newblock Clipscore: A reference-free evaluation metric for image captioning, 2022.
+\newblock URL \url{https://arxiv.org/abs/2104.08718}.
+
+\bibitem[Khan et~al.(2024)Khan, Hughes, Valentine, Ruis, Sachan, Radhakrishnan, Grefenstette, Bowman, Rockt\"{a}schel, and Perez]{khan2024debatingwithmorepersuasivellms}
+Akbir Khan, John Hughes, Dan Valentine, Laura Ruis, Kshitij Sachan, Ansh Radhakrishnan, Edward Grefenstette, Samuel~R. Bowman, Tim Rockt\"{a}schel, and Ethan Perez.
+\newblock Debating with more persuasive llms leads to more truthful answers.
+\newblock In \emph{Proceedings of the 41st International Conference on Machine Learning}, ICML'24. JMLR.org, 2024.
+
+\bibitem[Lambert et~al.(2025)Lambert, Morrison, Pyatkin, Huang, Ivison, Brahman, Miranda, Liu, Dziri, Lyu, Gu, Malik, Graf, Hwang, Yang, Bras, Tafjord, Wilhelm, Soldaini, Smith, Wang, Dasigi, and Hajishirzi]{lambert2025tulu3pushingfrontiers}
+Nathan Lambert, Jacob Morrison, Valentina Pyatkin, Shengyi Huang, Hamish Ivison, Faeze Brahman, Lester James~V. Miranda, Alisa Liu, Nouha Dziri, Shane Lyu, Yuling Gu, Saumya Malik, Victoria Graf, Jena~D. Hwang, Jiangjiang Yang, Ronan~Le Bras, Oyvind Tafjord, Chris Wilhelm, Luca Soldaini, Noah~A. Smith, Yizhong Wang, Pradeep Dasigi, and Hannaneh Hajishirzi.
+\newblock Tulu 3: Pushing frontiers in open language model post-training, 2025.
+\newblock URL \url{https://arxiv.org/abs/2411.15124}.
+
+\bibitem[Le et~al.(2022)Le, Wang, Gotmare, Savarese, and Hoi]{le2022coderlmasteringcodegeneration}
+Hung Le, Yue Wang, Akhilesh~Deepak Gotmare, Silvio Savarese, and Steven Chu~Hong Hoi.
+\newblock Coderl: Mastering code generation through pretrained models and deep reinforcement learning.
+\newblock In S.~Koyejo, S.~Mohamed, A.~Agarwal, D.~Belgrave, K.~Cho, and A.~Oh, editors, \emph{Advances in Neural Information Processing Systems}, volume~35, pages 21314--21328. Curran Associates, Inc., 2022.
+\newblock URL \url{https://proceedings.neurips.cc/paper_files/paper/2022/file/8636419dea1aa9fbd25fc4248e702da4-Paper-Conference.pdf}.
+
+\bibitem[Li et~al.(2023)Li, Hammoud, Itani, Khizbullin, and Ghanem]{li2023camelcommunicativeagents}
+Guohao Li, Hasan Hammoud, Hani Itani, Dmitrii Khizbullin, and Bernard Ghanem.
+\newblock Camel: Communicative agents for "mind" exploration of large language model society.
+\newblock In A.~Oh, T.~Naumann, A.~Globerson, K.~Saenko, M.~Hardt, and S.~Levine, editors, \emph{Advances in Neural Information Processing Systems}, volume~36, pages 51991--52008. Curran Associates, Inc., 2023.
+\newblock URL \url{https://proceedings.neurips.cc/paper_files/paper/2023/file/a3621ee907def47c1b952ade25c67698-Paper-Conference.pdf}.
+
+\bibitem[Li et~al.(2024)Li, Du, Zhang, Hou, Grabowski, Li, and Ie]{li2024improvingmultiagentdebatesparse}
+Yunxuan Li, Yibing Du, Jiageng Zhang, Le~Hou, Peter Grabowski, Yeqing Li, and Eugene Ie.
+\newblock Improving multi-agent debate with sparse communication topology, 2024.
+\newblock URL \url{https://arxiv.org/abs/2406.11776}.
+
+\bibitem[Liang et~al.(2024)Liang, He, Jiao, Wang, Wang, Wang, Yang, Shi, and Tu]{liang2024encouragingdivergentthinkinglarge}
+Tian Liang, Zhiwei He, Wenxiang Jiao, Xing Wang, Yan Wang, Rui Wang, Yujiu Yang, Shuming Shi, and Zhaopeng Tu.
+\newblock Encouraging divergent thinking in large language models through multi-agent debate, 2024.
+\newblock URL \url{https://arxiv.org/abs/2305.19118}.
+
+\bibitem[Liao et~al.(2025)Liao, Wen, Wang, and Zhang]{liao2025marftmultiagentreinforcementfinetuning}
+Junwei Liao, Muning Wen, Jun Wang, and Weinan Zhang.
+\newblock Marft: Multi-agent reinforcement fine-tuning, 2025.
+\newblock URL \url{https://arxiv.org/abs/2504.16129}.
+
+\bibitem[Liu et~al.(2025)Liu, Liang, Lyu, and Amato]{liu2025llmcollaborationmultiagentreinforcement}
+Shuo Liu, Zeyu Liang, Xueguang Lyu, and Christopher Amato.
+\newblock Llm collaboration with multi-agent reinforcement learning, 2025.
+\newblock URL \url{https://arxiv.org/abs/2508.04652}.
+
+\bibitem[Ma et~al.(2024)Ma, Hu, Pu, Liu, Ai, Liang, and Chen]{ma2024coevolvingwithotheryou}
+Hao Ma, Tianyi Hu, Zhiqiang Pu, Boyin Liu, Xiaolin Ai, Yanyan Liang, and Min Chen.
+\newblock Coevolving with the other you: Fine-tuning llm with sequential cooperative multi-agent reinforcement learning.
+\newblock In A.~Globerson, L.~Mackey, D.~Belgrave, A.~Fan, U.~Paquet, J.~Tomczak, and C.~Zhang, editors, \emph{Advances in Neural Information Processing Systems}, volume~37, pages 15497--15525. Curran Associates, Inc., 2024.
+\newblock URL \url{https://proceedings.neurips.cc/paper_files/paper/2024/file/1c2b1c8f7d317719a9ce32dd7386ba35-Paper-Conference.pdf}.
+
+\bibitem[Mistral-AI et~al.(2025)Mistral-AI, :, Rastogi, Jiang, Lo, Berrada, Lample, Rute, Barmentlo, Yadav, Khandelwal, Chandu, Blier, Saulnier, Dinot, Darrin, Gupta, Soletskyi, Vaze, Scao, Wang, Yang, Liu, Sablayrolles, Héliou, Martin, Ehrenberg, Agarwal, Roux, Darcet, Mensch, Bout, Rozière, Monicault, Bamford, Wallenwein, Renaudin, Lanfranchi, Dabert, Mizelle, de~las Casas, Chane-Sane, Fugier, Hanna, Delerce, Guinet, Novikov, Martin, Jaju, Ludziejewski, Chabran, Delignon, Studnia, Amar, Roberts, Denize, Saxena, Jain, Zhao, Martin, Gao, Lavaud, Pellat, Guillaumin, Felardos, Augustin, Seznec, Raghuraman, Duchenne, Wang, von Platen, Saffer, Jacob, Wambergue, Kurylowicz, Muddireddy, Chagniot, Stock, Agrawal, Sauvestre, Delacourt, Gandhi, Subramanian, Dalal, Gandhi, Ghosh, Mishra, Aithal, Antoniak, Schueller, Lavril, Robert, Wang, Lacroix, Nemychnikova, Paltz, Richard, Li, Marshall, Zhang, and Tang]{mistralai2025magistral}
+Mistral-AI, :, Abhinav Rastogi, Albert~Q. Jiang, Andy Lo, Gabrielle Berrada, Guillaume Lample, Jason Rute, Joep Barmentlo, Karmesh Yadav, Kartik Khandelwal, Khyathi~Raghavi Chandu, Léonard Blier, Lucile Saulnier, Matthieu Dinot, Maxime Darrin, Neha Gupta, Roman Soletskyi, Sagar Vaze, Teven~Le Scao, Yihan Wang, Adam Yang, Alexander~H. Liu, Alexandre Sablayrolles, Amélie Héliou, Amélie Martin, Andy Ehrenberg, Anmol Agarwal, Antoine Roux, Arthur Darcet, Arthur Mensch, Baptiste Bout, Baptiste Rozière, Baudouin~De Monicault, Chris Bamford, Christian Wallenwein, Christophe Renaudin, Clémence Lanfranchi, Darius Dabert, Devon Mizelle, Diego de~las Casas, Elliot Chane-Sane, Emilien Fugier, Emma~Bou Hanna, Gauthier Delerce, Gauthier Guinet, Georgii Novikov, Guillaume Martin, Himanshu Jaju, Jan Ludziejewski, Jean-Hadrien Chabran, Jean-Malo Delignon, Joachim Studnia, Jonas Amar, Josselin~Somerville Roberts, Julien Denize, Karan Saxena, Kush Jain, Lingxiao Zhao, Louis Martin, Luyu Gao, Lélio~Renard Lavaud, Marie
+  Pellat, Mathilde Guillaumin, Mathis Felardos, Maximilian Augustin, Mickaël Seznec, Nikhil Raghuraman, Olivier Duchenne, Patricia Wang, Patrick von Platen, Patryk Saffer, Paul Jacob, Paul Wambergue, Paula Kurylowicz, Pavankumar~Reddy Muddireddy, Philomène Chagniot, Pierre Stock, Pravesh Agrawal, Romain Sauvestre, Rémi Delacourt, Sanchit Gandhi, Sandeep Subramanian, Shashwat Dalal, Siddharth Gandhi, Soham Ghosh, Srijan Mishra, Sumukh Aithal, Szymon Antoniak, Thibault Schueller, Thibaut Lavril, Thomas Robert, Thomas Wang, Timothée Lacroix, Valeriia Nemychnikova, Victor Paltz, Virgile Richard, Wen-Ding Li, William Marshall, Xuanyu Zhang, and Yunhao Tang.
+\newblock Magistral, 2025.
+\newblock URL \url{https://arxiv.org/abs/2506.10910}.
+
+\bibitem[Motwani et~al.(2025)Motwani, Smith, Das, Rafailov, Laptev, Torr, Pizzati, Clark, and de~Witt]{motwani2025maltimprovingreasoningmultiagent}
+Sumeet~Ramesh Motwani, Chandler Smith, Rocktim~Jyoti Das, Rafael Rafailov, Ivan Laptev, Philip H.~S. Torr, Fabio Pizzati, Ronald Clark, and Christian~Schroeder de~Witt.
+\newblock Malt: Improving reasoning with multi-agent llm training, 2025.
+\newblock URL \url{https://arxiv.org/abs/2412.01928}.
+
+\bibitem[Nguyen et~al.(2024)Nguyen, Shen, Aponte, Xia, Basu, Hu, Chen, Parmar, Kunapuli, Barrow, Wu, Singh, Wang, Gu, Dernoncourt, Ahmed, Lipka, Zhang, Chen, Yu, Kim, Deilamsalehy, Park, Rimer, Zhang, Yang, Rossi, and Nguyen]{vannguyen2024surveysmalllanguagemodels}
+Chien~Van Nguyen, Xuan Shen, Ryan Aponte, Yu~Xia, Samyadeep Basu, Zhengmian Hu, Jian Chen, Mihir Parmar, Sasidhar Kunapuli, Joe Barrow, Junda Wu, Ashish Singh, Yu~Wang, Jiuxiang Gu, Franck Dernoncourt, Nesreen~K. Ahmed, Nedim Lipka, Ruiyi Zhang, Xiang Chen, Tong Yu, Sungchul Kim, Hanieh Deilamsalehy, Namyong Park, Mike Rimer, Zhehao Zhang, Huanrui Yang, Ryan~A. Rossi, and Thien~Huu Nguyen.
+\newblock A survey of small language models, 2024.
+\newblock URL \url{https://arxiv.org/abs/2410.20011}.
+
+\bibitem[OpenAI(2022)]{openai2022instructionfollowing}
+OpenAI.
+\newblock Aligning language models to follow instructions.
+\newblock \url{https://openai.com/index/instruction-following/}, 2022.
+\newblock Accessed: 2025-08-19.
+
+\bibitem[OpenAI(2024)]{openai2024learningtoreason}
+OpenAI.
+\newblock Learning to reason with llms.
+\newblock \url{https://openai.com/index/learning-to-reason-with-llms/}, 2024.
+\newblock Accessed: 2025-08-19.
+
+\bibitem[Ouyang et~al.(2022)Ouyang, Wu, Jiang, Almeida, Wainwright, Mishkin, Zhang, Agarwal, Slama, Ray, Schulman, Hilton, Kelton, Miller, Simens, Askell, Welinder, Christiano, Leike, and Lowe]{ouyang2022traininglanguagemodelsfollow}
+Long Ouyang, Jeff Wu, Xu~Jiang, Diogo Almeida, Carroll~L. Wainwright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, John Schulman, Jacob Hilton, Fraser Kelton, Luke Miller, Maddie Simens, Amanda Askell, Peter Welinder, Paul Christiano, Jan Leike, and Ryan Lowe.
+\newblock Training language models to follow instructions with human feedback, 2022.
+\newblock URL \url{https://arxiv.org/abs/2203.02155}.
+
+\bibitem[Park et~al.(2025)Park, Han, Guo, Ozdaglar, Zhang, and Kim]{park2025maporlmultiagentpostcotrainingcollaborative}
+Chanwoo Park, Seungju Han, Xingzhi Guo, Asuman Ozdaglar, Kaiqing Zhang, and Joo-Kyung Kim.
+\newblock Maporl: Multi-agent post-co-training for collaborative large language models with reinforcement learning, 2025.
+\newblock URL \url{https://arxiv.org/abs/2502.18439}.
+
+\bibitem[Perez et~al.(2022)Perez, Huang, Song, Cai, Ring, Aslanides, Glaese, McAleese, and Irving]{perez2022redteaminglanguagemodels}
+Ethan Perez, Saffron Huang, Francis Song, Trevor Cai, Roman Ring, John Aslanides, Amelia Glaese, Nat McAleese, and Geoffrey Irving.
+\newblock Red teaming language models with language models, 2022.
+\newblock URL \url{https://arxiv.org/abs/2202.03286}.
+
+\bibitem[{Qwen~Team}(2024)]{qwen2.5}
+{Qwen~Team}.
+\newblock Qwen2.5: A party of foundation models, September 2024.
+\newblock URL \url{https://qwenlm.github.io/blog/qwen2.5/}.
+
+\bibitem[Schulman et~al.(2017)Schulman, Wolski, Dhariwal, Radford, and Klimov]{schulman2017proximalpolicyoptimizationalgorithms}
+John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov.
+\newblock Proximal policy optimization algorithms, 2017.
+\newblock URL \url{https://arxiv.org/abs/1707.06347}.
+
+\bibitem[Shao et~al.(2024)Shao, Wang, Zhu, Xu, Song, Bi, Zhang, Zhang, Li, Wu, and Guo]{shao2024deepseekmathpushinglimitsmathematical}
+Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, Mingchuan Zhang, Y.~K. Li, Y.~Wu, and Daya Guo.
+\newblock Deepseekmath: Pushing the limits of mathematical reasoning in open language models, 2024.
+\newblock URL \url{https://arxiv.org/abs/2402.03300}.
+
+\bibitem[Stojanovski et~al.(2025)Stojanovski, Stanley, Sharratt, Jones, Adefioye, Kaddour, and Köpf]{stojanovski2025reasoninggymreasoningenvironments}
+Zafir Stojanovski, Oliver Stanley, Joe Sharratt, Richard Jones, Abdulhakeem Adefioye, Jean Kaddour, and Andreas Köpf.
+\newblock Reasoning gym: Reasoning environments for reinforcement learning with verifiable rewards, 2025.
+\newblock URL \url{https://arxiv.org/abs/2505.24760}.
+
+\bibitem[Subramaniam et~al.(2025)Subramaniam, Du, Tenenbaum, Torralba, Li, and Mordatch]{subramaniam2025multiagentfinetuningselfimprovement}
+Vighnesh Subramaniam, Yilun Du, Joshua~B. Tenenbaum, Antonio Torralba, Shuang Li, and Igor Mordatch.
+\newblock Multiagent finetuning: Self improvement with diverse reasoning chains, 2025.
+\newblock URL \url{https://arxiv.org/abs/2501.05707}.
+
+\bibitem[Tian et~al.(2023)Tian, Mitchell, Yao, Manning, and Finn]{tian2023finetuning}
+Katherine Tian, Eric Mitchell, Huaxiu Yao, Christopher Manning, and Chelsea Finn.
+\newblock Fine-tuning language models for factuality.
+\newblock In \emph{NeurIPS 2023 Workshop on Instruction Tuning and Instruction Following}, 2023.
+\newblock URL \url{https://openreview.net/forum?id=kEK08VdSO5}.
+
+\bibitem[Wu et~al.(2025)Wu, Wang, Tang, Ding, Helenowski, Tan, Xu, Gowda, Chen, Zhu, Tang, Qian, Zhu, and Hou]{wu2025llamarldistributedasynchronousreinforcement}
+Bo~Wu, Sid Wang, Yunhao Tang, Jia Ding, Eryk Helenowski, Liang Tan, Tengyu Xu, Tushar Gowda, Zhengxing Chen, Chen Zhu, Xiaocheng Tang, Yundi Qian, Beibei Zhu, and Rui Hou.
+\newblock Llamarl: A distributed asynchronous reinforcement learning framework for efficient large-scale llm training, 2025.
+\newblock URL \url{https://arxiv.org/abs/2505.24034}.
+
+\bibitem[Wu et~al.(2023)Wu, Bansal, Zhang, Wu, Li, Zhu, Jiang, Zhang, Zhang, Liu, Awadallah, White, Burger, and Wang]{wu2023autogenenablingnextgenllm}
+Qingyun Wu, Gagan Bansal, Jieyu Zhang, Yiran Wu, Beibin Li, Erkang Zhu, Li~Jiang, Xiaoyun Zhang, Shaokun Zhang, Jiale Liu, Ahmed~Hassan Awadallah, Ryen~W White, Doug Burger, and Chi Wang.
+\newblock Autogen: Enabling next-gen llm applications via multi-agent conversation, 2023.
+\newblock URL \url{https://arxiv.org/abs/2308.08155}.
+
+\bibitem[Yu et~al.(2025)Yu, Zhang, Zhu, Yuan, Zuo, Yue, Dai, Fan, Liu, Liu, Liu, Lin, Lin, Ma, Sheng, Tong, Zhang, Zhang, Zhang, Zhu, Zhu, Chen, Chen, Wang, Yu, Song, Wei, Zhou, Liu, Ma, Zhang, Yan, Qiao, Wu, and Wang]{yu2025dapoopensourcellmreinforcement}
+Qiying Yu, Zheng Zhang, Ruofei Zhu, Yufeng Yuan, Xiaochen Zuo, Yu~Yue, Weinan Dai, Tiantian Fan, Gaohong Liu, Lingjun Liu, Xin Liu, Haibin Lin, Zhiqi Lin, Bole Ma, Guangming Sheng, Yuxuan Tong, Chi Zhang, Mofan Zhang, Wang Zhang, Hang Zhu, Jinhua Zhu, Jiaze Chen, Jiangjie Chen, Chengyi Wang, Hongli Yu, Yuxuan Song, Xiangpeng Wei, Hao Zhou, Jingjing Liu, Wei-Ying Ma, Ya-Qin Zhang, Lin Yan, Mu~Qiao, Yonghui Wu, and Mingxuan Wang.
+\newblock Dapo: An open-source llm reinforcement learning system at scale, 2025.
+\newblock URL \url{https://arxiv.org/abs/2503.14476}.
+
+\bibitem[Yue et~al.(2025)Yue, Yuan, Yu, Zuo, Zhu, Xu, Chen, Wang, Fan, Du, Wei, Yu, Liu, Liu, Liu, Lin, Lin, Ma, Zhang, Zhang, Zhang, Zhu, Zhang, Liu, Wang, Wu, and Yan]{yue2025vapoefficientreliablereinforcement}
+Yu~Yue, Yufeng Yuan, Qiying Yu, Xiaochen Zuo, Ruofei Zhu, Wenyuan Xu, Jiaze Chen, Chengyi Wang, TianTian Fan, Zhengyin Du, Xiangpeng Wei, Xiangyu Yu, Gaohong Liu, Juncai Liu, Lingjun Liu, Haibin Lin, Zhiqi Lin, Bole Ma, Chi Zhang, Mofan Zhang, Wang Zhang, Hang Zhu, Ru~Zhang, Xin Liu, Mingxuan Wang, Yonghui Wu, and Lin Yan.
+\newblock Vapo: Efficient and reliable reinforcement learning for advanced reasoning tasks, 2025.
+\newblock URL \url{https://arxiv.org/abs/2504.05118}.
+
+\bibitem[Zhang et~al.(2025)Zhang, Hosseini, Bansal, Kazemi, Kumar, and Agarwal]{zhang2025generativeverifiersrewardmodeling}
+Lunjun Zhang, Arian Hosseini, Hritik Bansal, Mehran Kazemi, Aviral Kumar, and Rishabh Agarwal.
+\newblock Generative verifiers: Reward modeling as next-token prediction, 2025.
+\newblock URL \url{https://arxiv.org/abs/2408.15240}.
+
+\bibitem[Zhao et~al.(2025)Zhao, Yuksekgonul, Wu, and Zou]{zhao2025siriusselfimprovingmultiagentsystems}
+Wanjia Zhao, Mert Yuksekgonul, Shirley Wu, and James Zou.
+\newblock Sirius: Self-improving multi-agent systems via bootstrapped reasoning, 2025.
+\newblock URL \url{https://arxiv.org/abs/2502.04780}.
+
+\bibitem[Ziegler et~al.(2020)Ziegler, Stiennon, Wu, Brown, Radford, Amodei, Christiano, and Irving]{ziegler2020finetuninglanguagemodelshuman}
+Daniel~M. Ziegler, Nisan Stiennon, Jeffrey Wu, Tom~B. Brown, Alec Radford, Dario Amodei, Paul Christiano, and Geoffrey Irving.
+\newblock Fine-tuning language models from human preferences, 2020.
+\newblock URL \url{https://arxiv.org/abs/1909.08593}.
+
+\end{thebibliography}

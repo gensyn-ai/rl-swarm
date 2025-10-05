@@ -57,7 +57,6 @@ def main():
 
     # Paths
     log_dir = f"{gdrive_path}/experiments/{experiment_name}/logs/{node_id}"
-    judge_base_url = "https://swarm-judge.internal-apps-central1.clusters.gensyn.ai"
 
     get_logger().info("="*60)
     get_logger().info("Starting RL Swarm (Google Drive Mode)")
@@ -150,8 +149,7 @@ def main():
         models=[model],
         config=trainer_config,
         log_with='wandb',
-        log_dir=log_dir,
-        judge_base_url=judge_base_url
+        log_dir=log_dir
     )
     get_logger().info("✓ Created trainer")
 

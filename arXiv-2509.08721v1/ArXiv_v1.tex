@@ -1,0 +1,352 @@
+\documentclass[11pt, a4paper, logo, singlecolumn, copyright]{gensyn}
+%\documentclass[11pt, a4paper, logo, twocolumn, copyright]{gensyn}
+
+\input{packages}
+\input{macros}
+
+% \documentclass[dblblindworkshop]{article}
+% \usepackage{neurips_2025}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+
+\usepackage{amsmath}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+
+\newcommand{\SAPO}{\textbf{SAPO}}
+
+
+\begin{document}
+
+\title{Sharing is Caring: Efficient LM Post-Training with Collective RL Experience Sharing}
+
+% \author[1]{Jeffrey Amico}
+% \author[1]{Gabriel P.~Andrade}
+% \author[1]{John Donaghy}
+% \author[1]{Ben Fielding}
+% \author[1]{Tristin Forbus}
+% \author[1]{Harry Grieve}
+% \author[1]{Semih Kara}
+% \author[1]{Jari Kolehmainen}
+% \author[1]{Yihua Lou}
+% \author[1]{Christopher Nies}
+% \author[1]{Edward Phillip Flores Nu\~{n}o}
+% \author[1]{Diogo Ortega}
+% \author[1]{Shikhar Rastogi}
+% \author[1]{Jari Kolehmainen}
+% \author[1]{Austin Virts}
+% \author[1]{Matthew J Wright}
+% %\author[1,2]{}
+% %\author[2]{}
+
+% \affil[1]{Gensyn}
+\author{Gensyn AI Team \\ 
+\textbf{Jeffrey Amico, Gabriel Passamani Andrade$^\dagger$, John Donaghy$^\dagger$, Ben Fielding, Tristin Forbus, Harry Grieve, Semih Kara$^\dagger$, Jari Kolehmainen, Yihua Lou$^\dagger$, Christopher Nies, Edward Phillip Flores Nuño, Diogo Ortega, Shikhar Rastogi$^\dagger$, Austin Virts, Matthew J.~Wright} \\
+$^\dagger$\small{Primary contributors.}\\
+\small{Authors are listed in alphabetical order.}}
+
+% Can leave this option out if you do not wish to add a corresponding author.
+\correspondingauthor{gabriel@gensyn.ai~\&~semih@gensyn.ai}
+
+% Remove these if they are not needed 
+% \keywords{} 
+% \paperurl{}
+
+% Use the internally issued paper ID, if there is one
+% \reportnumber{} % Leave blank if n/a 
+
+% Assign your own date to the report. 
+% Can comment out if not needed or leave blank if n/a.
+% \renewcommand{\today}{} 
+
+
+\begin{abstract}
+	Post-training language models~(LMs) with reinforcement learning~(RL) can enhance their complex reasoning capabilities without supervised fine-tuning, as demonstrated by DeepSeek-R1-Zero~\citep{deepseekai2025deepseekr1incentivizingreasoningcapability}.
+    However, effectively utilizing RL for LMs requires significant parallelization to scale-up inference, which introduces non-trivial technical challenges~(e.g.~latency, memory, and reliability) alongside ever-growing financial costs.
+    We present \textbf{S}warm s\textbf{A}mpling \textbf{P}olicy \textbf{O}ptimization~(\SAPO), a fully decentralized and asynchronous RL post-training algorithm. 
+    \SAPO~is designed for decentralized networks of heterogenous compute nodes, where each node manages its own policy model(s) while ``sharing'' rollouts with others in the network; no explicit assumptions about latency, model homogeneity, or hardware are required and nodes can operate in silo if desired.
+    As a result, the algorithm avoids common bottlenecks in scaling RL post-training while also allowing (and even encouraging) new possibilities.
+    By sampling rollouts ``shared'' across the network, it~enables ``Aha moments'' to propagate, thereby bootstrapping the learning process. In this paper we show \SAPO~achieved cumulative reward gains of up to $94\%$ in controlled experiments. We also share insights from tests on a network with thousands of nodes contributed by Gensyn community members running the algorithm on diverse hardware and models during an open-source demo.
+    % We also share insights gathered from thousands of Gensyn community members who ran the algorithm across a wide range of hardware and models in an open-source demo.
+\end{abstract}
+
+
+\maketitle
+
+\renewcommand\thefootnote{}\footnotetext{%
+Acknowledgments: We thank all Gensyn community members who have contributed to our testnet. Your support makes it possible for us to iterate and experiment at unprecedented scales -- we hope you will continue to support us as we work together to democratize AI, do science in the open, and strive to build a future we all deserve.
+}
+\renewcommand\thefootnote{\arabic{footnote}}
+
+\section{Introduction}\label{sec:intro}
+
+Improving the capabilities of language models~(LMs) after pre-training has become a central goal in AI research. Reinforcement learning~(RL) has emerged as a powerful tool for this purpose, allowing models to improve through trial and error, rather than relying solely on supervised data~\citep{ziegler2020finetuninglanguagemodelshuman,openai2022instructionfollowing,openai2024learningtoreason,deepseekai2025deepseekr1incentivizingreasoningcapability}. Recent efforts to scale RL for LMs have largely focused on distributed systems that orchestrate large GPU clusters that need to keep policy weights synchronized during training~\citep{mistralai2025magistral,wu2025llamarldistributedasynchronousreinforcement,fu2025areallargescaleasynchronousreinforcement}. Although effective, these approaches are expensive, introduce communication bottlenecks, and often require carefully engineered infrastructure to remain stable and efficient.
+
+To address these challenges, we introduce \textbf{Swarm sAmpling Policy Optimization~(SAPO)}.
+\SAPO~is a distributed RL algorithm built for decentralized networks of heterogeneous compute nodes. In this setup, which we call \textbf{swarm}, \textit{each node trains its own policy~(or model) while sharing decoded rollouts}~(e.g., in plain text), enabling lightweight exchange of experience. 
+This simple mechanism makes the framework independent of model architecture, learning algorithm, and hardware, allowing heterogeneous contributors to participate without synchronization overhead. As a natural consequence, the system behaves like a multi-agent setup, where diverse models and abundant data enhance exploration and improve generalization. In controlled experiments, we observed that \SAPO~delivers higher sample efficiency and stronger task performance---improving cumulative rewards by up to $94\%$ while sidestepping the costs, bottlenecks, and fragility of conventional distributed RL methods.
+
+While \SAPO~can be applied in any RL setting, including the fine-tuning of large LMs (LLMs), in this work we focus on small LMs (SLMs), i.e., LMs with fewer than 10B parameters \citep{vannguyen2024surveysmalllanguagemodels}. We chose SLMs because swarms are most often implemented on local or edge devices, which typically run smaller models rather than large ones. A concrete example is Gensyn’s RLSwarm~\citep{gensyn2025rlswarm}, which allows thousands of heterogeneous SLMs running locally on consumer grade hardware~(e.g., MacBooks) to interact and train collectively. Thanks to contributions from \textbf{\textit{thousands of Gensyn community members}}, we conducted an open-source demo of \SAPO~that produced the empirical insights in~\S\ref{par:training_in_large_swarm}. Overall, the demo showed that collective training with shared experience makes SLMs learn much faster.
+
+\section{Related Work}
+
+\paragraph{Reinforcement Learning for LM Fine-Tuning}
+RL has become a central technique for fine-tuning LMs, aligning their behavior with human preferences~\citep{openai2022instructionfollowing,openai2024learningtoreason}, and enabling improvements in factual accuracy~\citep{tian2023finetuning}, code generation~\citep{le2022coderlmasteringcodegeneration} and reasoning beyond what supervised learning alone can achieve~\citep{openai2022instructionfollowing,openai2024learningtoreason,deepseekai2025deepseekr1incentivizingreasoningcapability}. Unlike supervised methods, RL optimizes models through trial-and-error, with RL from human feedback~(RLHF)~\citep{ziegler2020finetuninglanguagemodelshuman,ouyang2022traininglanguagemodelsfollow} and RL with verifiable rewards~(RLVR)~\citep{gao2024designingeffectiverlreward,lambert2025tulu3pushingfrontiers,deepseekai2025deepseekr1incentivizingreasoningcapability} emerging as the dominant paradigms. RLHF trains a reward model on human preference data, while RLVR leverages rule-based, programmatically verifiable reward functions. In both cases, the resulting rewards are used for fine-tuning LMs via policy-gradient algorithms such as Proximal Policy Optimization~(PPO)~\citep{schulman2017proximalpolicyoptimizationalgorithms}. More recently, extensions such as Group Relative Policy Optimization~(GRPO)~\citep{shao2024deepseekmathpushinglimitsmathematical} and its variants~(e.g., DAPO~\citep{yu2025dapoopensourcellmreinforcement}, VAPO~\citep{yue2025vapoefficientreliablereinforcement}) have refined RL objectives to better capture complex reasoning and reduce memory and computation requirements.
+
+\paragraph{Multi-Agent Methods}
+Multi-agent methods have become a central focus in LM research, influencing both model architecture and fine-tuning strategies. These approaches are typically organized around three ideas: debate, specialization~(role-playing), and self-improvement~(bootstrapped reasoning). A major line of work is multi-agent debate~\citep{wu2023autogenenablingnextgenllm,du2023improvingfactualityreasoninglanguage,li2024improvingmultiagentdebatesparse, khan2024debatingwithmorepersuasivellms,liang2024encouragingdivergentthinkinglarge}, where multiple LMs independently answer a query, then refine their responses through iterative dialogue. The final output is selected either by voting or by a dedicated verifier, yielding higher quality answers to use for inference or fine-tuning. When a verifier is introduced, debate naturally overlaps with specialization~\citep{subramaniam2025multiagentfinetuningselfimprovement,park2025maporlmultiagentpostcotrainingcollaborative,li2023camelcommunicativeagents,ma2024coevolvingwithotheryou}, in which agents are given defined roles. MALT~\citep{motwani2025maltimprovingreasoningmultiagent} is a prototypical example of specialization, which uses separate agents for generation, verification, and refinement. Alternatively, self-improvement methods emphasize bootstrapping and iterative self-play~\citep{chen2024selfplayfinetuningconvertsweak,zhao2025siriusselfimprovingmultiagentsystems}. For example, SPIN~\citep{chen2024selfplayfinetuningconvertsweak} trains models to iteratively generate responses that approximate human annotations, while simultaneously learning to distinguish between self-generated and human-provided outputs. Adversarial techniques can be integrated into any of these multi-agent strategies (i.e.~debate, specialization, or self-improvement) to deliberately stress models and improve their robustness and safety~\citep{perez2022redteaminglanguagemodels}. Moreover, many of the techniques referenced above use RL to update model parameters~\citep{wu2025llamarldistributedasynchronousreinforcement,ma2024coevolvingwithotheryou,park2025maporlmultiagentpostcotrainingcollaborative,liao2025marftmultiagentreinforcementfinetuning,liu2025llmcollaborationmultiagentreinforcement}.
+
+\paragraph{Comparing SAPO}
+Building on RL-based fine-tuning methods like RLHF and RLVR, \SAPO~uses reward-driven trial-and-error to improve LMs. However, unlike traditional approaches, it does not require a single policy to generate all rollouts nor synchronization among multiple policies. 
+
+From a multi-agent perspective, \SAPO~naturally exhibits collaborative behavior with minimal additional computation. Unlike structured multi-agent frameworks, it does not aim to produce specialized nodes or orchestrated collaboration. Nonetheless, by sharing experiences, nodes indirectly benefit from each other’s exploration and reasoning, yielding richer training signals. This positions \SAPO~as a bridge for interpolating between single-agent RL fine-tuning and structured multi-agent frameworks. Through experience sharing \SAPO~accelerates training by capturing many benefits of multi-agent methods, and through RL fine-tuning it encourages individuals to reap those benefits before ultimately passing them on to others in the swarm. Although communication with the swarm and re-encoding sampled rollouts introduces communication and computational overhead, as will be shown in~\S\ref{sec:results}, models trained with the swarm perform better with fewer rounds of training.
+Stated another way, \textit{each individuals' additional costs are outweighed by their collective gains.}
+
+\section{Methodology}\label{sec:prelims}
+
+\subsection{The Swarm}\label{subsec:swarm}
+Suppose that we have a decentralized network of $N$ nodes~(i.e.~a swarm) that generate and communicate rollouts with one another in discrete time steps $t \in [T]$, where $T > 0$. Each node $n$ has a set of questions~(or tasks) $\mathcal{Q}^n$, and each question $q \in \mathcal{Q}^n$ has a ground-truth solution $y_q \in \mathcal{Y}^n$. The dataset of node $n$ is
+\[
+\mathcal{D}^n := \{(q, y_q) \mid q \in \mathcal{Q}^n\}.
+\]
+Importantly, we require that tasks in $\mathcal{D}^n$ are verifiable~(i.e.~their answers can be efficiently and algorithmically checked for correctness), and that rollouts generated by $n$ have the same~(or compatible) modalities as other nodes in the swarm\footnote{An example of a multimodal swarm is one in which some nodes only generate images while others only generate language. In practice, since nodes filter samples from the swarm locally, the assumption about modalities can be omitted and these rollouts in different modalities would simply be ignored when incompatible.}. We denote the metadata\footnote{Made explicit for clarity, but in many swarm settings this metadata is implicit to the swarm being ``joined''.} of $\mathcal{D}^n$ by $\mathcal{M}^n$, which specifies how each task in the dataset can be verified.
+
+Node $n$ also holds a model~(e.g.~an LM) which, in RL terminology, is represented by a \textbf{policy} $\pi^n$ that maps an appropriate input format to answers. Given a question $q\in\mathcal{Q}^n$~(in the appropriate form), we ask node $n$ to generate $L^n$-many answers $$\mathcal{R}^n(q) := \{a^n_1(q),\dots,a^n_{L^n}(q)\},$$
+which forms its \textbf{rollout} in response to $q$.
+
+Throughout this paper we assume the model is an SLM and, for simplicity, that questions are presented directly as prompts. Nonetheless, the framework also supports arbitrary prompt generators, allowing for learned control over question/task difficulty and formatting. Furthermore, the dataset, number of generated answers, and sampled rollouts can all vary with time, however we omit the time subscript for notational convenience.
+
+Although not explored in this paper, it is interesting to note that nodes in the swarm do not necessarily need to partake in training and can use any compatible policy; hence, in principle, humans and other non-traditional policies can serve as generators in the swarm.
+
+\subsection{Swarm Sampling Policy Optimization~(SAPO)}\label{subsec:sapo}
+
+Consistent with standard RL post-training, during each round of training, each node subsamples a batch of questions $\mathcal{B}^n\subseteq \mathcal{Q}^n$ and answers them to generate rollouts. In \SAPO, after being generated and before proceeding with reward calculations, each task-rollout data point can be ``shared'' with or be ``sampled'' by other nodes. Stated formally, each node $n$ \textit{broadcasts a subset of the batch of questions along with their metadata, ground-truth answers, and corresponding rollouts}:
+$$\mathcal{C}^n(q) := (q,y_q,\mathcal{R}^n(q),\mathcal{M}^n)\text{~for~}q\in\mathcal{S}^n\subseteq \mathcal{B}^n.$$
+We emphasize that the rollouts are shared in a decoded format such that individuals in the swarm can emulate these rollouts as if generated by their own policy, e.g.~\textit{individuals can re-encode and compute token-level values as if the rollout was generated by their policy regardless of how unlikely.}
+
+Subsequently, node $n$ constructs a training set $\mathcal{T}^n$ by subsampling $I^n$-many datapoints from its own rollouts and $J^n$-many from those shared in the swarm:
+\begin{align*}
+\mathcal{T}^n &= \underbrace{\left\{I^n \text{-many samples from } \bigcup_{q\in\mathcal{B}^n} \mathcal{C}^n(q) \right\}}_{\text{self-rollouts}}
+\;\cup\;
+\underbrace{\left\{J^n \text{-many samples from } \bigcup_{m \neq n,~q\in\mathcal{S}^m} \mathcal{C}^m(q)\right\}}_{\text{external rollouts}}.
+\end{align*}
+Importantly, individual nodes have full control over the sampling methodology used for choosing between locally-generated or swarm-sampled rollouts---this is an important mechanism for \textit{allowing individuals in the swarm to both tailor and filter through experiences being shared with their policy model}. For example, in the experiments discussed throughout~\S\ref{sec:results}, all nodes first discard rollouts with zero advantage, and then uniformly sample from the remaining swarm rollouts.
+% For example, in the experiments discussed throughout~\S\ref{sec:results}, all nodes first filter out any rollouts with zero advantage then do uniform random sampling over the remaining rollouts coming from the swarm. 
+
+After constructing a training set, the node then uses its local reward model $\rho^n$ to compute rewards over $\mathcal{T}^n$, and updates its policy with any policy gradient algorithm, e.g.~PPO or GRPO. This process of constructing training sets from locally-generated and swarm-sampled datapoints repeats for the individual's desired number of rounds. We present a pseudocode summary of \SAPO~in Algorithm~\ref{algo:sapo}. Note that setting $J^n = 0$ reduces node $n$'s training to standard RL fine-tuning.
+
+
+\setlength{\algotitleheightrule}{0.8pt}
+\setlength{\algotitleheightrule}{0.8pt}
+\setlength{\interspacetitleruled}{2ex} % space around title
+\setlength{\algotitleheightrule}{0.8pt}
+\setlength{\algotitleheightrule}{0.8pt}
+\SetAlCapSkip{1.2em} % space after caption
+\renewcommand{\baselinestretch}{1.2} % extra line spacing
+\begin{algorithm}[htbp!]
+\DontPrintSemicolon
+\SetAlgoNlRelativeSize{-1}
+\SetAlgoNlRelativeSize{-1}
+\SetKwInput{KwIn}{Input}
+\SetKwInput{KwOut}{Output}
+
+\KwIn{For each $n\in[N]$: dataset~$\mathcal{D}^n$, metadata~$\mathcal{M}^n$, policy~$\pi^n$, reward model~$\rho^n$, policy update algorithm, number of local samples $I^n$, number of external samples $J^n$}
+\KwOut{Updated policy parameters}
+
+\For{each round $t$}{
+    \For(\tcp*[f]{Can be fully decentralized and run in parallel}){each node $n$}{
+        \tcp{Sample questions}
+        $\mathcal{B}^n \gets \text{SampleBatch}(\mathcal{Q}^n)$ \;
+        \tcp{Generate rollouts}
+        \For{each $q \in \mathcal{B}^n$}{
+            $\mathcal{R}^n(q) \gets \{ a^n_{1}(q), \dots, a^n_{L^n}(q) \}$ \;
+        }
+        
+        \tcp{Share rollouts and associated data}
+        $\mathcal{S}^n \gets \text{SelectSubset}(\mathcal{B}^n)$ \;
+        \text{Communicate}($\{\mathcal{C}^n(q)\mid q\in\mathcal{S}^n\}$)
+        
+        \tcp{Assemble training set}
+        $\mathcal{T}^n \gets \text{SampleSelf}(\{\mathcal{C}^n(q) \mid q\in\mathcal{B}^n\}, I^n)$ \\
+        $\qquad\quad \hookrightarrow ~\text{SampleExternal}(\cup_{m\neq n}\{\mathcal{C}^m(q) \mid q\in\mathcal{S}^m\}, J^n)$ \;
+        
+        \tcp{Policy update}
+        $\pi^n \gets \text{PolicyGradient}(\pi^n, \rho^n, \mathcal{T}^n)$ \;
+    }
+}
+\caption{\SAPO}
+\label{algo:sapo}
+\end{algorithm}
+
+\section{Controlled Experiment Setup}\label{sec:experiment_setup}
+In this section, we describe the setup of our controlled experiments. We used a swarm of eight Qwen2.5 models~\citep{qwen2.5}, each with 0.5B parameters, implemented the training process using PyTorch and ran the models within Docker containers. Docker Compose scripts orchestrated the containers, enabling scalable deployment. We managed multi-GPU parallelism with PyTorch's \texttt{distributed} package, assigning one GPU per agent and allowing NCCL to facilitate their communication in a swarm.
+
+\subsection{Dataset}\label{subsec:data}
+% For our experiments we used the ReasoningGYM dataset~\citep{stojanovski2025reasoninggymreasoningenvironments}, which procedurally generates multi-domain~(e.g., algebra, logic, or graph problems) data at run time via domain-specific generators that produce fresh problem instances each time they are called. 
+We conducted our experiments using the ReasoningGYM dataset~\citep{stojanovski2025reasoninggymreasoningenvironments}. This dataset generates problems on demand in domains such as algebra, logic, and graph reasoning. Each time a problem is requested, a domain-specific generator produces a fresh instance. Hence, ReasoningGYM can technically yield an unlimited stream of diverse training and evaluation tasks, with adjustable size, structure, and difficulty. Each domain-specific generator is also paired with a programmatic verifier, enabling reliable ``off-the-shelf'' correctness checks.
+
+From amongst the catalog of tasks available in reasoning gym\footnote{The full gallery of ReasoningGYM datasets can be found at the following link: \href{https://github.com/open-thought/reasoning-gym/blob/main/GALLERY.md}{https://github.com/open-thought/reasoning-gym/blob/main/GALLERY.md}}, we selected the following specialties: 
+\begin{itemize}
+    \item \texttt{base\_conversion}: converting numbers between different bases;
+    \item \texttt{basic\_arithmetic}: performing elementary arithmetic operations;
+    \item \texttt{arc\_1d}: abstract reasoning over one-dimensional sequences~(a simplified version of the ARC benchmark);
+    \item \texttt{bf}: tasks involving Brainf*ck programs or similar algorithmic reasoning;
+    \item \texttt{propositional\_logic}: solving propositional logic questions;
+    \item \texttt{fraction\_simplification}: simplifying fractions as much as possible;
+    \item \texttt{decimal\_arithmetic}: enforcing proper operator precedence during arithmetic with decimal contraints;
+    \item \texttt{calendar\_arithmetic}: puzzle solving on word problems involving calendar dates;
+    \item \texttt{binary\_matrix}: abstract reasoning on binary square matrices.
+\end{itemize}
+This selection ensures evaluation across a diverse set of reasoning tasks spanning symbolic, numeric, and abstract domains. At each training round, every agent randomly samples a set of specialties~(with replacement) from the above list and receives one ReasoningGYM question per specialty. For each of its own questions, each agent generates $8$ completions, resulting in a rollout of 8 entries per question~(i.e.~$L^n=8$ for all $n\in[8]$). We emphasize that, in the experiments, agents are generalists; i.e., they received questions from all specialties with equal probability.
+% An interesting next step for evaluating \SAPO~would be to study the effect of specialization~(or greater heterogeneity).
+
+\subsection{Policy Update}\label{subsec:local_alg}
+We used GRPO to update each node's policy. In initial experiments, as identified in DAPO~\citep{yu2025dapoopensourcellmreinforcement}, we found training to be more efficient without the KL-divergence penalty, so we set its weight to zero. Similarly, for clipping we used asymmetric thresholds with $\epsilon_{\text{low}} = 0.2$~(lower ratio bound) and $\epsilon_{\text{high}} = 0.28$~(upper ratio bound). Training ran for $2000$ rounds and used the Adam optimizer with the default hyperparameters~(e.g.,~learning rate $0.001$).
+
+\subsection{Reward Model}\label{subsec:rewards}
+For each node and task, we used the flexible, rule-based verifiers provided by ReasoningGYM. If the task-specific verifier was able to parse the correct answer from a completion, then it assigned a reward of $1$~\footnote{There are exceptions in specific verifiers where completions can receive partial credit for edge cases.} otherwise $0$. 
+% that completion receives a reward of $1$~\footnote{There are occasional exceptions in specific verifiers where completions can receive partial credit for edge cases.} otherwise $0$. 
+
+Interestingly, in our early experiments we added a formatting reward, but soon removed it. Experience sharing in \SAPO~made it unnecessary because knowledge about the correct formatting (expected by ReasoningGYM’s verifiers) spread throughout the swarm almost immediately without needing an explicit formatting reward signal.
+
+% Interestingly, during initial experimentation we also included a formatting reward but soon removed it after finding that the experience sharing amongst nodes in \SAPO~made it obsolete--knowledge about the correct formatting expected by ReasoningGYM's verifiers was being propogated throughout the swarm almost immediately without needing to explicitly include a formatting-related signal.
+
+\subsection{GenRL}
+We used GenRL~\citep{gensyn2025genrl}, the backend for Gensyn’s RLSwarm platform, to perform our experiments. GenRL is a decentralized, modular framework designed for scalable, multi-agent, multi-stage reinforcement learning. Unlike centralised systems, it supports peer-to-peer coordination and communication, giving full control over system architecture. Notably, GenRL integrates seamlessly with ReasoningGYM, offering out-of-the-box access to over 100 procedurally generated, verifiable reasoning tasks.
+
+\section{Controlled Experiment Results}\label{sec:results}
+
+To evaluate the efficacy of \SAPO, we trained the swarm described in~\S\ref{sec:experiment_setup} \textit{with varying degrees of experience sharing}. The \textit{baseline is no sharing}, which corresponds to standard RL fine-tuning~(\S\ref{sec:prelims}). To keep conditions comparable, each agent was assigned 8 tasks~(questions) per round, ensuring the total number of training samples was fixed across all setups.
+
+In the baseline, each agent samples specialties uniformly, receives one question per specialty, generates $8$ completions per question, and updates its policy using only~(and all of) its own rollouts. In \SAPO~with $I$ local~/~$J$ external rollouts (where $I,J>0$ and $I+J=8$), each agent samples $I$ specialties, receives one question per specialty, and generates 8 completions per question (number of completions per question is fixed across all experiments). Each agent then shares all of its rollouts with the swarm. From the shared pool, it removes rollouts with zero advantage, samples $J$ rollouts from the remaining ones, and combines them with its own local rollouts to update its policy. Note that \SAPO~gives agents the flexibility to \textit{subsample from a larger pool and remove the uninformative, $0$-advantage samples}, which the baseline cannot do. 
+
+We evaluate four configurations in total: $8$ local~/~$0$ external~(baseline), $6$ local~/~$2$ external, $4$ local~/~$4$ external, and $2$ local~/~$6$ external. For each configuration, we examine the reward trajectories produced during training.
+
+\begin{figure}[ht]
+    \centering
+    
+    % Row 1
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/SAPO_rewards_8loc0ext_gensyn.png}
+        \caption{Baseline case, i.e.~8 local / 0 external rollouts.}
+        \label{fig:raw_rewards80}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/SAPO_rewards_6loc2ext_gensyn.png}
+        \caption{6 local / 2 external rollouts.}
+        \label{fig:raw_rewards62}
+    \end{subfigure}
+    
+    % Row 2
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/SAPO_rewards_4loc4ext_gensyn.png}
+        \caption{4 local / 4 external rollouts.}
+        \label{fig:raw_rewards44}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/SAPO_rewards_2loc6ext_gensyn.png}
+        \caption{2 local / 6 external rollouts.}
+        \label{fig:raw_rewards26}
+    \end{subfigure}
+
+    \caption{Rewards obtained by all agents are shown for each configuration. Increasing the number of external rollouts raises peak rewards, but the highest overall reward accumulation occurs in the $4$ local~/~$4$ external setup, yielding a $\%94$ improvement over the baseline.}
+    \label{fig:raw_rewards}
+\end{figure}
+
+Figure~\ref{fig:raw_rewards} shows the rewards obtained by each agent across training rounds, with each subplot corresponding to a different configuration. Both the $4$ local~/~$4$ external and $2$ local~/~$6$ external schemes achieve the highest peak rewards, clearly outperforming the no-sharing baseline. Among all setups, the $4$ local~/~$4$ external configuration achieves the largest total reward accumulated across agents and rounds~($1093.31$), followed by $2$ local~/~$6$ external~($945.87$) and $6$ local~/~$2$ external~($854.43$). By comparison, the baseline yields only $561.79$. Overall, the $4$ local / $4$ external scheme delivers the strongest performance, with a $94\%$ improvement over the baseline.
+
+To gain further insight, we examine the agent-averaged rewards for each configuration. In addition, we apply a moving average with a window of $100$~samples to smooth the curves. Since the policy parameters change slower than individual training steps, the moving average effectively averages rewards as if the policy were frozen. As a result, the smoothed curve serves as a reasonable estimate of the expected average reward across tasks. The results are shown in Figure~\ref{fig:smooth_rewards}, with confidence intervals given by the minimum and maximum across agents.
+
+Figure~\ref{fig:smooth_rewards} illustrates that the $4$ local~/~$4$ external configuration consistently achieves higher expected average reward than the baseline, and in nearly all training rounds, it also outperforms the $6$ local~/~$2$ external configuration. Compared to the $2$ local~/~$6$ external setup, the $4$ local~/~$4$ external configuration again performs better for most rounds, although the difference is smaller than in the other cases. \textit{These results highlight the benefit of experience sharing: once one agent has an ``Aha moment,'' it can spread through the swarm and lift overall performance.} Notably, this effect appears even without giving agents specific roles or different models; adding more heterogeneity could make the swarm effect even stronger and suggests a promising line of future work for~\SAPO.
+
+On the other hand, since the $4$ local~/~$4$ external configuration outperforms the $2$ local~/~$6$ external case, we find that \textit{relying too heavily on external rollouts can actually hinder performance}. Notice also that the baseline shows much lower variation, and the level of oscillation increases as the proportion of external rollouts grows. The $2$ local~/~$6$ external setup, in particular, shows strong oscillations as training progresses. We interpret this as being due to two interesting network effects:~(i)~When high-performing agents overly rely on external rollouts, their progress can be adversely effected by the answers of worse-performing agents. 
+(ii)~When agents draw many rollouts from the swarm but collectively contribute too few, the quality of the shared pool diminishes.
+% (ii)~When the number of external rollouts being sampled from the swarm is large and not enough ``contributions'' are being made to the swarm, there is a higher likelihood that swarm-samples are of lower quality.
+Taken together, these effects lead to steep learning and forgetting behavior that explains the oscillatory pattern. 
+Finally, note that the moving average window smooths out task-level idiosyncrasy~(see Figure~\ref{fig:raw_rewards}), so these oscillations reflect meaningful large-scale training dynamics rather than task related randomness.
+
+% \begin{figure}[ht]
+%     \centering
+    
+%     % Top figure
+%     \begin{subfigure}{0.9\textwidth}  % adjust width as needed
+%         \centering
+%         \includegraphics[width=\linewidth]{figures/SAPO.png}
+%         \caption{Smoothed average rewards.}
+%         \label{fig:SAPO}
+%     \end{subfigure}
+    
+%     \vspace{0.5cm} % optional vertical spacing
+    
+%     % Bottom figure
+%     \begin{subfigure}{0.9\textwidth}
+%         \centering
+%         \includegraphics[width=\linewidth]{figures/SAPO_no_2loc6ext.png}
+%         \caption{The 2 local / 6 external case is omitted for easier comparison.}
+%         \label{fig:SAPO_no_2loc6ext}
+%     \end{subfigure}
+
+%     \caption{Average agent rewards for each configuration across training, smoothed with a moving average~(window size 100). Figure~\ref{fig:SAPO} shows all configurations, while Figure~\ref{fig:SAPO_no_2loc6ext} omits the 2 local / 6 external case for easier comparison. The 4 local / 4 external configuration consistently outperforms the baseline and, in nearly all rounds, also exceeds the 6 local / 2 external configuration in expected average reward. The 4 local / 4 external configuration also surpasses the 2 local / 6 external setup for most rounds, though the margin is smaller compared to the other cases.}
+%     \label{fig:smooth_rewards}
+% \end{figure}
+
+\begin{figure}[ht]
+    \centering
+    
+    \includegraphics[width=\linewidth]{figures/SAPO.png}
+    
+    \caption{Average agent rewards for each configuration across training, smoothed with a moving average~(window size 100). The 4 local / 4 external configuration consistently outperforms the baseline and, in nearly all rounds, also exceeds the 6 local / 2 external configuration in expected average reward. The 4 local / 4 external configuration also surpasses the 2 local / 6 external setup for most rounds, though the difference is smaller compared to the other cases.}
+    \label{fig:smooth_rewards}
+\end{figure}
+
+\section{Training in a Large Swarm: Insights from an Open-Source Demo}
+\label{par:training_in_large_swarm}
+To evaluate \SAPO~in more realistic and heterogeneous conditions, we collected data from a large-scale open source demo in which thousands of Gensyn community members contributed training runs across diverse hardware and model configurations. Each participating node had a unique peer identifier associated with metadata such as the model type being trained and, after each round, nodes participated in the following exchange with a ``judge'' we controlled:~(i)~the node requested an evaluation, (ii)~the judge randomly sampled a question from one of the ReasoningGYM tasks introduced in~\S\ref{subsec:data} and sent it to the node, (iii)~the node generated an answer to the question~(i.e., pass@$1$) and submitted it to the judge, (iv)~the judge scored the answer with the appropriate ReasoningGYM verifier.
+
+By analyzing the result of these judge evaluations associated with unique peer identifiers, we were able to compare models trained collaboratively in the swarm against counterparts trained in isolation. Our findings show that swarm-based training can yield measurable gains, but the effect is model dependent. 
+
+\begin{figure}[htbp!]
+	\centering
+	\includegraphics[width=\textwidth]{figures/sapo-Page-1.drawio.png}
+	\caption{Shown in red are the regions where the adjusted p-value is greater than $0.05$.  After a certain number of rounds, in this case approximately $175$, the performance per round of the models in the swarm significantly exceeds that of the model trained in isolation.}
+	\label{fig:demo}
+\end{figure}
+
+For the Qwen2.5 models with 0.5B parameters, swarm participation consistently led to improved cumulative performance over time compared to isolated training. As shown in Figure~\ref{fig:demo}, statistical testing confirms that after roughly $175$ normalized rounds\footnote{The large-scale demo's swarm was an ephemeral environment where nodes came and went or occasionally stopped then restarted. Hence we normalize rounds based on how many total rounds individuals participated in.}, the swarm-trained variant outperforms its isolated counterpart. Interestingly, by contrast, stronger models such as Qwen3 with 0.6B parameters achieved similar performance in and out of the swarm, suggesting that \SAPO’s benefits are most pronounced for mid-capacity models that can actively ``absorb'' and propagate diverse rollouts. 
+
+It is important to note that, in this demo, models selected rollouts from the swarm using straightforward uniform random sampling without any filtering. This caused rollouts without useful reward signals to be overrepresented in the swarm. We hypothesize that, with better sampling strategies, more performant models could also benefit from participating in the swarm under \SAPO.
+
+% It is important to note that models in this demo sampled rollouts from the swarm based on a top-k strategy, wherein they sampled rollouts having the highest total rewards across completions without any filtering; as a result, relatively easy questions were disproportionately favored by models in the swarm. We hypothesize that, with better sampling strategies, more performant models would also benefit from participating in the swarm while using \SAPO.
+
+\section{Conclusion}\label{sec:conclusion}
+In this paper we introduced \SAPO, a fully decentralized and asynchronous RL post-training algorithm. Unlike many centralized approaches, \SAPO~allows heterogeneous nodes to manage their own models while sharing rollouts, enabling learning to spread across the swarm without assumptions about latency, homogeneity, or hardware. Our experiments, using the ReasoningGYM dataset, show that balanced experience sharing~($4$ local~/~$4$ external) nearly doubles performance over the no-sharing baseline. However, excessive reliance on external rollouts can destabilize learning, causing steep learning and forgetting behavior. Overall, \SAPO~turns experience sharing into a core advantage, offering a scalable and practical path towards augmenting the reasoning capabilities of models through collaborative post-training.
+
+\paragraph{Future Directions}
+As discussed in~\S\ref{subsec:data} and~\S\ref{sec:results}, a natural next step is to evaluate \SAPO~under greater heterogeneity---for example, with specialized tasks or different base models. We presented some preliminary results in~\S\ref{par:training_in_large_swarm} where several different base models were allowed to participate in a large swarm, but a more systematic study is needed. Taking these explorations of heterogeneity to their natural extreme, as noted in~\S\ref{sec:prelims}, it would be interesting to explore the effect of unconventional, non-trained policies~(e.g., humans) within the swarm when proper incentive mechanisms are put in place to encourage earnest contributions.
+
+Stability remains an important open question: heavy reliance on external rollouts often causes oscillations and forgetting. Hybrid approaches that integrate \SAPO~with reward-guided sharing, RLHF, or generative verifiers~\citep{zhang2025generativeverifiersrewardmodeling} may help resolve this. Complimentary to these hybrid approaches, especially in large swarm settings where trust cannot be assumed, a promising direction is to develop meta-strategies for adaptively balancing local vs.~shared rollouts, or for strategically filtering swarm samples. 
+
+% Another key direction is addressing the oscillations and forgetting we observed when training relies too heavily on external rollouts, particularly for long-term stability. Hybrid approaches that combine \SAPO~with reward guided experience sharing and RLHF or generative verifiers~\citep{zhang2025generativeverifiersrewardmodeling} may help stabilize training and, in doing so, could unlock the full potential of experience sharing. Complimentary to these hybrid approaches, especially in large swarm settings where trust cannot be assumed, exploring meta-strategies for dynamically choosing the ratio of locally-generated to~swarm-sampled rollouts that nodes should utilize in a round or how to better filter rollouts being sampled from the swarm is a direction that could dramatically improve training outcomes.
+
+Finally, although our focus in this paper was on language models, \SAPO~is agnostic to data modality and can be applied quite generally; multi-modal applications of \SAPO~suggest intriguing directions that are quite unintuitive to imagine in traditional single-agent learning. For example, in image-based~(or any data with a notion of ``aesthetic'') swarms, individual nodes can define local reward mechanisms that codify a personal sense of ``taste'' which can induce a virtuous cycle if deemed ``good'' by other nodes' reward mechanisms since it may indirectly influence the style of images produced by other models in the swarm\footnote{In GenRL~\citep{gensyn2025genrl} we provide an example of a text-to-image swarm where some nodes assign rewards based only on aesthetics whereas others assign rewards based only on CLIPScore~\citep{hessel2022clipscorereferencefreeevaluationmetric}. The resulting policies generate images that satisfy both types of rewards.}. More broadly, multi-agent experience sharing algorithms such as \SAPO~allow us to explore novel learning paradigms designed to leverage unique self-organizing feedback loops between heterogenous models communicating with one another.
+
+\bibliography{references}
+\bibliographystyle{plainnat}
+
+\end{document}
