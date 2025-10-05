@@ -161,16 +161,23 @@ def main():
         log_dir=log_dir
     )
 
-    # Patch GPT-2 tokenizer to add chat template (GPT-2 doesn't have one by default)
-    if not hasattr(trainer.processing_class, 'chat_template') or trainer.processing_class.chat_template is None:
-        # Simple chat template for completion models: concatenate all messages with newlines
-        trainer.processing_class.chat_template = (
+    # Patch GPT-2 tokenizer for compatibility with GenRL (completion model fixes)
+    tokenizer = trainer.processing_class
+
+    # Fix 1: Add chat template (GPT-2 doesn't have one by default)
+    if not hasattr(tokenizer, 'chat_template') or tokenizer.chat_template is None:
+        tokenizer.chat_template = (
             "{% for message in messages %}"
             "{{ message['content'] }}"
             "{% if not loop.last %}\n\n{% endif %}"
             "{% endfor %}"
         )
-        get_logger().info("✓ Added simple chat template to tokenizer (completion model)")
+        get_logger().info("✓ Added chat template to tokenizer")
+
+    # Fix 2: Add padding token (GPT-2 doesn't have one by default)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        get_logger().info(f"✓ Set pad_token = eos_token ({tokenizer.eos_token})")
 
     get_logger().info("✓ Created trainer")
 
