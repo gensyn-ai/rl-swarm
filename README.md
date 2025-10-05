@@ -44,13 +44,13 @@ Perfect for testing and learning. Runs one training node on a free Colab GPU.
 
 1. **Open the Coordinator Notebook**
 
-   Click here: **[Open Coordinator Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_coordinator.ipynb)**
+   Click here: **[Open Coordinator Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.00.RL_Swarm_Coordinator.ipynb)**
 
    Or manually:
    - Go to [Google Colab](https://colab.research.google.com/)
    - File > Open notebook > GitHub tab
    - Enter: `Elrashid/rl-swarm`
-   - Select: `notebooks/colab_coordinator.ipynb`
+   - Select: `notebooks/EX12.00.RL_Swarm_Coordinator.ipynb`
 
 2. **Configure Your Experiment**
 
@@ -83,7 +83,7 @@ Perfect for testing and learning. Runs one training node on a free Colab GPU.
 
    While training is running, open a **new browser tab** and use the monitoring notebook:
 
-   **[🔗 Open Monitoring Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_monitoring.ipynb)**
+   **[🔗 Open Monitoring Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.02.RL_Swarm_Monitoring.ipynb)**
 
    Quick monitoring steps:
    - Mount Google Drive (same account)
@@ -111,7 +111,7 @@ Run multiple nodes to simulate swarm training. Each node learns from the others.
 
 2. **Open Worker Notebook**
 
-   In a **new tab/window**: **[Open Worker Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_worker.ipynb)**
+   In a **new tab/window**: **[Open Worker Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.01.RL_Swarm_Worker.ipynb)**
 
 3. **Configure Worker**
 
@@ -146,7 +146,7 @@ Run multiple nodes to simulate swarm training. Each node learns from the others.
 
    Use the monitoring notebook to see all nodes working together:
 
-   **[🔗 Open Monitoring Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_monitoring.ipynb)**
+   **[🔗 Open Monitoring Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.02.RL_Swarm_Monitoring.ipynb)**
 
    The dashboard will show:
    - All registered peers (coordinator + workers)
@@ -308,7 +308,7 @@ If you encounter issues, please first check [Troubleshooting](#troubleshooting).
 
 The monitoring notebook provides a comprehensive dashboard to track your experiment's progress with visualizations and diagnostics.
 
-**[🔗 Open Monitoring Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/colab_monitoring.ipynb)**
+**[🔗 Open Monitoring Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.02.RL_Swarm_Monitoring.ipynb)**
 
 **Quick Start:**
 

@@ -29,9 +29,9 @@ This fork is **Google Drive-only**. All blockchain, Hivemind, and Hydra dependen
    - `utils/notebook_utils.py`: Live output streaming for Jupyter/Colab notebooks
 
 **Colab Notebooks**:
-   - `notebooks/colab_coordinator.ipynb`: Coordinator setup with live training output
-   - `notebooks/colab_worker.ipynb`: Worker setup with live training output
-   - `notebooks/colab_monitoring.ipynb`: Real-time experiment monitoring dashboard
+   - `notebooks/EX12.00.RL_Swarm_Coordinator.ipynb`: Coordinator setup with live training output
+   - `notebooks/EX12.01.RL_Swarm_Worker.ipynb`: Worker setup with live training output
+   - `notebooks/EX12.02.RL_Swarm_Monitoring.ipynb`: Real-time experiment monitoring dashboard
 
 **Configuration**: All configuration via **environment variables only** (no YAML files)
 
@@ -83,10 +83,10 @@ The following have been **completely removed** from this fork:
 See [`README.md`](README.md) for detailed Colab instructions.
 
 Quick summary:
-1. Open `notebooks/colab_coordinator.ipynb` in Colab
+1. Open `notebooks/EX12.00.RL_Swarm_Coordinator.ipynb` in Colab
 2. Configure experiment name and model
 3. Run all cells
-4. (Optional) Add workers with `notebooks/colab_worker.ipynb`
+4. (Optional) Add workers with `notebooks/EX12.01.RL_Swarm_Worker.ipynb`
 
 **Local Testing:**
 
@@ -332,9 +332,9 @@ Quick tests:
 - `CLAUDE.md`: This file - architecture and development guide
 
 **Working Examples:**
-- `notebooks/colab_coordinator.ipynb`: Working Colab example for coordinator
-- `notebooks/colab_worker.ipynb`: Working Colab example for worker
-- `notebooks/colab_monitoring.ipynb`: Working Colab example for monitoring
+- `notebooks/EX12.00.RL_Swarm_Coordinator.ipynb`: Working Colab example for coordinator
+- `notebooks/EX12.01.RL_Swarm_Worker.ipynb`: Working Colab example for worker
+- `notebooks/EX12.02.RL_Swarm_Monitoring.ipynb`: Working Colab example for monitoring
 - `rgym_exp/runner/swarm_launcher.py`: Simple entry point showing all components
 
 **Removed Documentation:**

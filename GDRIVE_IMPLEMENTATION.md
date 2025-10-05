@@ -100,12 +100,12 @@ RL Swarm now supports a **Google Drive-only mode** that eliminates all external 
    - Added complete rollout_retention section
    - Removed old communications section (discovery)
 
-4. **`notebooks/colab_coordinator.ipynb`** (removed 1 cell, updated 3 cells)
+4. **`notebooks/EX12.00.RL_Swarm_Coordinator.ipynb`** (removed 1 cell, updated 3 cells)
    - Removed peer identity generation cell
    - Updated environment variables (removed IDENTITY_PATH, added rollout config)
    - Updated init_experiment cell (added rollout config overrides)
 
-5. **`notebooks/colab_worker.ipynb`** (removed 1 cell, updated 2 cells)
+5. **`notebooks/EX12.01.RL_Swarm_Worker.ipynb`** (removed 1 cell, updated 2 cells)
    - Removed peer identity generation cell
    - Updated environment variables (removed IDENTITY_PATH, added rollout config)
 
@@ -269,7 +269,7 @@ See `rgym_exp/config/colab-gdrive.yaml` for the complete configuration with all 
 #### Coordinator Node
 
 ```python
-# In notebooks/colab_coordinator.ipynb
+# In notebooks/EX12.00.RL_Swarm_Coordinator.ipynb
 
 # Configuration
 EXPERIMENT_NAME = 'qwen_0.6b_seed42'  # Must be same across all nodes
@@ -289,7 +289,7 @@ ROLLOUT_ARCHIVE_OLD = False
 #### Worker Nodes
 
 ```python
-# In notebooks/colab_worker.ipynb (separate Colab sessions)
+# In notebooks/EX12.01.RL_Swarm_Worker.ipynb (separate Colab sessions)
 
 # Configuration
 EXPERIMENT_NAME = 'qwen_0.6b_seed42'  # SAME as coordinator
