@@ -181,8 +181,6 @@ python -m rgym_exp.runner.swarm_launcher
 - `ROLLOUT_KEEP_LAST_N_ROUNDS`: Number of rounds to keep (default: 10)
 - `ROLLOUT_ARCHIVE_OLD`: 'True' or 'False' (default: False)
 - `HUGGINGFACE_ACCESS_TOKEN`: For pushing trained models (optional)
-- `WANDB_API_KEY`: Weights & Biases logging (optional)
-- `WANDB_PROJECT`: W&B project name (optional)
 
 **SAPO Experiment Configuration (NEW):**
 - `NUM_TRAIN_SAMPLES`: Number of local rollouts per round (I parameter, default: 8)

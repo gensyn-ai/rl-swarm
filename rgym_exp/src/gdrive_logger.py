@@ -5,7 +5,6 @@ Handles comprehensive logging to Google Drive including:
 - Training metrics (JSONL format)
 - Model checkpoints
 - Training events
-- Wandb synchronization
 """
 
 import json
@@ -23,7 +22,6 @@ class GDriveLogger:
     - Training metrics (JSONL format)
     - Checkpoints
     - Training events
-    - Wandb sync
     """
 
     def __init__(self, gdrive_log_path: str, node_id: str, experiment_name: str):
@@ -200,26 +198,6 @@ class GDriveLogger:
                 f.write(json.dumps(entry) + '\n')
         except Exception as e:
             get_logger().error(f"Failed to log event: {e}")
-
-    def sync_wandb_to_gdrive(self, wandb_dir: str):
-        """
-        Copy wandb logs to Google Drive for persistence.
-        (Colab sessions are temporary)
-
-        Args:
-            wandb_dir: Path to wandb directory
-        """
-        if not os.path.exists(wandb_dir):
-            get_logger().debug(f"Wandb directory not found: {wandb_dir}")
-            return
-
-        wandb_backup_dir = os.path.join(self.gdrive_log_path, 'wandb')
-
-        try:
-            shutil.copytree(wandb_dir, wandb_backup_dir, dirs_exist_ok=True)
-            get_logger().info(f"Synced wandb logs to {wandb_backup_dir}")
-        except Exception as e:
-            get_logger().error(f"Failed to sync wandb logs: {e}")
 
     def log_system_info(self, system_info: Dict[str, Any]):
         """

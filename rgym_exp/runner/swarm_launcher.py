@@ -148,7 +148,6 @@ def main():
     trainer = GRPOTrainerModule(
         models=[model],
         config=trainer_config,
-        log_with='wandb',
         log_dir=log_dir
     )
     get_logger().info("✓ Created trainer")

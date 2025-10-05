@@ -14,9 +14,6 @@ reasoning-gym
 pandas>=1.5.0
 pyyaml>=6.0
 
-# Logging and Monitoring
-wandb>=0.15.0
-
 # HuggingFace Integration
 huggingface-hub>=0.16.0
 
