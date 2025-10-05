@@ -41,11 +41,12 @@ def main():
     # Optional env vars
     hf_token = os.environ.get('HUGGINGFACE_ACCESS_TOKEN')
 
-    # Training config
-    max_round = 1000000
-    max_stage = 1
-    num_generations = 2
-    num_transplant_trees = 2
+    # Training config (configurable via env vars for SAPO experiments)
+    max_round = int(os.environ.get('MAX_ROUNDS', '2000'))
+    max_stage = 1  # Single stage per round
+    num_generations = int(os.environ.get('NUM_GENERATIONS', '8'))
+    num_transplant_trees = int(os.environ.get('NUM_TRANSPLANT_TREES', '0'))
+    num_train_samples = int(os.environ.get('NUM_TRAIN_SAMPLES', '8'))
     dtype = 'float32'
 
     # Rollout sharing config
@@ -67,6 +68,8 @@ def main():
     get_logger().info(f"Model: {model_name}")
     get_logger().info(f"GDrive Path: {gdrive_path}")
     get_logger().info(f"Rollout Frequency: {rollout_publish_frequency}")
+    get_logger().info(f"Training Config: I={num_train_samples}, J={num_transplant_trees}, G={num_generations}")
+    get_logger().info(f"Max Rounds: {max_round}")
     get_logger().info("="*60)
 
     # =======================
@@ -157,7 +160,7 @@ def main():
     # =======================
     data_manager = ReasoningGymDataManager(
         yaml_config_path="rgym_exp/src/datasets.yaml",
-        num_train_samples=2,
+        num_train_samples=num_train_samples,
         num_evaluation_samples=0,
         num_generations=num_generations,
         system_prompt_id='default',

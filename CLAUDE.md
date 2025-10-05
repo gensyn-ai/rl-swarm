@@ -33,6 +33,13 @@ This fork is **Google Drive-only**. All blockchain, Hivemind, and Hydra dependen
    - `notebooks/EX12.01.RL_Swarm_Worker.ipynb`: Worker setup with live training output
    - `notebooks/EX12.02.RL_Swarm_Monitoring.ipynb`: Real-time experiment monitoring dashboard
 
+**SAPO Paper Replication Notebooks** (arXiv:2509.08721):
+   - `notebooks/EX12.10.SAPO_Experiment_8loc0ext.ipynb`: Baseline (8 local / 0 external rollouts)
+   - `notebooks/EX12.11.SAPO_Experiment_6loc2ext.ipynb`: Config 1 (6/2, +52% improvement)
+   - `notebooks/EX12.12.SAPO_Experiment_4loc4ext.ipynb`: Config 2 (4/4, +94% improvement, BEST)
+   - `notebooks/EX12.13.SAPO_Experiment_2loc6ext.ipynb`: Config 3 (2/6, +68% improvement)
+   - `notebooks/EX12.20.SAPO_Results_Analysis.ipynb`: Compare all SAPO experiment results
+
 **Configuration**: All configuration via **environment variables only** (no YAML files)
 
 ### Removed Components
@@ -176,6 +183,12 @@ python -m rgym_exp.runner.swarm_launcher
 - `HUGGINGFACE_ACCESS_TOKEN`: For pushing trained models (optional)
 - `WANDB_API_KEY`: Weights & Biases logging (optional)
 - `WANDB_PROJECT`: W&B project name (optional)
+
+**SAPO Experiment Configuration (NEW):**
+- `NUM_TRAIN_SAMPLES`: Number of local rollouts per round (I parameter, default: 8)
+- `NUM_TRANSPLANT_TREES`: Number of external rollouts from swarm (J parameter, default: 0)
+- `NUM_GENERATIONS`: Number of completions per question (G parameter, default: 8)
+- `MAX_ROUNDS`: Maximum training rounds (default: 2000)
 
 **Removed Variables (No Longer Used):**
 - ~~`IDENTITY_PATH`~~ (no peer identities needed)
@@ -335,6 +348,14 @@ Quick tests:
 - `notebooks/EX12.00.RL_Swarm_Coordinator.ipynb`: Working Colab example for coordinator
 - `notebooks/EX12.01.RL_Swarm_Worker.ipynb`: Working Colab example for worker
 - `notebooks/EX12.02.RL_Swarm_Monitoring.ipynb`: Working Colab example for monitoring
+
+**SAPO Paper Replication Examples:**
+- `notebooks/EX12.10.SAPO_Experiment_8loc0ext.ipynb`: Baseline experiment (no swarm sharing)
+- `notebooks/EX12.11.SAPO_Experiment_6loc2ext.ipynb`: Config 1 (6 local / 2 external)
+- `notebooks/EX12.12.SAPO_Experiment_4loc4ext.ipynb`: Config 2 (4/4, optimal, +94%)
+- `notebooks/EX12.13.SAPO_Experiment_2loc6ext.ipynb`: Config 3 (2 local / 6 external)
+- `notebooks/EX12.20.SAPO_Results_Analysis.ipynb`: Results analysis and visualization
+- `SAPO_PAPER_EXPLAINED.md`: Comprehensive SAPO algorithm explanation
 - `rgym_exp/runner/swarm_launcher.py`: Simple entry point showing all components
 
 **Removed Documentation:**

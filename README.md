@@ -156,6 +156,114 @@ Run multiple nodes to simulate swarm training. Each node learns from the others.
 
    **Tip:** Keep the monitoring notebook open in a separate tab for real-time updates!
 
+### 🧪 SAPO Paper Replication (Research)
+
+Want to replicate the **SAPO (Swarm sAmpling Policy Optimization)** paper results? This fork includes complete experiment notebooks that reproduce the paper's findings on swarm collaboration benefits.
+
+**Paper Reference:** [arXiv:2509.08721](https://arxiv.org/abs/2509.08721) - SAPO: Decentralized RL with decoded rollout sharing
+
+**What is SAPO?**
+- Novel algorithm combining GRPO (policy optimization) with swarm experience sharing
+- Nodes share decoded rollouts (text completions), not gradients
+- Configurable I/J split: I local rollouts + J external (swarm) rollouts per round
+- Paper shows +94% improvement with optimal 50/50 local/external balance
+
+#### Available Experiment Notebooks
+
+We provide 5 notebooks to replicate all configurations from the paper:
+
+| Notebook | Config | Local/External | Expected Improvement | Description |
+|----------|--------|----------------|---------------------|-------------|
+| **[EX12.10](notebooks/EX12.10.SAPO_Experiment_8loc0ext.ipynb)** | Baseline | 8 / 0 | - | Control (no sharing) |
+| **[EX12.11](notebooks/EX12.11.SAPO_Experiment_6loc2ext.ipynb)** | Config 1 | 6 / 2 | +52% | Light collaboration |
+| **[EX12.12](notebooks/EX12.12.SAPO_Experiment_4loc4ext.ipynb)** | Config 2 ⭐ | 4 / 4 | +94% | **BEST - Optimal balance** |
+| **[EX12.13](notebooks/EX12.13.SAPO_Experiment_2loc6ext.ipynb)** | Config 3 | 2 / 6 | +68% | Heavy dependence |
+| **[EX12.20](notebooks/EX12.20.SAPO_Results_Analysis.ipynb)** | Analysis | - | - | Compare all results |
+
+#### Quick Start: Run Baseline Experiment
+
+**[🔗 Open Baseline Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.10.SAPO_Experiment_8loc0ext.ipynb)**
+
+1. Click link above to open in Colab
+2. Run all cells (this will train for 2000 rounds)
+3. Expected result: ~562 cumulative reward (baseline)
+4. Training time: ~24-48 hours on free Colab GPU
+
+#### Run Collaborative Experiments (Recommended)
+
+For best results, run **Config 2 (4/4)** with multiple nodes:
+
+**[🔗 Open Config 2 Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.12.SAPO_Experiment_4loc4ext.ipynb)**
+
+**Setup (8 nodes recommended):**
+
+1. **First Tab - Coordinator:**
+   - Open Config 2 notebook
+   - Keep `NODE_ROLE = 'coordinator'`
+   - Set `NODE_ID = 'node_0'`
+   - Run all cells
+
+2. **Additional Tabs - Workers (7 more):**
+   - Open same Config 2 notebook in new tabs
+   - Change `NODE_ROLE = 'worker'`
+   - Use unique IDs: `node_1`, `node_2`, ..., `node_7`
+   - Use **SAME** `EXPERIMENT_NAME` across all nodes
+   - Run all cells
+
+3. **Monitor Progress:**
+   - Open [Monitoring Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.02.RL_Swarm_Monitoring.ipynb)
+   - Set `EXPERIMENT_NAME = 'sapo_config2_4loc4ext'`
+   - Watch all 8 nodes training together!
+
+**Expected Results (after 2000 rounds):**
+- Cumulative reward: ~1093
+- **+94% improvement** over baseline (562)
+- **Best configuration** from the paper
+
+#### Analyze All Results
+
+After running multiple configurations, compare them:
+
+**[🔗 Open Analysis Notebook](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.20.SAPO_Results_Analysis.ipynb)**
+
+The analysis notebook will:
+- ✓ Load metrics from all experiments
+- ✓ Calculate cumulative rewards
+- ✓ Generate comparison plots (replicating paper figures)
+- ✓ Perform statistical significance tests
+- ✓ Export results to Google Drive
+
+**Key Findings You'll Replicate:**
+
+1. **Swarm collaboration works** - All configs beat baseline significantly
+2. **Balance is critical** - 4/4 (50% external) performs best
+3. **Diminishing returns** - More external ≠ better (2/6 worse than 4/4)
+4. **Local diversity matters** - Each node needs sufficient local exploration
+
+#### Configuration Parameters
+
+All SAPO experiments use these environment variables:
+
+```python
+# Example: Config 2 (4/4) - BEST
+NUM_TRAIN_SAMPLES = 4        # I: Local rollouts per round
+NUM_TRANSPLANT_TREES = 4     # J: External rollouts per round
+NUM_GENERATIONS = 8          # G: Completions per question
+MAX_ROUNDS = 2000            # Total training rounds (same as paper)
+```
+
+#### Time and Resource Requirements
+
+- **Single experiment:** ~24-48 hours on free Colab GPU (T4)
+- **All 4 configs:** Run in parallel using 4 Google accounts
+- **Storage:** ~2-5 GB per experiment in Google Drive
+- **Recommended:** Enable cleanup (`ROLLOUT_CLEANUP_ENABLED = True`)
+
+#### Detailed Documentation
+
+For algorithm details and implementation notes:
+- **[SAPO_PAPER_EXPLAINED.md](SAPO_PAPER_EXPLAINED.md)** - Comprehensive 25-page guide explaining the SAPO algorithm, paper contributions, and Google Colab implementation plan
+
 ### Local Testing (Advanced)
 
 For development and testing without Colab:
