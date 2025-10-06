@@ -27,8 +27,8 @@ class PRGModule:
                     or not org_id
                 ):
                     self._prg_game = False
-                    get_logger().debug(
-                        "PRG game disabled due to missing configuration."
+                    get_logger().warning(
+                        "PRG game disabled due to missing configuration (modal_proxy_url or org_id)."
                     )
                 else:
                     self.prg_coordinator = PRGCoordinator(
@@ -90,7 +90,7 @@ class PRGModule:
                     with open(self.prg_record, 'a') as f:
                         f.write(log_str)
                 except Exception as e:
-                    get_logger().debug(str(e))
+                    get_logger().warning(f"Failed to place bet or update PRG history: {e}")
 
                 # new game has started, claim rewards for previous game.
                 if self.prg_last_game_played and current_game != self.prg_last_game_played:
@@ -102,7 +102,7 @@ class PRGModule:
                         # only update if we successfully claimed the reward
                         self.prg_last_game_claimed = self.prg_last_game_played
                     except Exception as e:
-                        get_logger().debug(str(e))
+                        get_logger().warning(f"Failed to claim reward for game {self.prg_last_game_played}: {e}")
                 
                 self.prg_last_game_played = current_game
                 self.backup_state()
@@ -121,4 +121,4 @@ class PRGModule:
                     self.prg_last_game_played = None    
                     self.backup_state()
                 except Exception as e:
-                    get_logger().debug(str(e))
+                    get_logger().warning(f"Failed to claim final reward for game {self.prg_last_game_played}: {e}")

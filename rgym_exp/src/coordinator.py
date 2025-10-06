@@ -36,7 +36,7 @@ class ModalSwarmCoordinator(SwarmCoordinator):
                 get_logger().info(f"Peer ID [{peer_id}] is already registered! Continuing.")
 
             except json.JSONDecodeError as decode_err:
-                get_logger().debug(
+                get_logger().warning(
                     "Error decoding JSON during handling of register-peer error"
                 )
                 raise http_err
@@ -75,7 +75,7 @@ class PRGCoordinator:
     to handle routing requests to the correct backend via the endpoints.
     """
 
-    # TODO: We might want to change the name of these arguments to match what's in the contract for clarity ("clueId" -> "roundIdx")
+    # Note: Parameter names follow the API contract specification
     def __init__(
         self,
         org_id: str,
@@ -100,13 +100,13 @@ class PRGCoordinator:
                 # The new format returns the actual balance value
                 return int(response["result"])
             else:
-                get_logger().debug(f"Unexpected response format: {response}")
+                get_logger().warning(f"Unexpected response format from bet-token-balance: {response}")
                 return 0
         except requests.exceptions.HTTPError as e:
             if e.response is None or e.response.status_code != 500:
                 raise
 
-            get_logger().debug("Unknown error calling bet-token-balance endpoint! Continuing.")
+            get_logger().warning("Unknown error calling bet-token-balance endpoint! Continuing.")
             return 0
 
     def guess_answer(

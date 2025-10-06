@@ -195,6 +195,13 @@ if [ "$CONNECT_TO_TESTNET" = true ]; then
     done
 fi
 
+echo_green ">> Validating configuration..."
+python scripts/validate_config.py
+if [ $? -ne 0 ]; then
+    echo_red ">> Configuration validation failed. Please fix the errors above."
+    exit 1
+fi
+
 echo_green ">> Getting requirements..."
 pip install --upgrade pip
 
