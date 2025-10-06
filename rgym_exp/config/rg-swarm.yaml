@@ -20,15 +20,15 @@ training:
   dtype: 'float32'
 
 blockchain:
-  alchemy_url: "https://gensyn-testnet.g.alchemy.com/public"
-  swarm_contract_address: ${oc.env:SWARM_CONTRACT,null} # This is set by modal-login in run_rl_swarm.sh
-  org_id: ${oc.env:ORG_ID,null} # This is set by modal-login in run_rl_swarm.sh
-  mainnet_chain_id: 685685 # currently unused, will be used with WalletSwarmCoordinator
-  modal_proxy_url: "http://localhost:3000/api/"
+  alchemy_url: ${oc.env:ALCHEMY_URL,"https://gensyn-testnet.g.alchemy.com/public"}
+  swarm_contract_address: ${oc.env:SWARM_CONTRACT,null}
+  org_id: ${oc.env:ORG_ID,null}
+  mainnet_chain_id: ${oc.env:MAINNET_CHAIN_ID,685685}
+  modal_proxy_url: ${oc.env:MODAL_PROXY_URL,"http://localhost:3000/api/"}
   swarm_coordinator_abi_path: "rgym_exp/contracts/SwarmCoordinator_0.4.2.json"
 
 eval:
-  judge_base_url: "https://swarm-judge.internal-apps-central1.clusters.gensyn.ai"
+  judge_base_url: ${oc.env:JUDGE_BASE_URL,"https://swarm-judge.internal-apps-central1.clusters.gensyn.ai"}
 
 prg_game_config:
   prg_game: ${oc.env:PRG_GAME,null}
@@ -36,10 +36,7 @@ prg_game_config:
   modal_proxy_url: ${blockchain.modal_proxy_url}
 
 communications:
-  initial_peers:
-    - '/ip4/38.101.215.12/tcp/30011/p2p/QmQ2gEXoPJg6iMBSUFWGzAabS2VhnzuS782Y637hGjfsRJ'
-    - '/ip4/38.101.215.13/tcp/30012/p2p/QmWhiaLrx3HRZfgXc2i7KW5nMUNK7P9tRc71yFJdGEZKkC'
-    - '/ip4/38.101.215.14/tcp/30013/p2p/QmQa1SCfYTxx7RvU7qJJRo79Zm1RAwPpkeLueDVJuBBmFp'
+  initial_peers: ${oc.env:INITIAL_PEERS,'["/ip4/38.101.215.12/tcp/30011/p2p/QmQ2gEXoPJg6iMBSUFWGzAabS2VhnzuS782Y637hGjfsRJ", "/ip4/38.101.215.13/tcp/30012/p2p/QmWhiaLrx3HRZfgXc2i7KW5nMUNK7P9tRc71yFJdGEZKkC", "/ip4/38.101.215.14/tcp/30013/p2p/QmQa1SCfYTxx7RvU7qJJRo79Zm1RAwPpkeLueDVJuBBmFp"]'}
 
 game_manager:
   _target_: rgym_exp.src.manager.SwarmGameManager

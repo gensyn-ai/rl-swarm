@@ -3,6 +3,7 @@
 .DS_Store
 
 .env
+.env.local
 .next/
 temp-data/
 swarm.pem
@@ -11,6 +12,8 @@ runs/
 model_output_samples/
 grpo_trainer_lora_model/
 unsloth_compiled_cache/
+*.log
+*.log.*
 
 node_modules/
 web/ui/dist/

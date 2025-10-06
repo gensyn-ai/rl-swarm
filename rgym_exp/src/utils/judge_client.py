@@ -45,14 +45,17 @@ class JudgeClient:
             
             if response.status_code == 200:
                 result = response.json()
-                self.logger.debug(f'Received question: {result["question"]}')
+                self.logger.debug(f'Received question: {result.get("question", "N/A")}')
                 return result
             else:
-                self.logger.debug(f"Failed to receive question: {response.status_code}")
+                self.logger.warning(f"Failed to receive question: HTTP {response.status_code}")
                 return None
                 
+        except requests.exceptions.RequestException as e:
+            self.logger.warning(f"Network error requesting question: {e}")
+            return None
         except Exception as e:
-            self.logger.debug(f"Failed to request question: {e}")
+            self.logger.error(f"Unexpected error requesting question: {e}")
             return None
     
     def get_current_clue(self) -> Optional[Dict[str, Any]]:
@@ -67,14 +70,17 @@ class JudgeClient:
             
             if response.status_code == 200:
                 result = response.json()
-                self.logger.debug(f'Received clue: {result["clue"]}')
+                self.logger.debug(f'Received clue: {result.get("clue", "N/A")}')
                 return result
             else:
-                self.logger.debug(f"Failed to receive clue: {response.status_code}")
+                self.logger.warning(f"Failed to receive clue: HTTP {response.status_code}")
                 return None
                 
+        except requests.exceptions.RequestException as e:
+            self.logger.warning(f"Network error getting current clue: {e}")
+            return None
         except Exception as e:
-            self.logger.debug(f"Failed to get current clue: {e}")
+            self.logger.error(f"Unexpected error getting current clue: {e}")
             return None
         
 
@@ -104,12 +110,15 @@ class JudgeClient:
 
             if response.status_code == 200:
                 result = response.json()
-                self.logger.debug(f"Score: {result['score']}")
+                self.logger.debug(f"Score: {result.get('score', 'N/A')}")
                 return result
             else:
-                self.logger.debug(f"Failed to submit answer: {response.status_code}")
+                self.logger.warning(f"Failed to submit answer: HTTP {response.status_code}")
                 return None
 
+        except requests.exceptions.RequestException as e:
+            self.logger.warning(f"Network error submitting answer: {e}")
+            return None
         except Exception as e:
-            self.logger.debug(f"Failed to submit answer: {e}")
+            self.logger.error(f"Unexpected error submitting answer: {e}")
             return None

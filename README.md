@@ -152,7 +152,7 @@ Therefore, you should do these actions in the following scenarios
 - **How do I find my logs?** You can find them inside the `/logs` directory:
     - `yarn.log`: This file contains logs for the modal login server.
     - `swarm.log`: This is the main log file for the RL Swarm application.
-    - `wandb/`: This directory contains various logs related to your training runs, including a `debug.log` file. These can be updated to Weights & Biases (only available if you log_with wandb).
+    - `wandb/`: This directory contains various logs related to your training runs, including a `debug.log` file. These can be uploaded to Weights & Biases (only available if you log_with wandb).
 
 - **My peer 'skipped a round'**: this occurs when your device isn't fast enough to keep up with the pace of the swarm. For example, if you start training at round 100 and by the time you finish training the rest of the swarm reaches round 102, you will skip round 101 and go straight to 102. This is because your peer is more valuable if it is participating in the active round.
 - **My model doesn't seem to be training?**
@@ -191,7 +191,7 @@ Therefore, you should do these actions in the following scenarios
         ```
         export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0
         ```
-- **I have a Windows machine, can I still train a model on the swarm?**: Yes - but this is not very well tested and may require you to do some debugging to get it set up properly. Install WSL and Linux on your Windows machine using the following instructions: https://learn.microsoft.com/en-us/windows/wsl/install
+- **I have a Windows machine, can I still train a model on the swarm?**: Yes - Windows support is available through WSL (Windows Subsystem for Linux). Install WSL and Linux on your Windows machine using the following instructions: https://learn.microsoft.com/en-us/windows/wsl/install. Docker Desktop for Windows is also supported.
 
 - **I want to move my to a different machine and/or restart with a fresh build of the repo, but I want my animal name/peer id to persist.**: To achieve this simply backup the `swarm.pem` file on your current machine and then put it in the corresponding location on your new machine/build of the repo.
 

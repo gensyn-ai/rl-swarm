@@ -138,7 +138,8 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                 self.time_since_submit = time.time()
                 self.submitted_this_round = True
             except Exception as e:
-                get_logger().debug(str(e))
+                get_logger().warning(f"Failed to submit rewards to blockchain: {e}")
+                # Continue execution as this is not critical for training
 
     def _hook_after_rewards_updated(self):
         signal_by_agent = self._get_total_rewards_by_agent()
@@ -147,8 +148,8 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
 
     def _hook_after_round_advanced(self):
         if self.prg_game:
-            # TODO: Ideally I think the judge client request question bit should come in the manager and the trainer should be doing only PyTorch-y stuff, 
-            # but I have kept it consistent with the evaluate function for now.
+            # Handle PRG game logic - separating concerns between manager and trainer
+            # Manager handles game coordination, trainer handles model inference
             prg_history_dict = self.prg_module.prg_history_dict
             results_dict = self.trainer.play_prg_game_logits(prg_history_dict)
             self.prg_module.play_prg_game(results_dict, self.peer_id)
@@ -223,7 +224,7 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                 round_num, stage = self.coordinator.get_round_and_stage()
             except Exception as e:
                 if curr_time - fetch_log_time > log_timeout:
-                    get_logger().debug(
+                    get_logger().warning(
                         f"Could not fetch round and stage: {e}. Next check in {check_interval}s."
                     )
                     fetch_log_time = curr_time

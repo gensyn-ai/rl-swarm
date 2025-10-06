@@ -78,8 +78,12 @@ class GRPOTrainerModule(GRPOLanguageTrainerModule, LoggerMixin):
             return_tensors="pt",
         )
 
-        # TODO: Make the dtype changes from genrl here?
-        input_ids = input_ids.to(self.model.device)
+        # Apply dtype conversion if specified in config
+        if hasattr(self.config, 'dtype') and self.config.dtype:
+            dtype = getattr(torch, self.config.dtype, torch.float32)
+            input_ids = input_ids.to(self.model.device, dtype=dtype)
+        else:
+            input_ids = input_ids.to(self.model.device)
         outputs = self.model.generate(input_ids, max_new_tokens=512)
         answer = self.processing_class.decode(
             outputs[0], skip_special_tokens=True
@@ -140,8 +144,12 @@ class GRPOTrainerModule(GRPOLanguageTrainerModule, LoggerMixin):
                 return_tensors="pt",
             )
 
-            # TODO: Make the dtype changes from genrl here?
-            input_ids = input_ids.to(self.model.device)
+            # Apply dtype conversion if specified in config
+            if hasattr(self.config, 'dtype') and self.config.dtype:
+                dtype = getattr(torch, self.config.dtype, torch.float32)
+                input_ids = input_ids.to(self.model.device, dtype=dtype)
+            else:
+                input_ids = input_ids.to(self.model.device)
             
             # Get logits for each choice
             choice_logits = self._get_choice_logits(input_ids, choices)
@@ -174,7 +182,7 @@ class GRPOTrainerModule(GRPOLanguageTrainerModule, LoggerMixin):
 
         for choice in choices:
             # 1) build the full token sequence: prompt + "<answer>…</answer>"
-            # TODO: Make the dtype changes from genrl here?
+            # Build answer string with proper formatting
             answer_str = f"<answer>{choice}</answer>"
             choice_ids = self.processing_class(
                 answer_str,

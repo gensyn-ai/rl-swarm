@@ -59,7 +59,7 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
             column_preprocessing_map=None,
             seed=seed,
             batch_item_id_column=batch_item_id_column,
-            data_generator=self.load_reasoning_gym_dataset,  # TODO: this was confusing, we should document or change the way this is done
+            data_generator=self.load_reasoning_gym_dataset,  # Custom data generator for reasoning gym datasets
         )
 
         self.yaml_config_path = yaml_config_path
