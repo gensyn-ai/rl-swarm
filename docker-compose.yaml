@@ -43,6 +43,7 @@ services:
     environment:
       - HF_TOKEN=${HF_TOKEN}
       - GENSYN_RESET_CONFIG=${GENSYN_RESET_CONFIG}
+      - QUOK_API_KEY=${QUOK_API_KEY}
 
   # Requires the NVIDIA Drivers version >=525.60.13 to be installed, as well
   # as the nvidia-container-toolkit.
@@ -66,6 +67,7 @@ services:
     environment:
       - HF_TOKEN=${HF_TOKEN}
       - GENSYN_RESET_CONFIG=${GENSYN_RESET_CONFIG}
+      - QUOK_API_KEY=${QUOK_API_KEY}
     deploy:
       resources:
         reservations:
