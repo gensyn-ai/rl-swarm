@@ -9,11 +9,11 @@ if [[ -f /etc/debian_version ]] || [[ -f /etc/lsb-release ]] || command -v apt-g
     
     # Check if we have GPU support (NVIDIA CUDA)
     if command -v nvidia-smi &> /dev/null || [[ -n "${CUDA_VISIBLE_DEVICES:-}" ]] || [[ -f /usr/local/cuda/version.txt ]]; then
-        echo "GPU detected - Quok security audit available"
+        echo "GPU detected - Quok GPU Reliability audit available"
         
         # Ask user if they want to run Quok audit
         echo ""
-        read -p "Do you want to run Quok security audit? (Y/N): " -n 1 -r
+        read -p "Would you like to run a Quok GPU Reliability audit? (Y/N): " -n 1 -r
         echo ""
         
         if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -43,7 +43,7 @@ if [[ -f /etc/debian_version ]] || [[ -f /etc/lsb-release ]] || command -v apt-g
             echo "$QUOK_API_KEY" | quok init
             
             # Run Quok audit
-            echo "Running Quok auditme..."
+            echo "Running Quok auditme... this may take a bit."
             quok auditme
             
             echo "Quok setup and audit completed successfully."
