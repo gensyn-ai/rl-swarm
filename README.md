@@ -78,7 +78,9 @@ docker-compose run --rm --build -Pit swarm-gpu
 
 ##### Docker compose issue
 
-If `docker-compose` does not work when running the above commands, please try `docker compose` (no hyphen) instead. I.e. ` docker compose run --rm --build -Pit swarm-gpu`. This issue sometimes occurs on users running Ubuntu.
+If `docker-compose` does not work when running the above commands, please try `docker compose` (no hyphen) instead. I.e. ` docker compose run --rm --build -Pit swarm-gpu`. This issue sometimes occurs on users running Ubuntu. 
+
+If -Pit is giving you issues, try `docker compose -f docker-compose.yaml --profile swarm run --rm --build -it --service-ports swarm-gpu`
 
 ### Experimental (advanced) mode
 

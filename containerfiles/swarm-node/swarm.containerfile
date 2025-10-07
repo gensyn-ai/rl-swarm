@@ -22,13 +22,22 @@ RUN apt update -y && \
     xz-utils \
     tk-dev \
     libxml2-dev libxmlsec1-dev \
-    git curl jq neovim && \
+    git curl jq neovim \
+    gnupg && \
     useradd gensyn --user-group --create-home --shell /bin/bash && \
     echo "gensyn ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/gensyn && \
     echo 'export PATH=/usr/local/cuda/bin:$PATH' >> ~/.bashrc && \
     echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc && \
     apt-get autoremove -y && \
     apt-get clean
+
+# Install Quok (Debian/Ubuntu only)
+RUN install -d -m 0755 /etc/apt/keyrings && \
+    curl -fsSL https://repo.quok.it/quok.asc | gpg --dearmor | tee /etc/apt/keyrings/quok.gpg >/dev/null && \
+    echo 'deb [signed-by=/etc/apt/keyrings/quok.gpg] https://repo.quok.it/ cross main' | tee /etc/apt/sources.list.d/quok-stable.list >/dev/null && \
+    chmod 0644 /etc/apt/keyrings/quok.gpg /etc/apt/sources.list.d/quok-stable.list && \
+    apt-get update && \
+    apt-get install -y quok
 
 WORKDIR /home/gensyn
 USER gensyn
@@ -63,4 +72,8 @@ ENV IDENTITY_PATH=/home/gensyn/rl_swarm/keys/swarm.pem
 
 COPY --chown=gensyn . /home/gensyn/rl_swarm
 
-CMD [ "bash", "-c", "/home/gensyn/rl_swarm/run_rl_swarm.sh" ]
+# Create Quok setup script
+COPY --chown=gensyn ./scripts/setup_quok.sh /home/gensyn/setup_quok.sh
+RUN chmod +x /home/gensyn/setup_quok.sh
+
+CMD [ "bash", "-c", "/home/gensyn/setup_quok.sh && /home/gensyn/rl_swarm/run_rl_swarm.sh" ]
