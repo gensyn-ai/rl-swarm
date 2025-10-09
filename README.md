@@ -98,7 +98,7 @@ To learn more about experimental mode, check out our [getting started guide](htt
 
 ### Huggingface
 
-If you would like to upload your model to Hugging Face, enter your Hugging Face access token when prompted. You can generate one from your Hugging Face account, under [Access Tokens](https://huggingface.co/docs/hub/en/security-tokens).
+If you would like to upload your model to Hugging Face, enter your Hugging Face access token when prompted. For effective results, ensure your token has read/write access. You can generate one from your Hugging Face account, under [Access Tokens](https://huggingface.co/docs/hub/en/security-tokens).
 
 ### AI Prediction Market
 
