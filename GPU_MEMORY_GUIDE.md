@@ -6,11 +6,11 @@ Quick reference for running SAPO experiments on different GPU configurations.
 
 | Your GPU | What You Can Run | Notebook to Use | Notes |
 |----------|------------------|-----------------|-------|
-| **A100 80GB** | 8× gpt2 nodes | `EX12.14` | ✅ **Recommended** - Full swarm, all configs |
-| **A100 40GB** | 6× gpt2 nodes | `EX12.14` (modify) | ⚠️ Reduce NUM_NODES=6 |
-| **V100 32GB** | 4× gpt2 nodes | Not supported yet | Need to create custom notebook |
-| **L4 24GB** | 3× gpt2 nodes | Not supported yet | Need to create custom notebook |
-| **T4 15GB** | 1× gpt2 node | `EX12.10-13` (modify) | Change MODEL_NAME='gpt2' |
+| **A100 80GB** | 5 nodes (1 coord + 4 workers) | `EX12.14a-d`, `TEST_MODE` | ✅ **Recommended** - Full swarm, all configs |
+| **A100 40GB** | 4 nodes (1 coord + 3 workers) | `EX12.14` (modify) | ⚠️ Reduce to 4 total nodes |
+| **V100 32GB** | 3 nodes (1 coord + 2 workers) | Not supported yet | Need to create custom notebook |
+| **L4 24GB** | 2 nodes (1 coord + 1 worker) | Not supported yet | Need to create custom notebook |
+| **T4 15GB** | 1 node only | `EX12.10-13` (modify) | Change MODEL_NAME='gpt2' |
 | **CPU** | Don't | N/A | Way too slow (200× slower) |
 
 ---
@@ -19,16 +19,23 @@ Quick reference for running SAPO experiments on different GPU configurations.
 
 ### GPT-2 (124M parameters)
 
-**Per node memory:**
+**Per training node memory (during backward pass):**
 - Model weights: 0.5 GB
-- Forward pass (64 sequences): 4.0 GB
-- Gradients + optimizer: 1.5 GB
+- Forward pass (32 sequences): 3.0 GB
+- Gradients + optimizer: 2.0 GB
+- Activation checkpointing overhead: 2.5 GB
 - Working memory: 0.5 GB
-- **Total: ~6.5 GB per node**
+- **Peak total: ~8-10 GB per training node**
 
-**Full swarm (8 nodes):**
+**Coordinator node (non-training):**
+- State management only: ~0.5 GB
+- No model training, minimal memory
+
+**Full swarm (5 nodes: 1 coordinator + 4 workers):**
 ```
-8 nodes × 6.5 GB = 52 GB peak usage
+4 training nodes × 10 GB = 40 GB
+1 coordinator × 0.5 GB = 0.5 GB
+Total peak: ~40.5 GB (but typically ~33 GB average)
 ```
 
 ### Qwen2.5-0.5B (500M parameters) - Paper's Model
@@ -55,22 +62,27 @@ Requires 8 separate GPUs with 16GB+ each
 **Best for:** Full SAPO replication with gpt2
 
 **Configuration:**
-- Nodes: 8 (full swarm)
+- Nodes: 5 (1 coordinator + 4 training workers)
 - Model: gpt2
-- Config: I=8, J=0-6, G=8 (all paper configs)
-- Memory: 52 GB / 80 GB (65% usage, safe)
+- Configs: Baseline (4/0), Config1 (3/1), Config2 (2/2), Config3 (1/3)
+- Memory: ~33 GB average, ~40 GB peak / 80 GB (50% usage, very safe)
 
 **Cost:** $50/month (Colab Pro+ subscription)
 
 **Timeline:** ~21 hours per experiment, 4 days for all 4 configs
 
-**Notebook:** `notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb`
+**Notebooks:**
+- `notebooks/TEST_MODE.ipynb` - Quick test first (1-2 min)
+- `notebooks/EX12.14a.SAPO_gpt2_Baseline_4loc0ext.ipynb` - Baseline
+- `notebooks/EX12.14b.SAPO_gpt2_Config1_3loc1ext.ipynb` - Config 1
+- `notebooks/EX12.14c.SAPO_gpt2_Config2_2loc2ext.ipynb` - Config 2 (BEST)
+- `notebooks/EX12.14d.SAPO_gpt2_Config3_1loc3ext.ipynb` - Config 3
 
 **Steps:**
 1. Open Colab, select Runtime > Change runtime type > A100 GPU
-2. Open `EX12.14` notebook
-3. Run all cells
-4. For each experiment, change `NUM_TRAIN_SAMPLES` and `NUM_TRANSPLANT_TREES`
+2. **First run TEST_MODE to verify setup (~1-2 min)**
+3. Open one of the EX12.14a-d notebooks
+4. Run all cells - pre-configured, no changes needed!
 
 ---
 
