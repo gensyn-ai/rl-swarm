@@ -50,7 +50,7 @@ def main():
     if test_mode:
         # Test mode: 3 rounds, small batch size for quick validation (~1-2 minutes)
         max_round = 3
-        max_stage = 1
+        max_stage = int(os.environ.get('MAX_STAGES', '1'))
         num_generations = 4
         num_transplant_trees = int(os.environ.get('NUM_TRANSPLANT_TREES', '0'))
         num_train_samples = 4
@@ -59,7 +59,7 @@ def main():
     else:
         # Normal mode: use env vars or defaults
         max_round = int(os.environ.get('MAX_ROUNDS', '2000'))
-        max_stage = 1  # Single stage per round
+        max_stage = int(os.environ.get('MAX_STAGES', '1'))
         num_generations = int(os.environ.get('NUM_GENERATIONS', '8'))
         num_transplant_trees = int(os.environ.get('NUM_TRANSPLANT_TREES', '0'))
         num_train_samples = int(os.environ.get('NUM_TRAIN_SAMPLES', '8'))
