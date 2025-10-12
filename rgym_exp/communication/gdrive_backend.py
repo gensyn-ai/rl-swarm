@@ -208,13 +208,22 @@ class GDriveCommunicationBackend(Communication):
     def advance_round(self):
         """Notify backend that round has advanced."""
         old_round = self.current_round
+        old_stage = self.current_stage
 
-        # Flush buffered rollouts if frequency='round'
-        if self.publish_frequency == 'round' and old_round >= 0:
-            self.rollout_sharing.flush_buffer(
-                self.node_id,
-                old_round
-            )
+        # Flush buffered rollouts based on frequency
+        if old_round >= 0:
+            if self.publish_frequency == 'round':
+                self.rollout_sharing.flush_buffer(
+                    self.node_id,
+                    old_round
+                )
+            elif self.publish_frequency == 'stage':
+                # Flush the completed stage before advancing round
+                self.rollout_sharing.flush_buffer(
+                    self.node_id,
+                    old_round,
+                    old_stage
+                )
 
         self.current_round += 1
         self.current_stage = 0
