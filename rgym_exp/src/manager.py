@@ -205,7 +205,8 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         self._save_to_hf()
 
         # Save checkpoint to GDrive if enabled
-        if self.gdrive_logger and self.state.round % 10 == 0:
+        checkpoint_interval = int(os.environ.get('CHECKPOINT_INTERVAL', '10'))
+        if self.gdrive_logger and checkpoint_interval > 0 and self.state.round % checkpoint_interval == 0:
             try:
                 self.gdrive_logger.log_checkpoint(
                     self.state.round,
