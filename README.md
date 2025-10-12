@@ -480,7 +480,16 @@ All training runs now save logs and progress to Google Drive in real-time:
 - **Progress**: Updated every round with GPU memory, rewards, timing
 - **Test Results**: Automatically saved after TEST_MODE validation
 
-**Monitor from anywhere:**
+**View progress in notebooks:**
+
+All experiment notebooks (TEST_MODE and SAPO notebooks) include a built-in progress viewer cell (Section 7.5) that displays:
+- Current round and latest event for each node
+- Elapsed time and GPU memory usage
+- Training completion status
+
+Simply run the progress viewer cell after reconnecting to check training status.
+
+**Monitor programmatically:**
 ```python
 from rgym_exp.utils.progress_tracker import get_experiment_progress
 progress = get_experiment_progress('/path/to/gdrive', 'experiment_name')

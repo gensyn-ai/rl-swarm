@@ -75,7 +75,7 @@ env['TEST_MODE'] = 'True'
 
 ## Real-Time Progress Monitoring
 
-All TEST_MODE notebooks now include real-time progress monitoring that saves to Google Drive:
+All notebooks (TEST_MODE and SAPO experiment notebooks) now include real-time progress monitoring that saves to Google Drive:
 
 ### Progress Tracking
 - **Location**: `{gdrive_path}/experiments/{exp_name}/progress_{node_id}.jsonl`
@@ -96,7 +96,7 @@ All TEST_MODE notebooks now include real-time progress monitoring that saves to 
 
 ### Using Progress Monitoring
 
-Run the progress viewer cell (Section 7.5) anytime:
+All notebooks include a progress viewer cell (Section 7.5) that you can run anytime:
 ```python
 from rgym_exp.utils.progress_tracker import get_experiment_progress
 progress = get_experiment_progress(GDRIVE_BASE_PATH, EXPERIMENT_NAME)
