@@ -210,18 +210,18 @@ def main():
     get_logger().info("✓ Created data manager")
 
     # =======================
-    # 9. Create Coordinator (if coordinator role)
+    # 9. Create Coordinator (all nodes need it to poll state)
     # =======================
-    coordinator = None
+    coordinator = GDriveSwarmCoordinator(
+        gdrive_path=f"{gdrive_path}/experiments/{experiment_name}",
+        node_role=node_role,
+        round_check_interval=30
+    )
+
     if node_role == 'coordinator':
-        coordinator = GDriveSwarmCoordinator(
-            gdrive_path=f"{gdrive_path}/experiments/{experiment_name}",
-            node_role=node_role,
-            round_check_interval=30
-        )
-        get_logger().info("✓ Created GDrive coordinator")
+        get_logger().info("✓ Created GDrive coordinator (will manage rounds)")
     else:
-        get_logger().info("⊘ Running as worker (no coordinator)")
+        get_logger().info("✓ Created GDrive coordinator (read-only, will poll state)")
 
     # =======================
     # 10. Create Game Manager
