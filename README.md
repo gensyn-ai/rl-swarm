@@ -472,6 +472,26 @@ This software is **experimental** and provided as-is for users who are intereste
 
 If you encounter issues, please first check [Troubleshooting](#troubleshooting). If you cannot find a solution there, please check if there is an open (or closed) [Issue](../../issues). If there is no relevant issue, please file one and include 1) all relevant logs, 2) information about your device (e.g. which GPU, if relevant), and 3) your operating system information.
 
+## Real-Time Monitoring
+
+All training runs now save logs and progress to Google Drive in real-time:
+
+- **Logs**: Flushed every 30 seconds to prevent loss
+- **Progress**: Updated every round with GPU memory, rewards, timing
+- **Test Results**: Automatically saved after TEST_MODE validation
+
+**Monitor from anywhere:**
+```python
+from rgym_exp.utils.progress_tracker import get_experiment_progress
+progress = get_experiment_progress('/path/to/gdrive', 'experiment_name')
+```
+
+**Files created:**
+- `{exp}/logs/{node}/stdout.log` - Console output
+- `{exp}/logs/{node}/stderr.log` - Error output
+- `{exp}/progress_{node}.jsonl` - Training progress
+- `{exp}/test_results.json` - Validation results (TEST_MODE only)
+
 ## Monitor Progress
 
 ### Option A: Monitoring Notebook (Recommended)

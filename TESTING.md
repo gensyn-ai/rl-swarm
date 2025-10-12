@@ -73,6 +73,41 @@ Or in a notebook cell:
 env['TEST_MODE'] = 'True'
 ```
 
+## Real-Time Progress Monitoring
+
+All TEST_MODE notebooks now include real-time progress monitoring that saves to Google Drive:
+
+### Progress Tracking
+- **Location**: `{gdrive_path}/experiments/{exp_name}/progress_{node_id}.jsonl`
+- **Updates**: Every round completion
+- **Content**: Round number, elapsed time, GPU memory, events
+- **Access**: Can be viewed even after notebook disconnects
+
+### Log Streaming
+- **Location**: `{gdrive_path}/experiments/{exp_name}/logs/{node_id}/stdout.log` and `stderr.log`
+- **Flush interval**: Every 30 seconds (configurable)
+- **Content**: All console output (prints, errors, warnings)
+- **Benefit**: Logs never lost, even if process crashes
+
+### Test Results
+- **Location**: `{gdrive_path}/experiments/{exp_name}/test_results.json`
+- **Content**: Pass/fail status, check details, configuration, timestamps
+- **Purpose**: Easy comparison across multiple test runs
+
+### Using Progress Monitoring
+
+Run the progress viewer cell (Section 7.5) anytime:
+```python
+from rgym_exp.utils.progress_tracker import get_experiment_progress
+progress = get_experiment_progress(GDRIVE_BASE_PATH, EXPERIMENT_NAME)
+```
+
+This shows:
+- Current round for each node
+- Elapsed time
+- Latest event (round_start, round_complete, error)
+- GPU memory usage
+
 ## What Gets Validated
 
 After a TEST_MODE run, the following are automatically checked:

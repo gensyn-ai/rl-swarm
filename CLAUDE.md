@@ -196,6 +196,10 @@ See [`TESTING.md`](TESTING.md) for full testing guide.
   - `checkpoints/round_X/*.pt`: Model checkpoints
   - `logs/{NODE_ID}/metrics.jsonl`: Training metrics (JSONL format)
   - `logs/{NODE_ID}/training_events.jsonl`: Event logs
+  - `logs/{NODE_ID}/stdout.log`: Real-time console output (flushed every 30s)
+  - `logs/{NODE_ID}/stderr.log`: Real-time error output (flushed every 30s)
+  - `progress_{NODE_ID}.jsonl`: Per-node training progress (updated each round)
+  - `test_results.json`: TEST_MODE validation results (if applicable)
 - `/MyDrive/rl-swarm/archives/`: Archived rollouts (if archiving enabled)
 
 **Local Files:**
@@ -238,6 +242,7 @@ See [`TESTING.md`](TESTING.md) for full testing guide.
 - `NUM_TRANSPLANT_TREES`: Number of external rollouts from swarm (J parameter, default: 0)
 - `NUM_GENERATIONS`: Number of completions per question (G parameter, default: 8)
 - `MAX_ROUNDS`: Maximum training rounds (default: 2000)
+- `LOG_FLUSH_INTERVAL`: Seconds between log flushes to GDrive (default: 30.0)
 
 **Multi-Node Single-GPU Setup (EX12.14 series):**
 The new `EX12.14` series notebooks enable running 8 GPT-2 nodes on a single A100 80GB GPU. Use the pre-configured variants (EX12.14a-d) for each SAPO configuration, or the template (EX12.14) to manually adjust parameters:
@@ -279,6 +284,25 @@ Key GenRL concepts:
 - **WorldState**: Synchronized state across peers (via Google Drive or DHT)
 - **RewardManager**: Computes rewards using `RGRewards` (accuracy-based)
 - **Communication**: Abstracted via `GDriveCommunicationBackend` or `HivemindBackend`
+
+## Real-Time Monitoring
+
+Training progress and logs are continuously saved to Google Drive:
+
+### Log Streaming
+- stdout/stderr redirected to both console and GDrive files
+- Automatic flush every 30 seconds (configurable via LOG_FLUSH_INTERVAL)
+- Background thread ensures logs saved even if process crashes
+
+### Progress Tracking
+- Per-node progress logged to `progress_{node_id}.jsonl`
+- Tracks round completion, GPU memory, rewards, errors
+- Can be monitored independently after disconnect
+
+### Utilities
+- `rgym_exp/utils/gdrive_log_stream.py`: Log streaming implementation
+- `rgym_exp/utils/progress_tracker.py`: Progress tracking API
+- `rgym_exp/utils/test_results.py`: Test results saving
 
 ## Google Drive Mode Details
 
