@@ -23,6 +23,8 @@ from rgym_exp.src.manager import SwarmGameManager
 from rgym_exp.src.gdrive_coordinator import GDriveSwarmCoordinator
 from rgym_exp.src.gdrive_rollout_sharing import GDriveRolloutSharing
 from rgym_exp.communication.gdrive_backend import GDriveCommunicationBackend
+from rgym_exp.utils.gdrive_log_stream import setup_log_streaming
+from rgym_exp.utils.progress_tracker import ProgressTracker
 
 
 def main():
@@ -71,6 +73,26 @@ def main():
 
     # Paths
     log_dir = f"{gdrive_path}/experiments/{experiment_name}/logs/{node_id}"
+
+    # =======================
+    # 1a. Setup Real-time Log Streaming to Google Drive
+    # =======================
+    log_flush_interval = float(os.environ.get('LOG_FLUSH_INTERVAL', '30.0'))
+    log_streamer = setup_log_streaming(
+        gdrive_path=gdrive_path,
+        experiment_name=experiment_name,
+        node_id=node_id,
+        flush_interval=log_flush_interval
+    )
+
+    # =======================
+    # 1b. Setup Progress Tracking
+    # =======================
+    progress_tracker = ProgressTracker(
+        gdrive_path=gdrive_path,
+        experiment_name=experiment_name,
+        node_id=node_id
+    )
 
     get_logger().info("="*60)
     get_logger().info("Starting RL Swarm (Google Drive Mode)")
@@ -248,14 +270,27 @@ def main():
     # =======================
     # 11. Run Game (or Coordinator Loop)
     # =======================
-    if node_role == 'coordinator':
-        get_logger().info("Starting coordinator loop (non-training)...")
+    try:
+        if node_role == 'coordinator':
+            get_logger().info("Starting coordinator loop (non-training)...")
+            get_logger().info("="*60)
+            game_manager.run_coordinator_loop()
+            progress_tracker.log_training_complete(max_round)
+        else:
+            get_logger().info("Starting training...")
+            get_logger().info("="*60)
+            game_manager.run_game()
+            progress_tracker.log_training_complete(max_round)
+    except Exception as e:
+        get_logger().error(f"Training failed: {e}")
+        progress_tracker.log_error('training_failure', str(e))
+        raise
+    finally:
+        # Ensure logs are flushed before exit
         get_logger().info("="*60)
-        game_manager.run_coordinator_loop()
-    else:
-        get_logger().info("Starting training...")
+        get_logger().info("Training complete. Flushing logs...")
+        log_streamer.close()
         get_logger().info("="*60)
-        game_manager.run_game()
 
 
 if __name__ == "__main__":
