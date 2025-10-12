@@ -183,6 +183,24 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         self.batched_signals += self._get_my_rewards(signal_by_agent)
         self._try_submit_to_chain(signal_by_agent)
 
+        # Publish local rollouts to GDrive for swarm sharing
+        if isinstance(self.communication, GDriveCommunicationBackend):
+            try:
+                # Get local rollouts from state.trees[peer_id]
+                local_rollouts = self.state.trees.get(self.peer_id, {})
+                if local_rollouts:
+                    self.communication.publish_state(
+                        state_dict=local_rollouts,
+                        stage=self.state.stage,
+                        generation=None
+                    )
+                    get_logger().debug(
+                        f"Published local rollouts: round={self.state.round}, "
+                        f"stage={self.state.stage}, batches={len(local_rollouts)}"
+                    )
+            except Exception as e:
+                get_logger().error(f"Failed to publish rollouts: {e}")
+
     def _hook_after_round_advanced(self):
         self._save_to_hf()
 

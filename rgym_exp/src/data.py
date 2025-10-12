@@ -71,6 +71,9 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
         self.num_transplant_trees = kwargs.get("num_transplant_trees", 1)
         assert self.num_transplant_trees >= 0
         self.num_generations = kwargs.get("num_generations", None)
+
+        # Store communication backend for fetching swarm states
+        self.communication = kwargs.get("communication", None)
         try:
             self.config = CompositeConfig.from_yaml(yaml_config_path)
 
@@ -248,6 +251,21 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
     def prepare_states(
         self, current_state: GameState, swarm_states: Dict[Any, Any]
     ) -> Dict[Any, Dict[Any, List[Tuple[Any]]]]:
+        # Fetch swarm states from communication backend if not provided
+        if (swarm_states is None or not swarm_states) and self.communication is not None:
+            try:
+                swarm_states = self.communication.get_swarm_states(
+                    round_num=current_state.round,
+                    stage=current_state.stage
+                )
+                get_logger().debug(
+                    f"Fetched swarm states from communication backend: "
+                    f"{len(swarm_states)} peers"
+                )
+            except Exception as e:
+                get_logger().error(f"Failed to fetch swarm states: {e}")
+                swarm_states = {}
+
         if self.num_transplant_trees > 0:
             trees = current_state.trees
             transplants = self.transplant_trees(

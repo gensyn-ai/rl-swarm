@@ -227,7 +227,8 @@ def main():
         num_generations=num_generations,
         system_prompt_id='default',
         seed=seed,
-        num_transplant_trees=num_transplant_trees
+        num_transplant_trees=num_transplant_trees,
+        communication=communication  # Pass communication backend for rollout fetching
     )
     get_logger().info("✓ Created data manager")
 
