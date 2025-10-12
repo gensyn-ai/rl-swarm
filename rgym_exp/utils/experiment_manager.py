@@ -152,7 +152,7 @@ def get_experiment_metrics(gdrive_base_path: str, experiment_name: str) -> pd.Da
     try:
         # Read metrics from each node
         for node_dir in os.listdir(logs_dir):
-            metrics_file = os.path.join(logs_dir, node_dir, 'metrics.jsonl')
+            metrics_file = os.path.join(logs_dir, node_dir, 'metrics.json')
 
             if not os.path.exists(metrics_file):
                 continue

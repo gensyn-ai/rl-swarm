@@ -37,7 +37,7 @@ class ProgressTracker:
         exp_dir = os.path.join(gdrive_path, 'experiments', experiment_name)
         os.makedirs(exp_dir, exist_ok=True)
 
-        self.progress_file = os.path.join(exp_dir, f'progress_{node_id}.jsonl')
+        self.progress_file = os.path.join(exp_dir, f'progress_{node_id}.json')
 
         # Track start time
         self.start_time = time.time()
@@ -232,7 +232,7 @@ def get_experiment_progress(gdrive_path: str, experiment_name: str) -> Dict[str,
     # Find all progress files
     progress_files = [
         f for f in os.listdir(exp_dir)
-        if f.startswith('progress_') and f.endswith('.jsonl')
+        if f.startswith('progress_') and f.endswith('.json')
     ]
 
     if not progress_files:
@@ -242,7 +242,7 @@ def get_experiment_progress(gdrive_path: str, experiment_name: str) -> Dict[str,
     all_nodes = {}
 
     for progress_file in progress_files:
-        node_id = progress_file.replace('progress_', '').replace('.jsonl', '')
+        node_id = progress_file.replace('progress_', '').replace('.json', '')
         file_path = os.path.join(exp_dir, progress_file)
 
         try:

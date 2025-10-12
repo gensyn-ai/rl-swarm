@@ -254,16 +254,32 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
         # Fetch swarm states from communication backend if not provided
         if (swarm_states is None or not swarm_states) and self.communication is not None:
             try:
-                swarm_states = self.communication.get_swarm_states(
-                    round_num=current_state.round,
-                    stage=current_state.stage
-                )
-                get_logger().debug(
-                    f"Fetched swarm states from communication backend: "
-                    f"{len(swarm_states)} peers"
-                )
+                # Fetch from previous round (current round's rollouts aren't published yet)
+                fetch_round = max(0, current_state.round - 1)  # Can't fetch from round -1
+
+                if fetch_round >= 0 and current_state.round > 0:  # Skip round 0
+                    swarm_states = self.communication.get_swarm_states(
+                        round_num=fetch_round,
+                        stage=current_state.stage
+                    )
+
+                    if swarm_states:
+                        get_logger().info(
+                            f"Fetched swarm states from round {fetch_round}: "
+                            f"{len(swarm_states)} peers"
+                        )
+                    else:
+                        get_logger().debug(f"No swarm states found for round {fetch_round}")
+                else:
+                    swarm_states = {}
+                    get_logger().debug("Round 0: No previous rollouts to fetch")
+
+            except FileNotFoundError as e:
+                get_logger().warning(f"Rollout files not found for round {max(0, current_state.round - 1)}: {e}")
+                swarm_states = {}
             except Exception as e:
-                get_logger().error(f"Failed to fetch swarm states: {e}")
+                # Catch JSONDecodeError and all other exceptions
+                get_logger().error(f"Failed to fetch swarm states from round {max(0, current_state.round - 1)}: {e}")
                 swarm_states = {}
 
         if self.num_transplant_trees > 0:

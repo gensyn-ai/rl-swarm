@@ -39,8 +39,8 @@ class GDriveLogger:
 
         os.makedirs(gdrive_log_path, exist_ok=True)
 
-        self.metrics_file = os.path.join(gdrive_log_path, 'metrics.jsonl')
-        self.events_file = os.path.join(gdrive_log_path, 'training_events.jsonl')
+        self.metrics_file = os.path.join(gdrive_log_path, 'metrics.json')
+        self.events_file = os.path.join(gdrive_log_path, 'training_events.json')
 
         # Checkpoint directory is one level up from logs
         log_parent = os.path.dirname(gdrive_log_path.rstrip('/'))
