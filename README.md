@@ -179,18 +179,21 @@ We provide multiple notebooks for different use cases:
 | **[EX12.12](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.12.SAPO_Experiment_4loc4ext.ipynb)** | Config 2 ⭐ | 4 / 4 | Qwen2.5 | 1 node/session | **Original approach**: Run 1 node per Colab session. Need 8 sessions for full swarm (~$400) |
 | **[EX12.13](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.13.SAPO_Experiment_2loc6ext.ipynb)** | Config 3 | 2 / 6 | Qwen2.5 | 1 node/session | **Original approach**: Run 1 node per Colab session. Need 8 sessions for full swarm (~$400) |
 | **[EX12.14](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb)** | Template | Custom | GPT-2 | **8 nodes/1 GPU** | **For experimentation**: Manually set I/J values to test custom configurations |
-| **[EX12.14a](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14a.SAPO_gpt2_Baseline_8loc0ext.ipynb)** 🆕 | Baseline | 4 / 0 | GPT-2 | **5 nodes/1 GPU** | **Recommended**: Pre-configured baseline. Just click & run! (~$50) |
-| **[EX12.14b](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14b.SAPO_gpt2_Config1_6loc2ext.ipynb)** 🆕 | Config 1 | 3 / 1 | GPT-2 | **5 nodes/1 GPU** | **Recommended**: Pre-configured Config 1. Just click & run! (~$50) |
-| **[EX12.14c](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14c.SAPO_gpt2_Config2_4loc4ext.ipynb)** 🆕⭐ | Config 2 | 2 / 2 | GPT-2 | **5 nodes/1 GPU** | **Recommended BEST**: Pre-configured optimal config. Just click & run! (~$50) |
-| **[EX12.14d](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14d.SAPO_gpt2_Config3_2loc6ext.ipynb)** 🆕 | Config 3 | 1 / 3 | GPT-2 | **5 nodes/1 GPU** | **Recommended**: Pre-configured Config 3. Just click & run! (~$50) |
-| **[TEST_MODE](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/TEST_MODE.ipynb)** 🧪 | Test | 4 / 0 | GPT-2 | **5 nodes/1 GPU** | **Quick validation**: 1-2 min test run to verify setup before full training |
+| **[EX12.14a](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14a.SAPO_gpt2_Baseline_4loc0ext.ipynb)** 🆕 | Baseline | 4 / 0 | GPT-2 | **5 nodes/1 GPU** | **Recommended**: Pre-configured baseline. Just click & run! (~$50) |
+| **[EX12.14b](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14b.SAPO_gpt2_Config1_3loc1ext.ipynb)** 🆕 | Config 1 | 3 / 1 | GPT-2 | **5 nodes/1 GPU** | **Recommended**: Pre-configured Config 1. Just click & run! (~$50) |
+| **[EX12.14c](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14c.SAPO_gpt2_Config2_2loc2ext.ipynb)** 🆕⭐ | Config 2 | 2 / 2 | GPT-2 | **5 nodes/1 GPU** | **Recommended BEST**: Pre-configured optimal config. Just click & run! (~$50) |
+| **[EX12.14d](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14d.SAPO_gpt2_Config3_1loc3ext.ipynb)** 🆕 | Config 3 | 1 / 3 | GPT-2 | **5 nodes/1 GPU** | **Recommended**: Pre-configured Config 3. Just click & run! (~$50) |
+| **[TEST_MODE_Baseline](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/TEST_MODE_Baseline.ipynb)** 🧪 | Test Baseline | 4 / 0 | GPT-2 | **5 nodes/1 GPU** | **Quick validation**: 1-2 min test of baseline config (no rollout sharing) |
+| **[TEST_MODE_Config1](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/TEST_MODE_Config1.ipynb)** 🧪 | Test Config1 | 3 / 1 | GPT-2 | **5 nodes/1 GPU** | **Quick validation**: 1-2 min test of Config 1 (light rollout sharing) |
+| **[TEST_MODE_Config2](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/TEST_MODE_Config2.ipynb)** 🧪 | Test Config2 | 2 / 2 | GPT-2 | **5 nodes/1 GPU** | **Quick validation**: 1-2 min test of Config 2 (balanced rollout sharing) |
+| **[TEST_MODE_Config3](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/TEST_MODE_Config3.ipynb)** 🧪 | Test Config3 | 1 / 3 | GPT-2 | **5 nodes/1 GPU** | **Quick validation**: 1-2 min test of Config 3 (heavy rollout sharing) |
 | **[EX12.20](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.20.SAPO_Results_Analysis.ipynb)** | Analysis | - | - | - | **Post-training**: Load and compare results from all experiments |
 
 **Key Differences:**
 - **EX12.10-13**: Original single-node approach (expensive - needs 8 Colab Pro+ sessions = ~$400/month)
 - **EX12.14**: Template for custom I/J values (manual configuration required)
 - **EX12.14a-d**: ⭐ **Recommended** - Pre-configured for each config, just click and run (only ~$50/month for Colab Pro+)
-- **TEST_MODE**: 🧪 Quick validation run (1-2 minutes) to verify coordinator, rollouts, and logs before full training
+- **TEST_MODE_***: 🧪 Quick validation runs (1-2 minutes each) to verify coordinator, workers, rollout sharing, and logs before full training
 - **EX12.20**: Analysis notebook to visualize and compare results
 
 #### 🆕 NEW: Full Swarm on Single GPU (Recommended for Colab Pro+)
@@ -204,7 +207,12 @@ Instead of running 8 separate Colab sessions (8× $50/month = $400), you can now
 - **[EX12.14b - Config 1 (3/1)](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14b.SAPO_gpt2_Config1_3loc1ext.ipynb)** - Light collaboration (25%)
 - **[EX12.14c - Config 2 (2/2)](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14c.SAPO_gpt2_Config2_2loc2ext.ipynb)** ⭐ - **BEST** (50%)
 - **[EX12.14d - Config 3 (1/3)](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14d.SAPO_gpt2_Config3_1loc3ext.ipynb)** - Heavy collaboration (75%)
-- **[TEST_MODE](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/TEST_MODE.ipynb)** 🧪 - Quick validation (1-2 min) before full training
+
+**Quick validation (run before full training):**
+- **[TEST_MODE_Baseline](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/TEST_MODE_Baseline.ipynb)** 🧪 - Test baseline (1-2 min, no rollout sharing)
+- **[TEST_MODE_Config1](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/TEST_MODE_Config1.ipynb)** 🧪 - Test Config 1 (1-2 min, light sharing)
+- **[TEST_MODE_Config2](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/TEST_MODE_Config2.ipynb)** 🧪 - Test Config 2 (1-2 min, balanced sharing)
+- **[TEST_MODE_Config3](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/TEST_MODE_Config3.ipynb)** 🧪 - Test Config 3 (1-2 min, heavy sharing)
 
 Or use the **[template notebook (EX12.14)](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14.SAPO_8Node_SingleGPU_gpt2.ipynb)** to manually configure parameters.
 
@@ -220,7 +228,9 @@ Or use the **[template notebook (EX12.14)](https://colab.research.google.com/git
 - Or rent A100 80GB from Lambda Labs ($1.29/hour × 96 hours = $124 total)
 
 **Setup:**
-1. **First run TEST_MODE** to verify everything works (~1-2 min)
+1. **First run a TEST_MODE notebook** to verify everything works (~1-2 min)
+   - Choose the test that matches your planned experiment (Baseline/Config1/Config2/Config3)
+   - Validates coordinator, workers, rollout sharing, logs, and state management
 2. Open one of the experiment notebooks above
 3. Select Runtime > Change runtime type > **A100 GPU**
 4. Verify GPU: Cell 3 should show "NVIDIA A100-SXM4-80GB"
