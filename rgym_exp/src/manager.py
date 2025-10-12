@@ -255,6 +255,15 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
     def agent_block(
         self, check_interval=5.0, log_timeout=10.0, max_check_interval=60.0 * 15
     ):
+        # Coordinator advances the round when it finishes
+        if self.coordinator is not None and self.coordinator.node_role == 'coordinator':
+            try:
+                next_round = self.state.round + 1
+                self.coordinator.update_round_stage(next_round, 0)
+                get_logger().info(f"📝 Coordinator advanced global state to round {next_round}")
+            except Exception as e:
+                get_logger().error(f"Coordinator failed to advance round: {e}")
+
         start_time = time.monotonic()
         fetch_log_time = start_time
         check_backoff = (
@@ -296,3 +305,58 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                 return
 
         get_logger().info("Training timed out!")
+
+    def run_coordinator_loop(self):
+        """
+        Coordinator-only loop: manages round advancement without training.
+
+        The coordinator:
+        1. Initializes the global state
+        2. Waits for worker activity (or timeout)
+        3. Advances rounds automatically
+        4. Logs progress
+        5. No training, minimal GPU usage
+        """
+        if self.coordinator is None or self.coordinator.node_role != 'coordinator':
+            raise ValueError("run_coordinator_loop() can only be called by coordinator")
+
+        get_logger().info("="*60)
+        get_logger().info("🎯 Starting Coordinator Loop (non-training mode)")
+        get_logger().info("="*60)
+
+        current_round = 0
+        round_advance_interval = int(os.environ.get('COORDINATOR_ROUND_INTERVAL', '60'))  # seconds
+
+        start_time = time.time()
+
+        while current_round < self.max_round:
+            # Wait for workers to complete round (or timeout)
+            get_logger().info(f"📊 Round {current_round}: Waiting {round_advance_interval}s for workers...")
+            time.sleep(round_advance_interval)
+
+            # Check how many workers have submitted
+            try:
+                submissions = self.coordinator.get_submissions_for_round(current_round, 0)
+                active_peers = self.coordinator.get_active_peers()
+                get_logger().info(
+                    f"📥 Round {current_round}: {len(submissions)}/{len(active_peers)} workers submitted"
+                )
+            except Exception as e:
+                get_logger().warning(f"Failed to check submissions: {e}")
+
+            # Advance to next round
+            current_round += 1
+            try:
+                self.coordinator.update_round_stage(current_round, 0)
+                elapsed = time.time() - start_time
+                get_logger().info(
+                    f"✅ Advanced to round {current_round} (elapsed: {elapsed/60:.1f}m)"
+                )
+            except Exception as e:
+                get_logger().error(f"Failed to advance round: {e}")
+                break
+
+        total_time = time.time() - start_time
+        get_logger().info("="*60)
+        get_logger().info(f"🏁 Coordinator finished {self.max_round} rounds in {total_time/60:.1f}m")
+        get_logger().info("="*60)
