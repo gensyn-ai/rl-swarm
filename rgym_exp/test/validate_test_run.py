@@ -126,6 +126,70 @@ def validate_coordinator_logs(exp_path):
     return all_valid
 
 
+def validate_rollouts(exp_path, num_rounds=3, num_transplants=0, num_workers=4):
+    """
+    Validate rollout sharing (for configs with J > 0).
+
+    Args:
+        exp_path: Path to experiment directory
+        num_rounds: Number of rounds to check
+        num_transplants: Expected J value (0 means skip validation)
+        num_workers: Number of training workers (excludes coordinator)
+
+    Returns:
+        True if validation passes, False otherwise
+    """
+    if num_transplants == 0:
+        print("⊘ Rollout validation skipped (J=0, no sharing expected)")
+        return True
+
+    all_valid = True
+
+    for round_num in range(num_rounds):
+        rollouts_dir = os.path.join(exp_path, 'rollouts', f'round_{round_num}', 'stage_0')
+
+        if not os.path.exists(rollouts_dir):
+            print(f"✗ Round {round_num}: No rollouts directory")
+            all_valid = False
+            continue
+
+        rollout_files = [f for f in os.listdir(rollouts_dir) if f.endswith('.json')]
+
+        if len(rollout_files) == 0:
+            print(f"⚠ Round {round_num}: No rollout files (expected {num_workers})")
+            all_valid = False
+        elif len(rollout_files) < num_workers:
+            print(f"⚠ Round {round_num}: {len(rollout_files)} rollouts (expected {num_workers})")
+            all_valid = False
+        else:
+            # Validate rollout file structure
+            valid_files = 0
+            for rollout_file in rollout_files:
+                file_path = os.path.join(rollouts_dir, rollout_file)
+                try:
+                    with open(file_path, 'r') as f:
+                        data = json.load(f)
+
+                    # Check required fields
+                    required_fields = ['peer_id', 'round', 'stage', 'rollouts']
+                    if all(field in data for field in required_fields):
+                        valid_files += 1
+                    else:
+                        print(f"  ⚠ {rollout_file}: Missing required fields")
+                        all_valid = False
+                except Exception as e:
+                    print(f"  ✗ {rollout_file}: Failed to parse ({e})")
+                    all_valid = False
+
+            if valid_files == num_workers:
+                print(f"✓ Round {round_num}: {valid_files} rollouts published")
+            else:
+                print(f"⚠ Round {round_num}: {valid_files}/{num_workers} valid rollouts")
+                all_valid = False
+
+    return all_valid
+
+
 def main():
     parser = argparse.ArgumentParser(description='Validate TEST_MODE run outputs')
     parser.add_argument('--gdrive-path', default='/content/drive/MyDrive/rl-swarm',
@@ -135,17 +199,21 @@ def main():
     parser.add_argument('--rounds', type=int, default=3,
                         help='Expected number of rounds')
     parser.add_argument('--nodes', type=int, default=5,
-                        help='Expected number of nodes')
+                        help='Expected number of nodes (total including coordinator)')
+    parser.add_argument('--transplants', type=int, default=0,
+                        help='Expected J value (external rollouts per round, 0 = skip rollout validation)')
 
     args = parser.parse_args()
 
     exp_path = os.path.join(args.gdrive_path, 'experiments', args.experiment)
+    num_workers = args.nodes - 1  # Exclude coordinator from worker count
 
     print("=" * 60)
     print("🔍 TEST MODE VALIDATION")
     print("=" * 60)
     print(f"Experiment: {args.experiment}")
     print(f"Path: {exp_path}")
+    print(f"Config: {args.nodes} nodes ({num_workers} workers), J={args.transplants}")
     print("=" * 60)
 
     if not os.path.exists(exp_path):
@@ -158,6 +226,7 @@ def main():
         'Submissions': validate_submissions(exp_path, args.rounds),
         'Logs': validate_logs(exp_path, args.nodes),
         'Coordinator': validate_coordinator_logs(exp_path),
+        'Rollouts': validate_rollouts(exp_path, args.rounds, args.transplants, num_workers),
     }
 
     print("=" * 60)
