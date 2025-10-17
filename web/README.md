@@ -28,4 +28,4 @@ docker build -t swarmui -f Dockerfile.webserver .
 ```
 
 ## Smart contract
-The UI is set up to receive information from a smart contract. For development, it is assumed a smart contract is running locally using anvil.
+The UI is set up to receive information from a smart contract. For development, it is assumed a smart contract is running locally using Anvil.
