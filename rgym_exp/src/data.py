@@ -129,8 +129,6 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
         Returns:
             A Dataset object containing the samples from the reseeding dataset
         """
-        dataset_dict = {"question": [], "answer": [], "metadata": []}
-
         if split in ("test", "validation"):
             max_samples = self.num_samples["evaluation"]
         else:  # Default to train
@@ -139,22 +137,39 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
         if num_samples is not None:
             max_samples = min(num_samples, max_samples)
 
-        for i in range(max_samples):
-            item = next(self.reseeding_dataset)
+        # Optimized batch processing - pre-allocate lists for better memory efficiency
+        dataset_dict = {
+            "question": [None] * max_samples,
+            "answer": [None] * max_samples,
+            "metadata": [None] * max_samples
+        }
 
-            idx = i
+        # Process in smaller batches to reduce memory pressure
+        batch_size = min(1000, max_samples)
 
-            dataset_dict["question"].append(item["question"])
-            dataset_dict["answer"].append(item["answer"])
+        for batch_start in range(0, max_samples, batch_size):
+            batch_end = min(batch_start + batch_size, max_samples)
 
-            metadata = item.get("metadata", {})
-            if not isinstance(metadata, dict):
-                metadata = {"original_metadata": metadata}
+            # Load batch items
+            batch_items = []
+            for i in range(batch_end - batch_start):
+                batch_items.append(next(self.reseeding_dataset))
 
-            metadata["dataset_index"] = idx
-            metadata["split"] = split
+            # Process batch efficiently
+            for i, item in enumerate(batch_items):
+                idx = batch_start + i
 
-            dataset_dict["metadata"].append(metadata)
+                dataset_dict["question"][idx] = item["question"]
+                dataset_dict["answer"][idx] = item["answer"]
+
+                metadata = item.get("metadata", {})
+                if not isinstance(metadata, dict):
+                    metadata = {"original_metadata": metadata}
+
+                metadata["dataset_index"] = idx
+                metadata["split"] = split
+
+                dataset_dict["metadata"][idx] = metadata
 
         return Dataset.from_dict(dataset_dict)
 

@@ -120,25 +120,42 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
     def _try_submit_to_chain(self, signal_by_agent):
         elapsed_time_hours = (time.time() - self.time_since_submit) / 3600
         if elapsed_time_hours > self.submit_period:
-            try:
-                self.coordinator.submit_reward(
-                    self.state.round, 0, int(self.batched_signals), self.peer_id
-                )
-                self.batched_signals = 0.0
-                if len(signal_by_agent) > 0:
-                    max_agent, max_signal = max(
-                        signal_by_agent.items(), key=lambda x: x[1]
-                    )
-                else:  # if we have no signal_by_agents, just submit ourselves.
-                    max_agent = self.peer_id
+            # Exponential backoff for chain operations
+            max_retries = 3
+            base_delay = 1.0  # Start with 1 second
 
-                self.coordinator.submit_winners(
-                    self.state.round, [max_agent], self.peer_id
-                )
-                self.time_since_submit = time.time()
-                self.submitted_this_round = True
-            except Exception as e:
-                get_logger().debug(str(e))
+            for attempt in range(max_retries):
+                try:
+                    self.coordinator.submit_reward(
+                        self.state.round, 0, int(self.batched_signals), self.peer_id
+                    )
+                    self.batched_signals = 0.0
+
+                    if len(signal_by_agent) > 0:
+                        max_agent, max_signal = max(
+                            signal_by_agent.items(), key=lambda x: x[1]
+                        )
+                    else:  # if we have no signal_by_agents, just submit ourselves.
+                        max_agent = self.peer_id
+
+                    self.coordinator.submit_winners(
+                        self.state.round, [max_agent], self.peer_id
+                    )
+                    self.time_since_submit = time.time()
+                    self.submitted_this_round = True
+                    break  # Success - exit retry loop
+
+                except Exception as e:
+                    if attempt < max_retries - 1:
+                        # Calculate exponential backoff delay
+                        delay = base_delay * (2 ** attempt)
+                        get_logger().debug(
+                            f"Chain submission attempt {attempt + 1} failed: {e}. "
+                            f"Retrying in {delay} seconds."
+                        )
+                        time.sleep(delay)
+                    else:
+                        get_logger().debug(f"All chain submission attempts failed: {e}")
 
     def _hook_after_rewards_updated(self):
         try:
