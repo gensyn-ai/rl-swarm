@@ -1,7 +1,7 @@
 // Basic mock database implementation that simplify reads and writes from json files.
 // Should be replaced by a real database.
 
-import fs from "fs";
+import { promises as fs } from "fs";
 import path from "path";
 import { z, ZodSchema } from "zod";
 import { hexSchema } from "./lib/schemas";
@@ -10,21 +10,24 @@ import { Hex } from "viem";
 const userDataPath = path.join(process.cwd(), "./temp-data/userData.json");
 const apiKeyPath = path.join(process.cwd(), "./temp-data/userApiKey.json");
 
-function readJson<T extends ZodSchema>(
+async function readJson<T extends ZodSchema>(
   filePath: string,
   schema: T,
-): z.infer<T> {
-  if (!fs.existsSync(filePath)) {
-    return {};
+): Promise<z.infer<T>> {
+  try {
+    const fileData = await fs.readFile(filePath, "utf-8");
+    const raw = JSON.parse(fileData);
+    return schema.parse(raw);
+  } catch (error: any) {
+    if (error.code === "ENOENT") {
+      return {};
+    }
+    throw error;
   }
-  const fileData = fs.readFileSync(filePath, "utf-8");
-  const raw = JSON.parse(fileData);
-
-  return schema.parse(raw);
 }
 
-const writeJson = (filePath: string, data: ApiKeyRecord | UserDataRecord) => {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+const writeJson = async (filePath: string, data: ApiKeyRecord | UserDataRecord): Promise<void> => {
+  await fs.writeFile(filePath, JSON.stringify(data, null, 2));
 };
 
 const userDataSchema = z.object({
@@ -68,10 +71,12 @@ type ApiKeyRecord = z.infer<typeof apiKeyRecordSchema>;
  * Reads the current database from disk, updates the data,
  * and writes the new state back to disk.
  */
-export const upsertUser = (data: UserData, apiKey: UserApiKey) => {
-  // Read from disk.
-  const usersData = readJson(userDataPath, userDataRecordSchema);
-  const apiKeyData = readJson(apiKeyPath, apiKeyRecordSchema);
+export const upsertUser = async (data: UserData, apiKey: UserApiKey): Promise<void> => {
+  // Read from disk in parallel.
+  const [usersData, apiKeyData] = await Promise.all([
+    readJson(userDataPath, userDataRecordSchema),
+    readJson(apiKeyPath, apiKeyRecordSchema),
+  ]);
 
   // Update data.
   usersData[data.orgId] = data;
@@ -85,36 +90,38 @@ export const upsertUser = (data: UserData, apiKey: UserApiKey) => {
     }
   });
 
-  // Write back to disk.
-  writeJson(userDataPath, usersData);
-  writeJson(apiKeyPath, apiKeyData);
+  // Write back to disk in parallel.
+  await Promise.all([
+    writeJson(userDataPath, usersData),
+    writeJson(apiKeyPath, apiKeyData),
+  ]);
 };
 
 /**
  * Retrieve user data for a given organization id.
  */
-export const getUser = (orgId: string): UserData | null => {
-  const userData = readJson(userDataPath, userDataRecordSchema);
+export const getUser = async (orgId: string): Promise<UserData | null> => {
+  const userData = await readJson(userDataPath, userDataRecordSchema);
   return userData[orgId] ?? null;
 };
 
 /**
  * Get the latest API key for a given organization id.
  */
-export const getLatestApiKey = (orgId: string): UserApiKey | null => {
-  const apiKeyData = readJson(apiKeyPath, apiKeyRecordSchema);
+export const getLatestApiKey = async (orgId: string): Promise<UserApiKey | null> => {
+  const apiKeyData = await readJson(apiKeyPath, apiKeyRecordSchema);
   const keys: UserApiKey[] = apiKeyData[orgId];
   return keys?.[keys.length - 1] ?? null;
 };
 
-export const setApiKeyActivated = (
+export const setApiKeyActivated = async (
   orgId: string,
   apiKey: Hex,
   deferredActionDigest: Hex,
   accountAddress: Hex,
   initCode: Hex,
-): void => {
-  const apiKeyData = readJson(apiKeyPath, apiKeyRecordSchema);
+): Promise<void> => {
+  const apiKeyData = await readJson(apiKeyPath, apiKeyRecordSchema);
   const keys = apiKeyData[orgId];
   const key = keys.find((k) => k.publicKey === apiKey);
   if (!key) {
@@ -134,5 +141,5 @@ export const setApiKeyActivated = (
         : k,
     ),
   };
-  writeJson(apiKeyPath, updatedData);
+  await writeJson(apiKeyPath, updatedData);
 };

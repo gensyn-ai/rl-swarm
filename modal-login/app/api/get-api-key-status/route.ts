@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const key = getLatestApiKey(orgId);
+    const key = await getLatestApiKey(orgId);
     return new NextResponse(`${key?.activated ? "activated" : "pending"}`, {
       status: 200,
     });

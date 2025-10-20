@@ -196,12 +196,19 @@ class GossipDHTPublisher(BaseDHTPublisher):
                 self.logger.info("No gossip found for round", extra={"round": self.current_round})
                 return
 
-            # Update the last polled time
+            # Update the last polled time and cache timestamp
             self.last_polled = datetime.now(timezone.utc)
+            now_utc = self.last_polled  # Reuse same timestamp for all messages
+            ts = int(now_utc.timestamp())
+
+            # Pre-cache all peer names at once to avoid repeated lookups
+            peer_ids = list(round_data.value.keys())
+            peer_names = {peer_id: get_name_from_peer_id(peer_id) for peer_id in peer_ids}
 
             for peer_id, value_with_expiration in round_data.value.items():
                 bytes = value_with_expiration.value
                 payload_dict = from_bytes(bytes)
+                peer_name = peer_names[peer_id]  # O(1) lookup from cache
 
                 # Flatten the payloads into a list of payloads.
                 all_payloads = []
@@ -216,17 +223,15 @@ class GossipDHTPublisher(BaseDHTPublisher):
                     source_dataset = world_state_tuple.environment_states["metadata"]["source_dataset"]
                     action = random.choice(actions) if actions else ""
 
-                    # Stamp the message with the current time.
-                    now_utc = datetime.now(timezone.utc)
-                    ts = int(now_utc.timestamp())
+                    # Generate a unique ID for the gossip message (batch hash computation)
+                    hash_key = f"{question}-{peer_id}-{self.current_round}-{action}-{source_dataset}"
+                    gossip_id = hashlib.md5(hash_key.encode()).hexdigest()
 
-                    # Generate a unique ID for the gossip message.
-                    gossip_id = hashlib.md5(f"{question}-{peer_id}-{self.current_round}-{action}-{source_dataset}".encode()).hexdigest()
                     round_gossip.append((
                         ts, {
                             "id": gossip_id,
                             "message": f"{question}...{action}",
-                            "node": get_name_from_peer_id(peer_id),
+                            "node": peer_name,  # Use cached name
                             "nodeId": peer_id,
                             "dataset": source_dataset,
                         }

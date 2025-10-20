@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const user = getUser(body.orgId);
+    const user = await getUser(body.orgId);
     if (!user) {
       return NextResponse.json(
         { error: "user not found" },
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
         },
       );
     }
-    const apiKey = getLatestApiKey(body.orgId);
+    const apiKey = await getLatestApiKey(body.orgId);
     if (!apiKey?.activated) {
       return NextResponse.json(
         { error: "api key not found" },

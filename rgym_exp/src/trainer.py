@@ -166,32 +166,73 @@ class GRPOTrainerModule(GRPOLanguageTrainerModule, LoggerMixin):
         Returns a tensor of shape (len(choices),) giving, for each choice,
         the sum of log-probabilities that the model assigns to generating
         "<answer>{choice}</answer>" after the given input_ids.
+
+        This implementation batches all choices into a single forward pass for efficiency.
         """
 
         device = input_ids.device
         batch_size, prompt_len = input_ids.shape
-        logits_list = []
 
-        for choice in choices:
-            # 1) build the full token sequence: prompt + "<answer>…</answer>"
-            # TODO: Make the dtype changes from genrl here?
-            answer_str = f"<answer>{choice}</answer>"
-            choice_ids = self.processing_class(
+        # Tokenize all choices at once
+        answer_strs = [f"<answer>{choice}</answer>" for choice in choices]
+        all_choice_ids = [
+            self.processing_class(
                 answer_str,
                 return_tensors="pt",
                 add_special_tokens=False
-            ).input_ids.to(device)    # shape (1, L)
+            ).input_ids.to(device).squeeze(0)  # shape (L,)
+            for answer_str in answer_strs
+        ]
 
-            seq = torch.cat([input_ids, choice_ids], dim=1)  # (1, prompt_len + L)
+        # Find max length for padding
+        max_choice_len = max(choice_ids.size(0) for choice_ids in all_choice_ids)
 
-            # build labels that only include the answer positions
+        # Build batched sequences with padding
+        batched_seqs = []
+        batched_labels = []
+        actual_choice_lens = []
+
+        for choice_ids in all_choice_ids:
+            choice_len = choice_ids.size(0)
+            actual_choice_lens.append(choice_len)
+
+            # Pad choice_ids to max_choice_len
+            padded_choice_ids = torch.nn.functional.pad(
+                choice_ids,
+                (0, max_choice_len - choice_len),
+                value=self.processing_class.pad_token_id or 0
+            )
+
+            # Concatenate prompt with padded choice
+            seq = torch.cat([input_ids.squeeze(0), padded_choice_ids], dim=0)  # (prompt_len + max_choice_len,)
+            batched_seqs.append(seq)
+
+            # Create labels: ignore prompt and padding positions
             labels = seq.clone()
-            labels[:, :prompt_len] = -100  # ignore prompt positions in loss
-            outputs = self.model(input_ids=seq, labels=labels)
-            # outputs.loss is average negative log-likelihood over the L answer tokens
+            labels[:prompt_len] = -100  # ignore prompt
+            labels[prompt_len + choice_len:] = -100  # ignore padding
+            batched_labels.append(labels)
 
-            total_log_prob = -outputs.loss * choice_ids.size(1)
+        # Stack into batch: (num_choices, prompt_len + max_choice_len)
+        batched_seqs = torch.stack(batched_seqs)
+        batched_labels = torch.stack(batched_labels)
+
+        # Single forward pass for all choices
+        outputs = self.model(input_ids=batched_seqs, labels=batched_labels)
+
+        # outputs.loss is averaged over the batch and over non-ignored tokens
+        # We need to extract per-sample losses
+        logits_list = []
+        for i, choice_len in enumerate(actual_choice_lens):
+            # For each sample, compute loss only over the actual choice tokens
+            sample_logits = outputs.logits[i, prompt_len:prompt_len+choice_len, :]  # (choice_len, vocab_size)
+            sample_labels = batched_labels[i, prompt_len:prompt_len+choice_len]  # (choice_len,)
+
+            # Compute cross-entropy loss manually
+            log_probs = torch.log_softmax(sample_logits, dim=-1)
+            token_log_probs = log_probs[range(choice_len), sample_labels]
+            total_log_prob = token_log_probs.sum()
             logits_list.append(total_log_prob)
 
-        # stack into a single tensor of shape (num_choices,)
+        # Return as tensor of shape (num_choices,)
         return torch.stack(logits_list)
