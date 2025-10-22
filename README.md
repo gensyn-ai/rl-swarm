@@ -32,7 +32,7 @@ OR
     - H100
 
 
-With either configuration, you will need Python >=3.10 (for Mac, you will likely need to upgrade).
+With either configuration, you will need Python >=3.10 (for macOS, you will likely need to upgrade).
 
 ## ⚠️ Please read before continuing ⚠️
 
@@ -66,19 +66,19 @@ Run the following commands from the root of the repository.
 
  If you’re using a Mac or if your machine has CPU-only support:
 ```sh
-docker-compose run --rm --build -Pit swarm-cpu
+docker-compose run --rm --build -p it swarm-cpu
 ```
 
 ##### GPU support
 
 If you're using a machine with an officially supported GPU:
 ```sh
-docker-compose run --rm --build -Pit swarm-gpu
+docker-compose run --rm --build -p it swarm-gpu
 ```
 
 ##### Docker compose issue
 
-If `docker-compose` does not work when running the above commands, please try `docker compose` (no hyphen) instead. I.e. ` docker compose run --rm --build -Pit swarm-gpu`. This issue sometimes occurs on users running Ubuntu.
+If `docker-compose` does not work when running the above commands, please try `docker compose` (no hyphen) instead. I.e. ` docker compose run --rm --build -p it swarm-gpu`. This issue sometimes occurs on users running Ubuntu.
 
 ### Experimental (advanced) mode
 
