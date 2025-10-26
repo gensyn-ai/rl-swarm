@@ -141,23 +141,35 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                 get_logger().debug(str(e))
 
     def _hook_after_rewards_updated(self):
-        signal_by_agent = self._get_total_rewards_by_agent()
-        self.batched_signals += self._get_my_rewards(signal_by_agent)
+        try:
+            signal_by_agent = self._get_total_rewards_by_agent()
+            self.batched_signals += self._get_my_rewards(signal_by_agent)
+        except Exception as e:
+            # If signal_by_agent is empty, we just submit ourself as winner according to logic in _try_submit_to_chain
+            get_logger().debug(f"Error getting total rewards by agent: {e}")
+            signal_by_agent = {}
         self._try_submit_to_chain(signal_by_agent)
 
     def _hook_after_round_advanced(self):
-        if self.prg_game:
-            # TODO: Ideally I think the judge client request question bit should come in the manager and the trainer should be doing only PyTorch-y stuff, 
-            # but I have kept it consistent with the evaluate function for now.
-            prg_history_dict = self.prg_module.prg_history_dict
-            results_dict = self.trainer.play_prg_game_logits(prg_history_dict)
-            self.prg_module.play_prg_game(results_dict, self.peer_id)
+        try:
+            if self.prg_game:
+                # TODO: Ideally I think the judge client request question bit should come in the manager and the trainer should be doing only PyTorch-y stuff, 
+                # but I have kept it consistent with the evaluate function for now.
+                prg_history_dict = self.prg_module.prg_history_dict
+                results_dict = self.trainer.play_prg_game_logits(prg_history_dict)
+                self.prg_module.play_prg_game(results_dict, self.peer_id)
+        except Exception as e:
+            get_logger().info(f"Error playing PRG game, continuing with the next round")
 
         self._save_to_hf()
 
         # Try to submit to chain again if necessary, but don't update our signal twice
         if not self.submitted_this_round:
-            signal_by_agent = self._get_total_rewards_by_agent()
+            try:
+                signal_by_agent = self._get_total_rewards_by_agent()
+            except Exception as e:
+                get_logger().debug(f"Error getting total rewards by agent: {e}")
+                signal_by_agent = {}
             self._try_submit_to_chain(signal_by_agent)
 
         # Reset flag for next round
