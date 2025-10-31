@@ -40,7 +40,6 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         hf_push_frequency: int = 20,
         **kwargs,
     ):
-
         super().__init__(
             max_stage=max_stage,
             max_round=max_round,
@@ -64,12 +63,11 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         # Register peer_id and get current round from the chain
         self.coordinator = coordinator
         self.coordinator.register_peer(self.peer_id)
-        round, _ = self.coordinator.get_round_and_stage()
-        self.state.round = round
+        round_num, _ = self.coordinator.get_round_and_stage()
+        self.state.round = round_num
 
-        self.communication.step_ = (
-            self.state.round
-        )  # initialize communication module to contract's round
+        # align comms to chain's round
+        self.communication.step_ = self.state.round
 
         # enable push to HF if token was provided
         self.hf_token = hf_token
@@ -82,7 +80,8 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         get_logger().info(f"bootnodes: {kwargs.get('bootnodes', [])}")
         get_logger().info(f"Using Model: {self.trainer.model.config.name_or_path}")
 
-        with open(os.path.join(log_dir, f"system_info.txt"), "w") as f:
+        os.makedirs(log_dir, exist_ok=True)
+        with open(os.path.join(log_dir, "system_info.txt"), "w") as f:
             f.write(get_system_info())
 
         self.batched_signals = 0.0
@@ -94,6 +93,24 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         self.prg_module = PRGModule(log_dir, **kwargs)
         self.prg_game = self.prg_module.prg_game
 
+    # ---- helper that leverages backend auto-reconnect ----
+    def _ensure_visible(self):
+        """
+        Ensure local p2pd socket is reachable. Prefer backend helper; fallback to manual.
+        """
+        try:
+            return self.communication._ensure_visible(latest=True)  # type: ignore[attr-defined]
+        except AttributeError:
+            # Older backend without helper: try direct call; if it fails, call _reconnect_dht if available
+            try:
+                return self.communication.dht.get_visible_maddrs(latest=True)  # type: ignore[attr-defined]
+            except (FileNotFoundError, ConnectionRefusedError, OSError):
+                if hasattr(self.communication, "_reconnect_dht"):  # type: ignore[attr-defined]
+                    get_logger().warning("[p2pd] visible maddrs failed; manual reconnect…")
+                    self.communication._reconnect_dht(retries=3, base_delay=2.0)  # type: ignore[attr-defined]
+                    return self.communication.dht.get_visible_maddrs(latest=True)  # type: ignore[attr-defined]
+                raise
+
     def _get_total_rewards_by_agent(self):
         rewards_by_agent = defaultdict(int)
         for stage in range(self.state.stage):
@@ -104,16 +121,13 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                     for generation_rewards in batch_rewards:
                         tot += sum(generation_rewards)
                     rewards_by_agent[agent_id] += tot
-
         return rewards_by_agent
 
     def _get_my_rewards(self, signal_by_agent):
         if len(signal_by_agent) == 0:
             return 0
-        if self.peer_id in signal_by_agent:
-            my_signal = signal_by_agent[self.peer_id]
-        else:
-            my_signal = 0
+        my_signal = signal_by_agent[self.peer_id] if self.peer_id in signal_by_agent else 0
+        # ensure positive values count at least 1
         my_signal = (my_signal + 1) * (my_signal > 0) + my_signal * (my_signal <= 0)
         return my_signal
 
@@ -126,15 +140,11 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                 )
                 self.batched_signals = 0.0
                 if len(signal_by_agent) > 0:
-                    max_agent, max_signal = max(
-                        signal_by_agent.items(), key=lambda x: x[1]
-                    )
-                else:  # if we have no signal_by_agents, just submit ourselves.
+                    max_agent, _ = max(signal_by_agent.items(), key=lambda x: x[1])
+                else:
                     max_agent = self.peer_id
 
-                self.coordinator.submit_winners(
-                    self.state.round, [max_agent], self.peer_id
-                )
+                self.coordinator.submit_winners(self.state.round, [max_agent], self.peer_id)
                 self.time_since_submit = time.time()
                 self.submitted_this_round = True
             except Exception as e:
@@ -145,7 +155,6 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
             signal_by_agent = self._get_total_rewards_by_agent()
             self.batched_signals += self._get_my_rewards(signal_by_agent)
         except Exception as e:
-            # If signal_by_agent is empty, we just submit ourself as winner according to logic in _try_submit_to_chain
             get_logger().debug(f"Error getting total rewards by agent: {e}")
             signal_by_agent = {}
         self._try_submit_to_chain(signal_by_agent)
@@ -153,17 +162,15 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
     def _hook_after_round_advanced(self):
         try:
             if self.prg_game:
-                # TODO: Ideally I think the judge client request question bit should come in the manager and the trainer should be doing only PyTorch-y stuff, 
-                # but I have kept it consistent with the evaluate function for now.
+                # render PRG predictions and submit
                 prg_history_dict = self.prg_module.prg_history_dict
                 results_dict = self.trainer.play_prg_game_logits(prg_history_dict)
                 self.prg_module.play_prg_game(results_dict, self.peer_id)
-        except Exception as e:
-            get_logger().info(f"Error playing PRG game, continuing with the next round")
+        except Exception:
+            get_logger().info("Error playing PRG game, continuing with the next round")
 
         self._save_to_hf()
 
-        # Try to submit to chain again if necessary, but don't update our signal twice
         if not self.submitted_this_round:
             try:
                 signal_by_agent = self._get_total_rewards_by_agent()
@@ -172,10 +179,7 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                 signal_by_agent = {}
             self._try_submit_to_chain(signal_by_agent)
 
-        # Reset flag for next round
         self.submitted_this_round = False
-
-        # Block until swarm round advances
         self.agent_block()
 
     def _hook_after_game(self):
@@ -196,10 +200,9 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
             self.hf_token not in [None, "None"]
             and self.state.round % self.hf_push_frequency == 0
         ):
-            get_logger().info(f"pushing model to huggingface")
+            get_logger().info("pushing model to huggingface")
             try:
                 repo_id = self.trainer.args.hub_model_id
-
                 self.trainer.model.push_to_hub(
                     repo_id=repo_id,
                     token=self.hf_token,
@@ -218,19 +221,16 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                     stack_info=True,
                 )
 
-    def agent_block(
-        self, check_interval=5.0, log_timeout=10.0, max_check_interval=60.0 * 15
-    ):
+    def agent_block(self, check_interval=5.0, log_timeout=10.0, max_check_interval=60.0 * 15):
         start_time = time.monotonic()
         fetch_log_time = start_time
-        check_backoff = (
-            check_interval  # Exponential backoff for already finished rounds.
-        )
+        check_backoff = check_interval
         while time.monotonic() - start_time < self.train_timeout:
             curr_time = time.monotonic()
-            _ = self.communication.dht.get_visible_maddrs(latest=True)
 
-            # Retrieve current round and stage.
+            # Use backend auto-reconnect (handles socket loss)
+            _ = self._ensure_visible()
+
             try:
                 round_num, stage = self.coordinator.get_round_and_stage()
             except Exception as e:
@@ -239,14 +239,13 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                         f"Could not fetch round and stage: {e}. Next check in {check_interval}s."
                     )
                     fetch_log_time = curr_time
-
                 time.sleep(check_interval)
                 continue
 
             if round_num >= self.state.round:
                 get_logger().info(f"🐝 Joining round: {round_num}")
-                check_backoff = check_interval  # Reset backoff after successful round
-                self.state.round = round_num  # advance to swarm's round.
+                check_backoff = check_interval
+                self.state.round = round_num
                 return
             else:
                 get_logger().info(
