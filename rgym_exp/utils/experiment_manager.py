@@ -11,7 +11,7 @@ import time
 from typing import Dict, List, Any, Optional
 import pandas as pd
 import yaml
-from genrl.logging_utils.global_defs import get_logger
+from rgym_exp.vendor.genrl.logging_utils.global_defs import get_logger
 
 
 def init_experiment(

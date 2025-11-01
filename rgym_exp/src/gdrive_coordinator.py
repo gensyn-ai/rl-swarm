@@ -10,7 +10,7 @@ import json
 import os
 import time
 from typing import List, Tuple, Optional
-from genrl.logging_utils.global_defs import get_logger
+from rgym_exp.vendor.genrl.logging_utils.global_defs import get_logger
 
 
 class GDriveSwarmCoordinator:

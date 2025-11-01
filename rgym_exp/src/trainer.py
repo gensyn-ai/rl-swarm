@@ -1,12 +1,12 @@
 from typing import Any, Optional, List
 
 import torch
-from genrl.data import DataManager
-from genrl.logging_utils.global_defs import get_logger
-from genrl.logging_utils.ml_logger import LoggerMixin
-from genrl.rewards import RewardManager
-from genrl.state import GameState
-from genrl.trainer.grpo_trainer import GRPOLanguageTrainerModule
+from rgym_exp.vendor.genrl.data import DataManager
+from rgym_exp.vendor.genrl.logging_utils.global_defs import get_logger
+from rgym_exp.vendor.genrl.logging_utils.ml_logger import LoggerMixin
+from rgym_exp.vendor.genrl.rewards import RewardManager
+from rgym_exp.vendor.genrl.state import GameState
+from rgym_exp.vendor.genrl.trainer.grpo_trainer import GRPOLanguageTrainerModule
 
 
 

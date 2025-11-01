@@ -7,8 +7,8 @@ Replaces HivemindBackend with file-based approach.
 
 from typing import Any, Dict, List, Optional
 
-from genrl.communication.communication import Communication
-from genrl.logging_utils.global_defs import get_logger
+from rgym_exp.vendor.genrl.communication.communication import Communication
+from rgym_exp.vendor.genrl.logging_utils.global_defs import get_logger
 
 from rgym_exp.src.gdrive_rollout_sharing import GDriveRolloutSharing
 

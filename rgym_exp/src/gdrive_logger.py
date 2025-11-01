@@ -13,7 +13,7 @@ import shutil
 import time
 from typing import Dict, Any, Optional
 import torch
-from genrl.logging_utils.global_defs import get_logger
+from rgym_exp.vendor.genrl.logging_utils.global_defs import get_logger
 
 
 class GDriveLogger:

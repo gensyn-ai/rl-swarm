@@ -2,16 +2,16 @@ import os
 import time
 from collections import defaultdict
 
-from genrl.communication import Communication
-from genrl.data import DataManager
-from genrl.game import BaseGameManager
-from genrl.game.game_manager import DefaultGameManagerMixin
-from genrl.logging_utils.global_defs import get_logger
-from genrl.logging_utils.system_utils import get_system_info
-from genrl.rewards import RewardManager
-from genrl.roles import RoleManager
-from genrl.state import GameState
-from genrl.trainer import TrainerModule
+from rgym_exp.vendor.genrl.communication import Communication
+from rgym_exp.vendor.genrl.data import DataManager
+from rgym_exp.vendor.genrl.game import BaseGameManager
+from rgym_exp.vendor.genrl.game.game_manager import DefaultGameManagerMixin
+from rgym_exp.vendor.genrl.logging_utils.global_defs import get_logger
+from rgym_exp.vendor.genrl.logging_utils.system_utils import get_system_info
+from rgym_exp.vendor.genrl.rewards import RewardManager
+from rgym_exp.vendor.genrl.roles import RoleManager
+from rgym_exp.vendor.genrl.state import GameState
+from rgym_exp.vendor.genrl.trainer import TrainerModule
 from huggingface_hub import login, whoami
 
 from rgym_exp.src.utils.name_utils import get_name_from_peer_id
@@ -187,7 +187,9 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         if isinstance(self.communication, GDriveCommunicationBackend):
             try:
                 # Get local rollouts from state.trees[peer_id]
+                get_logger().debug(f"[DEBUG_TREES] Checking for rollouts: state.trees={self.state.trees}, peer_id={self.peer_id}")
                 local_rollouts = self.state.trees.get(self.peer_id, {})
+                get_logger().debug(f"[DEBUG_TREES] local_rollouts: {local_rollouts}, len={len(local_rollouts) if local_rollouts else 0}")
                 if local_rollouts:
                     self.communication.publish_state(
                         state_dict=local_rollouts,
@@ -198,6 +200,8 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                         f"Published local rollouts: round={self.state.round}, "
                         f"stage={self.state.stage}, batches={len(local_rollouts)}"
                     )
+                else:
+                    get_logger().warning(f"[DEBUG_TREES] No local rollouts to publish! state.trees keys={list(self.state.trees.keys()) if self.state.trees else 'None'}")
             except Exception as e:
                 get_logger().error(f"Failed to publish rollouts: {e}")
 

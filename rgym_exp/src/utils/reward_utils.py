@@ -1,7 +1,7 @@
 import re
 from typing import Any, Dict, List, Optional
 
-from genrl.state import GameState
+from rgym_exp.vendor.genrl.state import GameState
 from reasoning_gym.factory import get_score_answer_fn
 from reasoning_gym.utils import compute_decimal_reward, extract_answer
 

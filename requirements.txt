@@ -7,8 +7,8 @@ datasets>=2.14.0
 # Protobuf version constraint (TensorFlow/Transformers compatibility)
 protobuf>=4.25.0,<5.0
 
-# GenRL Framework
-gensyn-genrl==0.1.9
+# GenRL Framework (vendored locally in rgym_exp/vendor/genrl/)
+# gensyn-genrl==0.1.9  # Commented out - using vendored v0.1.6 for debugging
 
 # Reasoning Tasks (GitHub-only package)
 git+https://github.com/open-thought/reasoning-gym.git

@@ -4,11 +4,11 @@ import random
 from typing import Any, Dict, List, Optional, Tuple
 
 from datasets import Dataset
-from genrl.communication import Payload
-from genrl.data import LocalMemoryTextDataManager
-from genrl.logging_utils.global_defs import get_logger
-from genrl.misc_utils.utils import generate_md5_hash_id
-from genrl.state import GameState, WorldState
+from rgym_exp.vendor.genrl.communication import Payload
+from rgym_exp.vendor.genrl.data import LocalMemoryTextDataManager
+from rgym_exp.vendor.genrl.logging_utils.global_defs import get_logger
+from rgym_exp.vendor.genrl.misc_utils.utils import generate_md5_hash_id
+from rgym_exp.vendor.genrl.state import GameState, WorldState
 from reasoning_gym.composite import CompositeConfig, CompositeDataset
 from reasoning_gym.dataset import ReseedingDataset
 from reasoning_gym.utils import SYSTEM_PROMPTS

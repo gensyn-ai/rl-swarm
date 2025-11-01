@@ -11,7 +11,7 @@ import shutil
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
-from genrl.logging_utils.global_defs import get_logger
+from rgym_exp.vendor.genrl.logging_utils.global_defs import get_logger
 
 
 class GDriveRolloutSharing:

@@ -9,12 +9,12 @@ import os
 import uuid
 
 from transformers import AutoModelForCausalLM
-from genrl.communication.communication import Communication
-from genrl.logging_utils.global_defs import get_logger
-from genrl.state.game_state import GameState
-from genrl.rewards import DefaultRewardManager
-from genrl.rewards.reward_store import RewardFnStore, RoundRewardFnStore
-from genrl.trainer.grpo_trainer import GRPOTrainerConfig
+from rgym_exp.vendor.genrl.communication.communication import Communication
+from rgym_exp.vendor.genrl.logging_utils.global_defs import get_logger
+from rgym_exp.vendor.genrl.state.game_state import GameState
+from rgym_exp.vendor.genrl.rewards import DefaultRewardManager
+from rgym_exp.vendor.genrl.rewards.reward_store import RewardFnStore, RoundRewardFnStore
+from rgym_exp.vendor.genrl.trainer.grpo_trainer import GRPOTrainerConfig
 
 from rgym_exp.src.trainer import GRPOTrainerModule
 from rgym_exp.src.data import ReasoningGymDataManager
