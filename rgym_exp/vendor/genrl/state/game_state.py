@@ -65,7 +65,8 @@ class GameState:
                     round_data[batch_idx][1]
                 )  # NOTE: Assumes round data is a list containting tuples of [unique_id, WorldState]
 
-        get_logger().debug(f"[DEBUG_TREES] _init_game completed: trees keys={list(self.trees.keys())}, tree_counts={{{agent: len(self.trees[agent]) for agent in self.trees}}}")
+        tree_counts = {agent: len(self.trees[agent]) for agent in self.trees}
+        get_logger().debug(f"[DEBUG_TREES] _init_game completed: trees keys={list(self.trees.keys())}, tree_counts={tree_counts}")
 
     # Core methods
     def advance_round(
