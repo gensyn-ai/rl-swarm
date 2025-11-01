@@ -186,10 +186,11 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         # Publish local rollouts to GDrive for swarm sharing
         if isinstance(self.communication, GDriveCommunicationBackend):
             try:
-                # Get local rollouts from state.trees[peer_id]
-                get_logger().debug(f"[DEBUG_TREES] Checking for rollouts: state.trees={self.state.trees}, peer_id={self.peer_id}")
-                local_rollouts = self.state.trees.get(self.peer_id, {})
-                get_logger().debug(f"[DEBUG_TREES] local_rollouts: {local_rollouts}, len={len(local_rollouts) if local_rollouts else 0}")
+                # Get local rollouts from communication payloads (correctly formatted for publishing)
+                communication_payloads = self.state.get_latest_communication()
+                get_logger().debug(f"[DEBUG_TREES] Communication payloads available for ranks: {list(communication_payloads.keys())}, self.rank={self.rank}")
+                local_rollouts = communication_payloads.get(self.rank, {})
+                get_logger().debug(f"[DEBUG_TREES] local_rollouts type: {type(local_rollouts)}, content: {local_rollouts}")
                 if local_rollouts:
                     self.communication.publish_state(
                         state_dict=local_rollouts,
@@ -198,10 +199,10 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                     )
                     get_logger().debug(
                         f"Published local rollouts: round={self.state.round}, "
-                        f"stage={self.state.stage}, batches={len(local_rollouts)}"
+                        f"stage={self.state.stage}, rank={self.rank}"
                     )
                 else:
-                    get_logger().warning(f"[DEBUG_TREES] No local rollouts to publish! state.trees keys={list(self.state.trees.keys()) if self.state.trees else 'None'}")
+                    get_logger().warning(f"[DEBUG_TREES] No local rollouts to publish! Available ranks={list(communication_payloads.keys())}")
             except Exception as e:
                 get_logger().error(f"Failed to publish rollouts: {e}")
 
