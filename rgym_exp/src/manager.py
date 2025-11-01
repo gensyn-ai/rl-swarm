@@ -52,6 +52,7 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
             run_mode=run_mode,
         )
 
+        # Ensure we are using the hardened backend (assertion helps catch misconfig)
         assert isinstance(self.communication, HivemindBackend)
         self.train_timeout = 60 * 60 * 24 * 31  # 1 month
 
@@ -78,7 +79,10 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
             f"🐱 Hello 🐈 [{get_name_from_peer_id(self.peer_id)}] 🦮 [{self.peer_id}]!"
         )
         get_logger().info(f"bootnodes: {kwargs.get('bootnodes', [])}")
-        get_logger().info(f"Using Model: {self.trainer.model.config.name_or_path}")
+        try:
+            get_logger().info(f"Using Model: {self.trainer.model.config.name_or_path}")
+        except Exception:
+            get_logger().info("Using Model: <unknown>")
 
         os.makedirs(log_dir, exist_ok=True)
         with open(os.path.join(log_dir, "system_info.txt"), "w") as f:
@@ -186,18 +190,28 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         self._save_to_hf()
 
     def _configure_hf_hub(self, hf_push_frequency):
-        username = whoami(token=self.hf_token)["name"]
-        model_name = self.trainer.model.config.name_or_path.split("/")[-1]
+        try:
+            username = whoami(token=self.hf_token)["name"]
+        except Exception:
+            # If token invalid or network issue, skip hub push config
+            get_logger().info("Hugging Face whoami() failed; skipping Hub config for now.")
+            return
+        model_name = getattr(self.trainer.model.config, "name_or_path", "model")
+        model_name = str(model_name).split("/")[-1]
         model_name += "-Gensyn-Swarm"
         model_name += f"-{self.animal_name}"
         self.trainer.args.hub_model_id = f"{username}/{model_name}"
         self.hf_push_frequency = hf_push_frequency
         get_logger().info("Logging into Hugging Face Hub...")
-        login(self.hf_token)
+        try:
+            login(self.hf_token)
+        except Exception:
+            get_logger().info("HF login failed; will skip pushes until credentials are valid.")
 
     def _save_to_hf(self):
         if (
             self.hf_token not in [None, "None"]
+            and getattr(self, "hf_push_frequency", None) is not None
             and self.state.round % self.hf_push_frequency == 0
         ):
             get_logger().info("pushing model to huggingface")
