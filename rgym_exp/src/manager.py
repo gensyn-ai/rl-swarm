@@ -1,6 +1,11 @@
 import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import time
 from collections import defaultdict
+import subprocess
+import re
+import logging
+logging.getLogger("hivemind").setLevel(logging.CRITICAL)
 
 from genrl.blockchain import SwarmCoordinator
 from genrl.communication import Communication
@@ -15,6 +20,7 @@ from genrl.roles import RoleManager
 from genrl.state import GameState
 from genrl.trainer import TrainerModule
 from huggingface_hub import login, whoami
+from hivemind import DHT
 
 from rgym_exp.src.utils.name_utils import get_name_from_peer_id
 from rgym_exp.src.prg_module import PRGModule
@@ -40,7 +46,6 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         hf_push_frequency: int = 20,
         **kwargs,
     ):
-
         super().__init__(
             max_stage=max_stage,
             max_round=max_round,
@@ -93,6 +98,9 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         # PRG Game
         self.prg_module = PRGModule(log_dir, **kwargs)
         self.prg_game = self.prg_module.prg_game
+        
+        # Store bootnodes for reconnection
+        self.bootnodes = kwargs.get('bootnodes', [])
 
     def _get_total_rewards_by_agent(self):
         rewards_by_agent = defaultdict(int)
@@ -153,8 +161,6 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
     def _hook_after_round_advanced(self):
         try:
             if self.prg_game:
-                # TODO: Ideally I think the judge client request question bit should come in the manager and the trainer should be doing only PyTorch-y stuff, 
-                # but I have kept it consistent with the evaluate function for now.
                 prg_history_dict = self.prg_module.prg_history_dict
                 results_dict = self.trainer.play_prg_game_logits(prg_history_dict)
                 self.prg_module.play_prg_game(results_dict, self.peer_id)
@@ -218,19 +224,91 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                     stack_info=True,
                 )
 
+    def find_existing_p2pd(self):
+        """Try to find existing p2pd ports"""
+        try:
+            result = subprocess.run(['ss', '-tlpn'], capture_output=True, text=True)
+            output = result.stdout
+            
+            # Look for p2pd in the output
+            if 'p2pd' in output:
+                # Extract the ports
+                tcp_match = re.search(r'.*:(\d+).*p2pd.*tcp', output)
+                udp_match = re.search(r'.*:(\d+).*p2pd.*udp', output)
+                
+                if tcp_match and udp_match:
+                    return [
+                        f"/ip4/0.0.0.0/tcp/{tcp_match.group(1)}",
+                        f"/ip4/0.0.0.0/udp/{udp_match.group(1)}/quic"
+                    ]
+            return None
+        except:
+            return None
+
     def agent_block(
         self, check_interval=5.0, log_timeout=10.0, max_check_interval=60.0 * 15
     ):
         start_time = time.monotonic()
         fetch_log_time = start_time
-        check_backoff = (
-            check_interval  # Exponential backoff for already finished rounds.
-        )
+        check_backoff = check_interval
+        reconnect_attempts = 0
+        max_reconnect_attempts = 3
+        
+        # Store initial configuration
+        initial_peers = self.communication.dht.initial_peers
+        
         while time.monotonic() - start_time < self.train_timeout:
             curr_time = time.monotonic()
-            _ = self.communication.dht.get_visible_maddrs(latest=True)
+            try:
+                _ = self.communication.dht.get_visible_maddrs(latest=True)
+                reconnect_attempts = 0
+            except Exception as e:
+                get_logger().warning(f"P2PD connection lost at {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                get_logger().warning(f"Error details: {str(e)}")
+                
+                if reconnect_attempts < max_reconnect_attempts:
+                    try:
+                        # Check for existing p2pd first
+                        existing_maddrs = self.find_existing_p2pd()
+                        
+                        if existing_maddrs:
+                            get_logger().info(f"Found existing p2pd ports, attempting to connect...")
+                            host_maddrs = existing_maddrs
+                            client_mode = True
+                            start = False
+                        else:
+                            get_logger().info(f"No existing p2pd found, creating new instance...")
+                            host_maddrs = ["/ip4/0.0.0.0/tcp/0"]
+                            client_mode = False
+                            start = True
+                        
+                        # Try to reconnect
+                        get_logger().info(f"Reconnection attempt {reconnect_attempts + 1}/{max_reconnect_attempts}")
+                        new_dht = DHT(
+                            start=start,
+                            host_maddrs=host_maddrs,
+                            initial_peers=initial_peers + self.bootnodes,
+                            client_mode=client_mode,
+                            use_ipfs=False
+                        )
+                        
+                        time.sleep(5)
+                        self.communication.dht = new_dht
+                        get_logger().info("Successfully created new DHT connection")
+                    except Exception as reinit_error:
+                        get_logger().warning(f"Connection attempt {reconnect_attempts + 1} failed: {reinit_error}")
+                        reconnect_attempts += 1
+                        if reconnect_attempts < max_reconnect_attempts:
+                            get_logger().info(f"Retrying in {check_interval} seconds...")
+                            time.sleep(check_interval)
+                            continue
+                
+                if reconnect_attempts >= max_reconnect_attempts:
+                    get_logger().warning("Max reconnection attempts reached, continuing without DHT...")
+                    self.state.round += 1
+                    return
 
-            # Retrieve current round and stage.
+            # Retrieve current round and stage
             try:
                 round_num, stage = self.coordinator.get_round_and_stage()
             except Exception as e:
@@ -239,14 +317,13 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
                         f"Could not fetch round and stage: {e}. Next check in {check_interval}s."
                     )
                     fetch_log_time = curr_time
-
                 time.sleep(check_interval)
                 continue
 
             if round_num >= self.state.round:
                 get_logger().info(f"🐝 Joining round: {round_num}")
-                check_backoff = check_interval  # Reset backoff after successful round
-                self.state.round = round_num  # advance to swarm's round.
+                check_backoff = check_interval
+                self.state.round = round_num
                 return
             else:
                 get_logger().info(
