@@ -1,3 +1,4 @@
+import json
 import os
 import random
 from typing import Any, Dict, List, Optional, Tuple
@@ -277,8 +278,12 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
             except FileNotFoundError as e:
                 get_logger().warning(f"Rollout files not found for round {max(0, current_state.round - 1)}: {e}")
                 swarm_states = {}
+            except json.JSONDecodeError as e:
+                # JSONDecodeError is common during concurrent writes - log as warning
+                get_logger().warning(f"Corrupted rollout file for round {max(0, current_state.round - 1)} (concurrent write?): {e}")
+                swarm_states = {}
             except Exception as e:
-                # Catch JSONDecodeError and all other exceptions
+                # Catch all other unexpected exceptions
                 get_logger().error(f"Failed to fetch swarm states from round {max(0, current_state.round - 1)}: {e}")
                 swarm_states = {}
 
@@ -343,9 +348,15 @@ class ReasoningGymDataManager(LocalMemoryTextDataManager):
                             and hasattr(payload, "actions")
                             and payload.actions is not None
                             and isinstance(payload.actions, list)
-                            and len(payload.actions) == self.num_generations
+                            and len(payload.actions) > 0  # Accept any non-empty action list
                             and all([isinstance(action, str) for action in payload.actions])
                         ):
+                            # Log warning if generation count mismatch (but still accept)
+                            if len(payload.actions) != self.num_generations:
+                                get_logger().warning(
+                                    f"Transplant from {agent} has {len(payload.actions)} generations, "
+                                    f"expected {self.num_generations}. Accepting anyway."
+                                )
                             transplants[(agent, batch_id)] = payload
                             if len(transplants) >= num_transplants:
                                 return transplants

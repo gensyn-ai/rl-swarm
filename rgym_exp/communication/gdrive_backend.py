@@ -194,7 +194,8 @@ class GDriveCommunicationBackend(Communication):
         old_stage = self.current_stage
 
         # Flush buffered rollouts if frequency='stage'
-        if self.publish_frequency == 'stage' and old_stage >= 0:
+        # Note: Only flush if we've completed at least one stage (stage 0+)
+        if self.publish_frequency == 'stage' and self.current_stage >= 0:
             self.rollout_sharing.flush_buffer(
                 self.node_id,
                 self.current_round,
