@@ -63,4 +63,4 @@ ENV IDENTITY_PATH=/home/gensyn/rl_swarm/keys/swarm.pem
 
 COPY --chown=gensyn . /home/gensyn/rl_swarm
 
-CMD [ "bash", "-c", "/home/gensyn/rl_swarm/run_rl_swarm.sh" ]
+CMD ["/bin/bash", "-c", "sleep 2 && echo -e '\n\nN' | /home/gensyn/rl_swarm/run_rl_swarm.sh"]
