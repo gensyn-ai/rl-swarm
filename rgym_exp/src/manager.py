@@ -136,7 +136,7 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         )  # Compute reward functions now that we have all the data needed for this round
         self._hook_after_rewards_updated()  # Call hook
 
-        from rgym_exp.vendor.genrl.trainer.trainer_module import RunType
+        from rgym_exp.vendor.genrl.game import RunType
         if self.mode in [RunType.Train, RunType.TrainAndEvaluate]:
             self.trainer.train(self.state, self.data_manager, self.rewards)
         if self.mode in [RunType.Evaluate, RunType.TrainAndEvaluate]:
