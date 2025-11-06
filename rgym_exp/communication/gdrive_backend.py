@@ -246,7 +246,7 @@ class GDriveCommunicationBackend(Communication):
             get_logger().debug(f"Invalidated rollout cache ({old_size} entries)")
 
     # Compatibility methods for Communication base class
-    def all_gather_object(self, obj: Any) -> List[Any]:
+    def all_gather_object(self, obj: Any) -> Dict[str | int, Any]:
         """
         Gather objects from all peers.
 
@@ -257,7 +257,7 @@ class GDriveCommunicationBackend(Communication):
             obj: Object to gather (communication payload dict: {batch_id: [Payload, ...]})
 
         Returns:
-            List containing just this node's object (no actual gathering)
+            Dict containing just this node's object (compatible with Communication interface)
         """
         # Publish local rollouts to GDrive (will buffer based on publish_frequency)
         if obj:  # Only publish if we have data
@@ -273,7 +273,8 @@ class GDriveCommunicationBackend(Communication):
         else:
             get_logger().debug("all_gather_object called with empty object, skipping publish")
 
-        return [obj]
+        # Return dict with node_id as key (compatible with base Communication class)
+        return {self.node_id: obj}
 
     @property
     def dht(self):
