@@ -17,36 +17,47 @@ RL Swarm is a system for decentralized reinforcement learning that implements th
 
 ## Quick Start: Optimal SAPO Configuration
 
-This repository includes one pre-configured notebook for the **optimal SAPO configuration** (Config 2: 2 local / 2 external rollouts).
+This repository includes one pre-configured notebook for the **optimal SAPO configuration** (Config 2: 4 local / 4 external rollouts).
 
 ### Run on Google Colab
 
-**[🔗 Open EX12.14c - SAPO Config 2 (2/2) ⭐ BEST](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14c.SAPO_gpt2_Config2_2loc2ext.ipynb)**
+**[🔗 Open EX12.14c - SAPO Config 2 (4/4) ⭐ BEST](https://colab.research.google.com/github/Elrashid/rl-swarm/blob/main/notebooks/EX12.14c.SAPO_gpt2_Config2_2loc2ext.ipynb)**
 
 This notebook runs **5 nodes** (1 coordinator + 4 training workers) on a single A100 80GB GPU using GPT-2.
+
+**⚠️ IMPORTANT: Testing Mode by Default**
+
+The notebook defaults to **TESTING MODE** (10 rounds, ~6 minutes):
+- Quick validation to ensure everything works
+- Verifies nodes start, rollouts share, logs save
+- **Run this first before committing to 21-hour production run**
+
+After validation succeeds, switch to **PRODUCTION MODE** (2000 rounds, ~21 hours) by uncommenting one line in Cell 2.
 
 **Setup:**
 
 1. Click the link above to open in Google Colab
 2. Select: **Runtime > Change runtime type > A100 GPU**
-3. Run all cells - training takes ~21 hours
-4. Expected result: **+94-150% improvement** over baseline
+3. **Run all cells** (testing mode, ~6 minutes)
+4. **Check results** in Cell 8 to verify everything worked
+5. **For production**: Uncomment `MAX_ROUNDS = 2000` in Cell 2, run again
+6. Expected result: **+94-150% improvement** over baseline
 
 **Requirements:**
 - Google Colab Pro+ ($50/month) for A100 80GB access
 - Or rent A100 80GB from cloud providers ($1.29/hour × 21 hours = $27 total)
 
-**Configuration:**
+**Configuration (Production Mode):**
 ```python
-NUM_TRAIN_SAMPLES = 2        # I: Local rollouts per round
-NUM_TRANSPLANT_TREES = 2     # J: External rollouts from swarm
-NUM_GENERATIONS = 4          # G: Completions per question
-MAX_ROUNDS = 2000            # Total training rounds
+NUM_TRAIN_SAMPLES = 4        # I: Local rollouts per round
+NUM_TRANSPLANT_TREES = 4     # J: External rollouts from swarm
+NUM_GENERATIONS = 8          # G: Completions per question
+MAX_ROUNDS = 2000            # Total training rounds (10 for testing)
 ```
 
 **Why GPT-2 instead of Qwen2.5?**
 - GPT-2 (124M params) uses ~6.5 GB per node during training
-- 5 nodes fit on single A100 80GB (~33 GB total)
+- 5 nodes fit on single A100 80GB (~30 GB total)
 - Paper's finding: **Weaker models benefit MORE from swarm collaboration**
 - Expected: **>94% improvement** (vs paper's 94% with Qwen2.5-0.5B)
 - **90% cost savings** vs running 8 separate Colab sessions
@@ -82,16 +93,17 @@ cd rl-swarm
 # Install dependencies
 pip install -r requirements.txt
 
-# Terminal 1 - Start Coordinator
+# Terminal 1 - Start Coordinator (Testing Mode)
 export GDRIVE_PATH="/path/to/shared/folder"
 export EXPERIMENT_NAME="test_experiment"
 export NODE_ROLE="coordinator"
 export NODE_ID="coordinator_0"
 export MODEL_NAME="openai-community/gpt2"
-export NUM_TRAIN_SAMPLES="2"
-export NUM_TRANSPLANT_TREES="2"
-export NUM_GENERATIONS="4"
-export MAX_ROUNDS="2000"
+export NUM_TRAIN_SAMPLES="4"
+export NUM_TRANSPLANT_TREES="4"
+export NUM_GENERATIONS="8"
+export MAX_ROUNDS="10"                       # Testing: 10 rounds (~6 min)
+export CHECKPOINT_INTERVAL="100"
 export ROLLOUT_PUBLISH_FREQUENCY="stage"
 
 python -m rgym_exp.runner.swarm_launcher
@@ -102,13 +114,16 @@ export EXPERIMENT_NAME="test_experiment"      # SAME name
 export NODE_ROLE="worker"
 export NODE_ID="worker_1"                     # DIFFERENT ID
 export MODEL_NAME="openai-community/gpt2"
-export NUM_TRAIN_SAMPLES="2"
-export NUM_TRANSPLANT_TREES="2"
-export NUM_GENERATIONS="4"
-export MAX_ROUNDS="2000"
+export NUM_TRAIN_SAMPLES="4"
+export NUM_TRANSPLANT_TREES="4"
+export NUM_GENERATIONS="8"
+export MAX_ROUNDS="10"
+export CHECKPOINT_INTERVAL="100"
 export ROLLOUT_PUBLISH_FREQUENCY="stage"
 
 python -m rgym_exp.runner.swarm_launcher
+
+# For production run: Change MAX_ROUNDS to 2000
 ```
 
 ## Google Drive Structure
@@ -158,13 +173,15 @@ All configuration is done via **environment variables**:
 
 ## Expected Results
 
-With the optimal configuration (Config 2: 2 local / 2 external):
+With the optimal configuration (Config 2: 4 local / 4 external, production mode):
 
 | Metric | Paper (Qwen2.5) | Expected (GPT-2) |
 |--------|-----------------|------------------|
-| Baseline | 562 | 200-300 |
-| Config 2 (2/2) | 1093 | 500-700 |
+| Baseline (4/0) | 562 | 200-300 |
+| Config 2 (4/4) | 1093 | 500-700 |
 | **Improvement** | **+94%** | **+110-150%** ✅ |
+
+**Note:** Testing mode (10 rounds) validates the system but won't achieve these results. Run production mode (2000 rounds) for meaningful comparison.
 
 ## Monitoring Progress
 
