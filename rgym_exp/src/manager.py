@@ -113,6 +113,43 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         self.submit_period = 3.0  # hours
         self.submitted_this_round = False
 
+    def run_game_round(self):
+        """
+        Override to call communication hooks after stage/round advances.
+        This ensures rollouts are flushed at the right time in GDrive mode.
+        """
+        # Loop through stages until end of round is hit
+        while not self.end_of_round():
+            self.run_game_stage()  # Generates rollout and updates the game state
+            swarm_payloads = self.communication.all_gather_object(
+                self.state.get_latest_communication()[self.rank]
+            )
+            world_states = self.data_manager.prepare_states(
+                self.state, swarm_payloads
+            )  # Maps states received via communication with the swarm to RL game tree world states
+            self.state.advance_stage(world_states)  # Prepare for next stage
+            # IMPORTANT: Call communication hook after stage advance to flush buffered rollouts
+            self.communication.advance_stage()
+
+        self.rewards.update_rewards(
+            self.state
+        )  # Compute reward functions now that we have all the data needed for this round
+        self._hook_after_rewards_updated()  # Call hook
+
+        from rgym_exp.vendor.genrl.trainer.trainer_module import RunType
+        if self.mode in [RunType.Train, RunType.TrainAndEvaluate]:
+            self.trainer.train(self.state, self.data_manager, self.rewards)
+        if self.mode in [RunType.Evaluate, RunType.TrainAndEvaluate]:
+            self.trainer.evaluate(self.state, self.data_manager, self.rewards)
+
+        self.state.advance_round(
+            self.data_manager.get_round_data(), agent_keys=self.agent_ids
+        )  # Resets the game state appropriately, stages the next round, and increments round/stage counters appropriatelly
+        self.rewards.reset()
+        # IMPORTANT: Call communication hook after round advance
+        self.communication.advance_round()
+        self._hook_after_round_advanced()  # Call hook
+
     def _get_total_rewards_by_agent(self):
         rewards_by_agent = defaultdict(int)
         for stage in range(self.state.stage):
@@ -183,28 +220,9 @@ class SwarmGameManager(BaseGameManager, DefaultGameManagerMixin):
         self.batched_signals += self._get_my_rewards(signal_by_agent)
         self._try_submit_to_chain(signal_by_agent)
 
-        # Publish local rollouts to GDrive for swarm sharing
-        if isinstance(self.communication, GDriveCommunicationBackend):
-            try:
-                # Get local rollouts from communication payloads (correctly formatted for publishing)
-                communication_payloads = self.state.get_latest_communication()
-                get_logger().debug(f"[DEBUG_TREES] Communication payloads available for ranks: {list(communication_payloads.keys())}, self.rank={self.rank}")
-                local_rollouts = communication_payloads.get(self.rank, {})
-                get_logger().debug(f"[DEBUG_TREES] local_rollouts type: {type(local_rollouts)}, content: {local_rollouts}")
-                if local_rollouts:
-                    self.communication.publish_state(
-                        state_dict=local_rollouts,
-                        stage=self.state.stage,
-                        generation=None
-                    )
-                    get_logger().debug(
-                        f"Published local rollouts: round={self.state.round}, "
-                        f"stage={self.state.stage}, rank={self.rank}"
-                    )
-                else:
-                    get_logger().warning(f"[DEBUG_TREES] No local rollouts to publish! Available ranks={list(communication_payloads.keys())}")
-            except Exception as e:
-                get_logger().error(f"Failed to publish rollouts: {e}")
+        # NOTE: Rollout publishing now happens in run_game_round() via all_gather_object()
+        # This ensures rollouts are published with the correct stage information during
+        # the stage loop, not after all stages are complete.
 
     def _hook_after_round_advanced(self):
         self._save_to_hf()

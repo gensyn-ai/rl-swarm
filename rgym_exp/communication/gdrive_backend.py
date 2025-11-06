@@ -250,16 +250,29 @@ class GDriveCommunicationBackend(Communication):
         """
         Gather objects from all peers.
 
-        In GDrive mode, this is not used since we fetch rollouts directly
-        from Google Drive files instead of using collective operations.
+        In GDrive mode, we publish local rollouts to GDrive and return local object.
+        The actual gathering/fetching happens separately in data manager.
 
         Args:
-            obj: Object to gather
+            obj: Object to gather (communication payload dict: {batch_id: [Payload, ...]})
 
         Returns:
             List containing just this node's object (no actual gathering)
         """
-        get_logger().debug("all_gather_object called but not used in GDrive mode")
+        # Publish local rollouts to GDrive (will buffer based on publish_frequency)
+        if obj:  # Only publish if we have data
+            get_logger().debug(
+                f"Publishing rollouts via all_gather_object: "
+                f"round={self.current_round}, stage={self.current_stage}"
+            )
+            self.publish_state(
+                state_dict=obj,
+                stage=self.current_stage,
+                generation=self.current_generation
+            )
+        else:
+            get_logger().debug("all_gather_object called with empty object, skipping publish")
+
         return [obj]
 
     @property
