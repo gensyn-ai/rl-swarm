@@ -9,9 +9,68 @@ import json
 import os
 import shutil
 import time
+from dataclasses import is_dataclass, asdict
 from typing import Any, Dict, List, Optional, Tuple
 
 from rgym_exp.vendor.genrl.logging_utils.global_defs import get_logger
+from rgym_exp.vendor.genrl.communication import Payload
+from rgym_exp.vendor.genrl.state import WorldState
+
+
+class PayloadJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder for Payload and WorldState objects."""
+
+    def default(self, obj):
+        # Handle Payload objects (subclass of dict)
+        if isinstance(obj, Payload):
+            return {
+                'world_state': obj.world_state,
+                'actions': obj.actions,
+                'metadata': obj.metadata
+            }
+
+        # Handle WorldState dataclass
+        if isinstance(obj, WorldState):
+            return {
+                'environment_states': obj.environment_states,
+                'opponent_states': obj.opponent_states,
+                'personal_states': obj.personal_states
+            }
+
+        # Handle other dataclasses
+        if is_dataclass(obj):
+            return asdict(obj)
+
+        # Let the base class handle other types
+        return super().default(obj)
+
+
+def reconstruct_payload(data: Dict[str, Any]) -> Payload:
+    """
+    Reconstruct a Payload object from JSON-decoded data.
+
+    Args:
+        data: Dictionary with 'world_state', 'actions', 'metadata' keys
+
+    Returns:
+        Payload object
+    """
+    # Reconstruct WorldState if present
+    world_state_data = data.get('world_state')
+    if world_state_data and isinstance(world_state_data, dict):
+        world_state = WorldState(
+            environment_states=world_state_data.get('environment_states'),
+            opponent_states=world_state_data.get('opponent_states'),
+            personal_states=world_state_data.get('personal_states')
+        )
+    else:
+        world_state = world_state_data
+
+    return Payload(
+        world_state=world_state,
+        actions=data.get('actions'),
+        metadata=data.get('metadata')
+    )
 
 
 class GDriveRolloutSharing:
@@ -278,7 +337,19 @@ class GDriveRolloutSharing:
                     get_logger().warning(f"Invalid rollout file format: {filename}")
                     continue
 
-                rollouts[peer_id] = data['rollouts']
+                # Reconstruct Payload objects from JSON data
+                reconstructed_rollouts = {}
+                for batch_id, payload_list in data['rollouts'].items():
+                    # Convert string batch_id back to int
+                    batch_id_int = int(batch_id)
+                    reconstructed_rollouts[batch_id_int] = []
+
+                    for payload_data in payload_list:
+                        # Reconstruct Payload object
+                        payload = reconstruct_payload(payload_data)
+                        reconstructed_rollouts[batch_id_int].append(payload)
+
+                rollouts[peer_id] = reconstructed_rollouts
                 get_logger().debug(f"Fetched rollouts from {peer_id}")
 
             except json.JSONDecodeError:
@@ -389,7 +460,7 @@ class GDriveRolloutSharing:
     @staticmethod
     def _write_json_file(file_path: str, data: Dict[str, Any]):
         """
-        Write JSON file atomically.
+        Write JSON file atomically with custom encoder for Payload/WorldState objects.
 
         Args:
             file_path: Path to file
@@ -398,7 +469,7 @@ class GDriveRolloutSharing:
         # Write to temp file first
         temp_path = file_path + '.tmp'
         with open(temp_path, 'w') as f:
-            json.dump(data, f, indent=2)
+            json.dump(data, f, indent=2, cls=PayloadJSONEncoder)
 
         # Atomic rename
         os.replace(temp_path, file_path)
