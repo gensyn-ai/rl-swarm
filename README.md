@@ -2,16 +2,28 @@
 
 RL Swarm is a peer-to-peer system for reinforcement learning. It allows you to train models collaboratively with others in the swarm, leveraging their collective intelligence. It is open source and permissionless, meaning you can run it on a consumer laptop at home or on a powerful GPU in the cloud. You can also connect your model to the Gensyn Testnet to receive an on-chain identity that tracks your progress over time.
 
-Currently, we are running the [reasoning-gym](https://github.com/open-thought/reasoning-gym/tree/main) swarm on the Testnet. This swarm is designed to train models to solve a diverse set of reasoning tasks using the reasoning-gym dataset. The current list of default models includes:
+> **Update -> CodeZero Environment**  
+> RL Swarm now powers **CodeZero**, the newest active environment on the Gensyn Testnet.  
+> CodeZero extends RL Swarm beyond reasoning and math into **collaborative coding tasks**, where models take on distinct roles, *Solvers*, *Proposers*, and *Evaluators*, to learn from one another across a decentralized network.
 
-Models:
-   - Gensyn/Qwen2.5-0.5B-Instruct
-   - Qwen/Qwen3-0.6B
-   - nvidia/AceInstruct-1.5B
-   - dnotitia/Smoothie-Qwen3-1.7B
-   - Gensyn/Qwen2.5-1.5B-Instruct
+Currently, we are running **CodeZero** on the Gensyn Testnet.  
+
+CodeZero replaces the previous *reasoning-gym* environment, introducing a new task domain focused on programming challenges and model-based evaluation.  
+
+If you previously ran RL Swarm during the reasoning-gym phase, your node will automatically transition to CodeZero after updating using the `git pull` command. 
+
+The current list of default models includes:
+
+Models (CodeZero):
+   - **Qwen2.5-Coder-0.5B-Instruct** — Solver role  
+   - **Qwen2.5-Coder-1.5B-Instruct** — Evaluator (frozen)  
+   - **Qwen3-4B-Instruct-2507** — Proposer (frozen, dynamic prompting)
 
 This iteration of rl-swarm is powered by the [GenRL](https://github.com/gensyn-ai/genrl) library.  It is a fully composable framework for decentralized reinforcement learning which enables users to create and customize their own swarms for reinforcement learning with multi-agent multi-stage environments.
+
+The **CodeZero** environment runs on the same RL Swarm + GenRL stack, extending the framework to cooperative code generation and debugging tasks. 
+
+> **Note:** As of the CodeZero release, all RL Swarm nodes train on code-generation tasks rather than reasoning-gym problems. The setup process remains identical.
 
 ## Requirements
 
@@ -20,7 +32,6 @@ Your hardware requirements will vary depending on a number of factors including 
 **Supported Hardware**
 
 - arm64 or x86 CPU with a minimum of 32GB RAM (note that if you run other applications during training it might crash the training).
-
 
 OR
 
@@ -34,7 +45,7 @@ OR
 
 With either configuration, you will need Python >=3.10 (for Mac, you will likely need to upgrade).
 
-## ⚠️ Please read before continuing ⚠️
+## **Please read before continuing!**
 
 This software is **experimental** and provided as-is for users who are interested in using (or helping to develop) an early version of the Gensyn Protocol for training models.
 
@@ -46,13 +57,15 @@ If you encounter issues, please first check [Troubleshooting](#troubleshooting).
 
 **Once CodeZero is released, you must update your RL Swarm installation to continue earning participation points.**
 
-After the CodeZero release, you will need to run `git pull` to update to the new environment (transitioning from reasoning-gym to CodeZero). While the RL Swarm in its current setup and other testnet applications will remain online, **any activity after the CodeZero launch will not result in tracked participation** if you haven't updated to the new environment.
+With the new CodeZero release, you will need to run `git pull` to update to the new environment (transitioning from reasoning-gym to CodeZero).  
+
+Existing nodes will seamlessly migrate to CodeZero while retaining the same on-chain identity, peer keys, and connection structure. While the RL Swarm in its current setup and other Testnet applications will remain online, **any activity after the CodeZero launch will not result in tracked participation** if you haven't updated to the new environment.
 
 To update, simply run:
 ```sh
 git pull
 ```
-Then restart your swarm following the [instructions below](#instructions).
+Then restart your swarm.
 
 ## Instructions
 
@@ -73,6 +86,8 @@ Make sure you have Docker installed and the Docker daemon is running on your mac
 #### 3. Start the Swarm
 
 Run the following commands from the root of the repository.
+
+> Once updated, your node will automatically participate in **CodeZero**, the active swarm environment focused on collaborative coding.
 
 ##### CPU support
 
@@ -102,6 +117,7 @@ source .venv/bin/activate
 ```  
 To learn more about experimental mode, check out our [getting started guide](https://github.com/gensyn-ai/genrl/blob/main/getting_started.ipynb).
 
+
 ### Login
 
 1. A browser window will pop open (you'll need to manually navigate to http://localhost:3000/ if you're on a VM).
@@ -113,6 +129,9 @@ To learn more about experimental mode, check out our [getting started guide](htt
 If you would like to upload your model to Hugging Face, enter your Hugging Face access token when prompted. You can generate one from your Hugging Face account, under [Access Tokens](https://huggingface.co/docs/hub/en/security-tokens).
 
 ### AI Prediction Market
+
+> **Note:** The AI Prediction Market was part of the previous reasoning-gym environment.  
+> In CodeZero, evaluation and reward assignment are handled by the **Evaluator** service, which acts as a model-based prediction market for code correctness.
 
 During setup, you'll be asked if you'd like to participate in the **AI Prediction Market**.
 
@@ -132,6 +151,20 @@ From this stage onward your device will begin training. You should see your peer
 You can also track your training progress in real time:
 - On the Gensyn Testnet Dashboard: [dashboard.gensyn.ai](https://dashboard.gensyn.ai)
 
+## Environment Overview (CodeZero)
+
+CodeZero extends RL Swarm with distinct node roles that collaborate on programming challenges:
+
+| Role | Description | Typical Host |
+|------|--------------|---------------|
+| **Solver** | Learns locally on code tasks using GRPO; shares rollouts with peers | Community node |
+| **Proposer** | Generates coding problems and adjusts difficulty heuristically | Network service |
+| **Evaluator** | Frozen model predicting correctness and assigning rewards | Hosted service |
+
+Most users will run **Solver** nodes.  
+
+The transition is automatic after updating your RL Swarm installation.
+
 ### Updating RL Swarm
 
 To update your RL Swarm installation to the latest version, run:
@@ -148,6 +181,8 @@ docker-compose build
 ```
 
 ## Identity management
+
+> CodeZero uses the same identity and peer registration system as previous RL Swarm environments. No new setup is required.
 
 ### Introduction
 
@@ -180,6 +215,10 @@ Therefore, you should do these actions in the following scenarios
     - `yarn.log`: This file contains logs for the modal login server.
     - `swarm.log`: This is the main log file for the RL Swarm application.
     - `wandb/`: This directory contains various logs related to your training runs, including a `debug.log` file. These can be updated to Weights & Biases (only available if you log_with wandb).
+
+- **CodeZero environment detection:**  
+  - Confirm that your logs mention `codezero-policy-model` or `codezero-state-service`.  
+  - If you still see references to `reasoning-gym`, run `git pull` and rebuild your containers.
 
 - **My peer 'skipped a round'**: this occurs when your device isn't fast enough to keep up with the pace of the swarm. For example, if you start training at round 100 and by the time you finish training the rest of the swarm reaches round 102, you will skip round 101 and go straight to 102. This is because your peer is more valuable if it is participating in the active round.
 - **My model doesn't seem to be training?**
@@ -235,3 +274,10 @@ Therefore, you should do these actions in the following scenarios
     - Make sure you answered `Y` to the AI Prediction Market prompt (see [above](#ai-prediction-market)).
     - Log in to the [Gensyn Testnet Dashboard](https://dashboard.gensyn.ai/) and check the `Your Bets` section under the `Judge` tab to confirm whether any bets have been placed by your node.
     - Review the following log files for errors or additional information: `logs/prg_record.txt` and `logs/swarm_launcher.log`.
+
+---
+
+### Learn More
+
+- [Dashboard](https://dashboard.gensyn.ai/)
+- [Docs](https://docs.gensyn.ai/testnet/rl-swarm)
