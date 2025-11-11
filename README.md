@@ -42,6 +42,18 @@ If you care about on-chain participation, you **must** read the [Identity Manage
 
 If you encounter issues, please first check [Troubleshooting](#troubleshooting). If you cannot find a solution there, please check if there is an open (or closed) [Issue](../../issues). If there is no relevant issue, please file one and include 1) all relevant [logs](#troubleshooting), 2) information about your device (e.g. which GPU, if relevant), and 3) your operating system information.
 
+### ⚠️ CodeZero Release - Important Update Required ⚠️
+
+**Once CodeZero is released, you must update your RL Swarm installation to continue earning participation points.**
+
+After the CodeZero release, you will need to run `git pull` to update to the new environment (transitioning from reasoning-gym to CodeZero). While the RL Swarm in its current setup and other testnet applications will remain online, **any activity after the CodeZero launch will not result in tracked participation** if you haven't updated to the new environment.
+
+To update, simply run:
+```sh
+git pull
+```
+Then restart your swarm following the [instructions below](#instructions).
+
 ## Instructions
 
 ### Run the Swarm
@@ -119,6 +131,21 @@ From this stage onward your device will begin training. You should see your peer
 
 You can also track your training progress in real time:
 - On the Gensyn Testnet Dashboard: [dashboard.gensyn.ai](https://dashboard.gensyn.ai)
+
+### Updating RL Swarm
+
+To update your RL Swarm installation to the latest version, run:
+
+```sh
+git pull
+```
+
+After pulling the latest changes, restart your swarm following the [instructions above](#run-the-swarm). This ensures you have the latest features, bug fixes, and compatibility updates.
+
+**Note**: If you're using Docker, you may need to rebuild your containers after updating:
+```sh
+docker-compose build
+```
 
 ## Identity management
 
