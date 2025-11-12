@@ -161,7 +161,7 @@ CodeZero extends RL Swarm with distinct node roles that collaborate on programmi
 | **Proposer** | Generates coding problems and adjusts difficulty heuristically | Network service |
 | **Evaluator** | Frozen model predicting correctness and assigning rewards | Hosted service |
 
-Most users will run **Solver** nodes.  
+Users will run **Solver** nodes.  
 
 The transition is automatic after updating your RL Swarm installation.
 
