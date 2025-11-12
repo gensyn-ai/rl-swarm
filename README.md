@@ -23,7 +23,7 @@ This iteration of rl-swarm is powered by the [GenRL](https://github.com/gensyn-a
 
 The **CodeZero** environment runs on the same RL Swarm + GenRL stack, extending the framework to cooperative code generation and debugging tasks. 
 
-> **Note:** As of the CodeZero release, all RL Swarm nodes train on code-generation tasks rather than reasoning-gym problems. The setup process remains identical.
+> **Note:** As of the CodeZero release, all new RL Swarm nodes train on code-generation tasks rather than reasoning-gym problems. The setup process remains identical.
 
 ## Requirements
 
