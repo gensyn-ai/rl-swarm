@@ -2,7 +2,7 @@
 
 RL Swarm is a peer-to-peer system for reinforcement learning. It allows you to train models collaboratively with others in the swarm, leveraging their collective intelligence. It is open source and permissionless, meaning you can run it on a consumer laptop at home or on a powerful GPU in the cloud. You can also connect your model to the Gensyn Testnet to receive an on-chain identity that tracks your progress over time.
 
-> **Update -> CodeZero Environment**  
+> **Update -> CodeZero Swarm Environment**  
 > RL Swarm now powers **CodeZero**, the newest active environment on the Gensyn Testnet.  
 > CodeZero extends RL Swarm beyond reasoning and math into **collaborative coding tasks**, where models take on distinct roles, *Solvers*, *Proposers*, and *Evaluators*, to learn from one another across a decentralized network.
 
