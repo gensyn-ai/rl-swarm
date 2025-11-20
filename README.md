@@ -178,7 +178,7 @@ To learn more, head to our [blog](https://blog.gensyn.ai/) and check out our [Ge
 
 ### Initial peering and training
 
-From this stage onward your device will begin training. You should see your peer register and vote on-chain [here](https://gensyn-testnet.explorer.alchemy.com/address/0xFaD7C5e93f28257429569B854151A1B8DCD404c2?tab=logs).
+From this stage onward your device will begin training. You should see your peer register and vote on-chain [here](https://gensyn-testnet.explorer.alchemy.com/address/0x7745a8FE4b8D2D2c3BB103F8dCae822746F35Da0?tab=logs).
 
 You can also track your training progress in real time:
 - On the Gensyn Testnet Dashboard: [dashboard.gensyn.ai](https://dashboard.gensyn.ai)
