@@ -112,3 +112,65 @@ If you see P2PDaemonError: ... failed to connect to bootstrap peers
 → your network cannot reach the bootnodes; try a VPN or a network where ports 30021–30023 are open.
 
 This guide is based on a real WSL2 setup that is now running RL-Swarm reliably and contributing examples to the Gensyn testnet.
+
+---
+
+## Known issue: `RuntimeError: probability tensor contains either 'inf', 'nan' or element < 0`
+
+In rare cases a training run may terminate with a stack trace ending in something like:
+
+```text
+RuntimeError: probability tensor contains either 'inf', 'nan' or element < 0
+...
+wandb: Run summary:
+wandb:   train/loss ...
+Symptoms:
+
+The terminal shows this error followed by a W&B "Run summary".
+
+No new rounds are logged after that point.
+
+A Telegram /status bot may still say "RL-Swarm is running!" for a short time, because it only checks for a cached process name.
+
+What this means:
+
+The GRPO trainer produced invalid probabilities (NaN / inf).
+
+The current swarm_launcher process exited, so the node is no longer contributing work.
+
+This does not affect your identity or stake; it only stops the current training run.
+
+How to recover:
+
+Check whether a swarm_launcher process is still running:
+
+ps aux | grep swarm_launcher | grep -v grep
+
+
+If the command prints nothing, the process has stopped (expected after this error).
+
+If it prints a line, you can still safely restart; the process is already in a bad state.
+
+Restart RL-Swarm from your rl-swarm directory:
+
+cd ~/rl-swarm
+source .venv/bin/activate
+./run_rl_swarm.sh
+
+
+Confirm that the node rejoined the swarm:
+
+Look for log lines such as:
+
+✅ Connected to Gensyn Testnet
+🐝 Joining CodeZero Swarm
+Starting round: ...
+
+
+If you use the Telegram /status bot, it should start replying again once a new swarm_launcher is running.
+
+Notes:
+
+If this error happens frequently, you can share the log snippet from ./logs or the corresponding wandb run with the Gensyn team so they can improve the trainer.
+
+A simple restart is usually enough; no config changes are required on the node operator side.
