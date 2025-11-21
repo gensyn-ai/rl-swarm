@@ -174,3 +174,53 @@ Notes:
 If this error happens frequently, you can share the log snippet from ./logs or the corresponding wandb run with the Gensyn team so they can improve the trainer.
 
 A simple restart is usually enough; no config changes are required on the node operator side.
+
+
+## 3. Reward submission errors (`/api/submit-reward` 500, `InvalidRoundNumber`)
+
+### Symptoms
+
+While RL-Swarm is running, training stops with a message like:
+
+```text
+>> An error was detected while running rl-swarm. See /root/rl-swarm/logs for full logs.
+>> Shutting down trainer...
+Terminated
+In logs/swarm_launcher.log you may see lines such as:
+
+text
+Kodu kopyala
+POST /api/submit-reward HTTP/1.1" 500
+500 Server Error: Internal Server Error for url: http://localhost:3000/api/submit-reward
+Already finished round: 15027. Next check in 5.0s.
+and in logs/yarn.log:
+
+text
+Kodu kopyala
+Failed to call submitReward: InvalidRoundNumber
+TypeError: Cannot read properties of undefined (reading 'hasHydrated')
+Root cause (what is happening?)
+The node successfully finishes the current round of work (for example, round 15027).
+
+When it tries to submit rewards via the local modal-login service (/api/submit-reward), that service returns HTTP 500.
+
+Internally this can show up as InvalidRoundNumber on the smart contract, or a Next.js error such as hasHydrated.
+
+This is a backend / coordination issue, not a GPU, WSL2, or local configuration problem on the worker machine.
+
+The node then shuts down cleanly. Work that was already reported for previous rounds remains valid on-chain, but the reward for the current round may not be recorded.
+
+How to recover
+Confirm that previous rounds were processed (the logs show lines like:
+Already finished round: 15027).
+
+Simply restart RL-Swarm:
+
+bash
+Kodu kopyala
+cd ~/rl-swarm
+source .venv/bin/activate
+./run_rl_swarm.sh
+Optionally, monitor the node with your Telegram /status bot to confirm that it is running again.
+
+If this error appears repeatedly in a short period of time, it is likely a temporary issue with the Gensyn testnet or reward service. In that case, wait a bit and retry. No additional configuration changes are required on the worker.
