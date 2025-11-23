@@ -1,5 +1,6 @@
 services:
   fastapi:
+      restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile.webserver
@@ -14,6 +15,7 @@ services:
       retries: 3
 
   otel-collector:
+       restart: unless-stopped
     image: otel/opentelemetry-collector-contrib:0.120.0
     ports:
       - "4317:4317"  # OTLP gRPC
@@ -27,6 +29,7 @@ services:
       retries: 5
 
   swarm-cpu:
+       restart: unless-stopped
     profiles: ["swarm"]
     build:
       context: .
@@ -53,6 +56,7 @@ services:
   # https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/
   # https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
   swarm-gpu:
+      restart: unless-stopped
     profiles: ["swarm"]
     build:
       context: .
@@ -80,6 +84,7 @@ services:
               count: all
               capabilities: [gpu]
   ollama:
+    restart: unless-stopped
     image: ollama/ollama:0.11.10
     ports:
       - "11434:11434"
