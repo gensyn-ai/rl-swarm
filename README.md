@@ -55,6 +55,16 @@ OR
     - H100
 
 With either configuration, you will need Python >=3.10,<=3.13 (for Mac, you will likely need to upgrade).
+### Supported operating systems
+
+RL Swarm is primarily developed and tested on Unix-like systems:
+
+- Linux distributions (Ubuntu and Debian-based distros are the most common)
+- macOS (Apple Silicon and Intel)
+- Windows via WSL2 (see the Troubleshooting section for more details)
+
+Running RL Swarm directly on bare-metal Windows without WSL is not recommended and may require additional manual debugging.
+
 
 ## **Please read before continuing!**
 
