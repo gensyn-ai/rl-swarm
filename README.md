@@ -317,3 +317,15 @@ Therefore, you should do these actions in the following scenarios
 
 - [Dashboard](https://dashboard.gensyn.ai/)
 - [Docs](https://docs.gensyn.ai/testnet/rl-swarm)
+
+  ## Uninstalling and cleaning up
+
+If you want to stop running RL Swarm and free up local resources:
+
+1. Stop the running process or Docker container.
+2. Remove logs and cached data if you no longer need them:
+
+```bash
+rm -rf logs
+rm -rf .venv .cache
+
