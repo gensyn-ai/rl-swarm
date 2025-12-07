@@ -1,0 +1,19 @@
+# Security Policy
+
+## Supported versions
+
+RL Swarm is under active development. In practice, only the latest code on the `main` branch is supported for security fixes.
+
+## Reporting a vulnerability
+
+If you believe you have found a security issue in RL Swarm:
+
+- Please **do not** open a public GitHub issue describing the details.
+- Instead, use the **“Report a vulnerability”** button in the **Security** tab of this repository to submit a private report.
+- Include as much detail as possible:
+  - steps to reproduce
+  - expected vs. actual behaviour
+  - environment (OS, Python version, CPU/GPU)
+  - relevant logs or minimal configuration snippets
+
+The maintainers will review your report, reach out if they need more information, and coordinate a fix and disclosure if necessary.
