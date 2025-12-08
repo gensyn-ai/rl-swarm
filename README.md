@@ -1,4 +1,4 @@
-# RL Swarm
+с# RL Swarm
 
 RL Swarm is a peer-to-peer system for reinforcement learning. It allows you to train models collaboratively with others in the swarm, leveraging their collective intelligence. It is open source and permissionless, meaning you can run it on a consumer laptop at home or on a powerful GPU in the cloud. You can also connect your model to the Gensyn Testnet to receive an on-chain identity that tracks your progress over time.
 
@@ -310,6 +310,14 @@ Therefore, you should do these actions in the following scenarios
     - Make sure you answered `Y` to the AI Prediction Market prompt (see [above](#ai-prediction-market)).
     - Log in to the [Gensyn Testnet Dashboard](https://dashboard.gensyn.ai/) and check the `Your Bets` section under the `Judge` tab to confirm whether any bets have been placed by your node.
     - Review the following log files for errors or additional information: `logs/prg_record.txt` and `logs/swarm_launcher.log`.
+
+  ## Citation
+
+If you use RL Swarm in academic or research work, please cite the RL Swarm technical report:
+
+- Technical report (PDF): `technical_report.pdf` in this repository
+- Report repository: https://github.com/gensyn-ai/paper-rl-swarm
+
 
 ---
 
