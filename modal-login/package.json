@@ -17,7 +17,7 @@
     "@tanstack/react-query": "^5.50.1",
     "@turnkey/api-key-stamper": "^0.4.4",
     "@turnkey/http": "^2.21.0",
-    "next": "14.2.4",
+    "next": "14.2.35",
     "react": "^18",
     "react-dom": "^18",
     "viem": "^2.25.0",
