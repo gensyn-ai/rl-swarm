@@ -317,3 +317,11 @@ Therefore, you should do these actions in the following scenarios
 
 - [Dashboard](https://dashboard.gensyn.ai/)
 - [Docs](https://docs.gensyn.ai/testnet/rl-swarm)
+
+## Running Tests
+
+To verify your environment and check that everything is working correctly, you can run the test suite:
+
+```bash
+pytest tests/
+
