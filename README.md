@@ -249,6 +249,15 @@ Therefore, you should do these actions in the following scenarios
 - **Signed up with `email address`, generated `swarm.pem`, BUT lost `swarm.pem`** OR **You want to run multiple nodes at once**: run from scratch with the same email address and generate a new `swarm.pem`. 
 - **Signed up with `email address`, generated `swarm.pem`, kept `swarm.pem`** -> you can re-run a single node using this pair if you've still got them both.
 
+## Community
+
+If you want to discuss RL Swarm, get support, or follow development updates:
+
+- Discord (Gensyn community): https://discord.gg/gensyn
+- Technical report: https://github.com/gensyn-ai/paper-rl-swarm/blob/main/latest.pdf
+- Documentation: https://docs.gensyn.ai/testnet/rl-swarm
+
+
 ## Troubleshooting
 
 - **How do I find my logs?** You can find them inside the `/logs` directory:
