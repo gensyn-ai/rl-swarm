@@ -1,3 +1,10 @@
+### Requirements
+
+Before installing dependencies, ensure you have **Poetry** installed:
+
+```bash
+pip install poetry
+
 # RL Swarm
 
 RL Swarm is a peer-to-peer system for reinforcement learning. It allows you to train models collaboratively with others in the swarm, leveraging their collective intelligence. It is open source and permissionless, meaning you can run it on a consumer laptop at home or on a powerful GPU in the cloud. You can also connect your model to the Gensyn Testnet to receive an on-chain identity that tracks your progress over time.
