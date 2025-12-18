@@ -1,6 +1,7 @@
 import json
 import logging
 from abc import ABC
+import os  # For reading environment variables for API timeout
 
 import requests
 from eth_account import Account
@@ -16,6 +17,9 @@ SWARM_COORDINATOR_ABI_JSON = (
 )
 
 MODAL_PROXY_URL = "http://localhost:3000/api/"
+
+# Default timeout (in seconds) for API requests. Can be overridden via API_TIMEOUT env var.
+API_TIMEOUT = float(os.getenv("API_TIMEOUT", "10"))
 
 logger = logging.getLogger(__name__)
 
@@ -147,14 +151,24 @@ class ModalSwarmCoordinator(SwarmCoordinator):
             # logger.info("Winners already submitted for this round! Continuing.")
 
 
-def send_via_api(org_id, method, args):
+def send_via_api(org_id, method, args, *, timeout: float = API_TIMEOUT):
     # Construct URL and payload.
     url = MODAL_PROXY_URL + method
     payload = {"orgId": org_id} | args
 
-    # Send the POST request.
-    response = requests.post(url, json=payload)
-    response.raise_for_status()  # Raise an exception for HTTP errors
+    # Send the POST request with a timeout and basic network error handling.
+    try:
+        response = requests.post(url, json=payload, timeout=timeout)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+    except requests.exceptions.Timeout:
+        # Provide a clear error message on timeouts.
+        logger.error(f"Request to {method} API timed out after {timeout} seconds.")
+        raise
+    except requests.exceptions.RequestException as e:
+        # Catch other network-related errors (e.g., connection errors)
+        logger.error(f"Error calling {method} API: {e}")
+        raise
+
     return response.json()
 
 
