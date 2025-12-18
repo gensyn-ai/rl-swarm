@@ -18,7 +18,7 @@ services:
     ports:
       - "4317:4317"  # OTLP gRPC
       - "4318:4318"  # OTLP HTTP
-      - "55679:55679"  # Prometheus metrics (optional)
+      - "55679:55679" # Prometheus metrics (optional)
     environment:
       - OTEL_LOG_LEVEL=DEBUG
     healthcheck:
@@ -36,7 +36,7 @@ services:
     depends_on:
       - ollama
     ports:
-      - 3000:3000
+      - "3000:3000"
     volumes:
       - ./user/modal-login:/home/gensyn/rl_swarm/modal-login/temp-data
       - ./user/keys:/home/gensyn/rl_swarm/keys
@@ -47,11 +47,6 @@ services:
       - GENSYN_RESET_CONFIG=${GENSYN_RESET_CONFIG}
       - OLLAMA_HOST=http://ollama:11434
 
-  # Requires the NVIDIA Drivers version >=525.60.13 to be installed, as well
-  # as the nvidia-container-toolkit.
-  # https://docs.nvidia.com/deploy/cuda-compatibility/index.html#cuda-11-and-later-defaults-to-minor-version-compatibility
-  # https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/
-  # https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
   swarm-gpu:
     profiles: ["swarm"]
     build:
@@ -62,7 +57,7 @@ services:
     depends_on:
       - ollama
     ports:
-      - 3000:3000
+      - "3000:3000"
     volumes:
       - ./user/modal-login:/home/gensyn/rl_swarm/modal-login/temp-data
       - ./user/keys:/home/gensyn/rl_swarm/keys
@@ -79,6 +74,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+
   ollama:
     image: ollama/ollama:0.11.10
     ports:
