@@ -310,6 +310,16 @@ Therefore, you should do these actions in the following scenarios
     - Make sure you answered `Y` to the AI Prediction Market prompt (see [above](#ai-prediction-market)).
     - Log in to the [Gensyn Testnet Dashboard](https://dashboard.gensyn.ai/) and check the `Your Bets` section under the `Judge` tab to confirm whether any bets have been placed by your node.
     - Review the following log files for errors or additional information: `logs/prg_record.txt` and `logs/swarm_launcher.log`.
+      
+## Community & resources
+
+For more information about RL Swarm and the Gensyn network:
+
+- RL Swarm docs: https://docs.gensyn.ai/testnet/rl-swarm  
+- RL Swarm article: https://www.gensyn.ai/articles/rl-swarm  
+- Technical report: https://github.com/gensyn-ai/paper-rl-swarm  
+- Testnet dashboard: https://dashboard.gensyn.ai  
+- Discord: https://discord.gg/AdnyWNzXh5  
 
 ---
 
