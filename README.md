@@ -312,6 +312,9 @@ Therefore, you should do these actions in the following scenarios
     - Review the following log files for errors or additional information: `logs/prg_record.txt` and `logs/swarm_launcher.log`.
 
 ---
+## Contributing
+
+Contributions are welcome. If you find issues or have ideas for improvements, feel free to open an issue or submit a pull request.
 
 ### Learn More
 
