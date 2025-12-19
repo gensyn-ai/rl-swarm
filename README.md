@@ -312,6 +312,11 @@ Therefore, you should do these actions in the following scenarios
     - Review the following log files for errors or additional information: `logs/prg_record.txt` and `logs/swarm_launcher.log`.
 
 ---
+### Community & Support
+
+- Discord — Join the Gensyn community for help and updates: https://discord.gg/AdnyWNzXh5
+- Issues — Report bugs or request features: https://github.com/gensyn-ai/rl-swarm/issues
+
 
 ### Learn More
 
