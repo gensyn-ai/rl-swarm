@@ -312,6 +312,13 @@ Therefore, you should do these actions in the following scenarios
     - Review the following log files for errors or additional information: `logs/prg_record.txt` and `logs/swarm_launcher.log`.
 
 ---
+## Glossary
+
+- **Swarm** — the distributed network of peers training together and sharing information.
+- **Peer** — an individual node (your machine) participating in the swarm.
+- **Round** — a unit of training progress used by the swarm and smart contracts to coordinate activity.
+- **CodeZero** — the current active RL Swarm environment focused on collaborative coding tasks.
+- **Solver** — the role run by individual users; Solver nodes learn locally on tasks and share rollouts with the swarm.
 
 ### Learn More
 
