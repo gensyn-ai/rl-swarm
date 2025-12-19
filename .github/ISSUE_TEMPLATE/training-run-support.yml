@@ -1,0 +1,122 @@
+name: Training run / reward behaviour issue
+description: Report issues where training runs behave unexpectedly (rewards, stability, convergence) while RL Swarm itself appears to be running.
+title: "[Training] <short summary>"
+labels:
+  - support
+  - training
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for issues where RL Swarm is running, but the
+        training behaviour is not what you expect (for example, rewards
+        do not improve, runs end early, or behaviour is unstable).
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Describe where you are running RL Swarm and the hardware configuration.
+      placeholder: |
+        Example:
+        - Cloud GPU instance (A100, 80 GiB, Ubuntu 22.04)
+        - or: local workstation (RTX 4090, 64 GiB RAM)
+    validations:
+      required: true
+
+  - type: textarea
+    id: rl_swarm_version
+    attributes:
+      label: RL Swarm version and branch
+      description: Include the branch, commit, or tag you are using.
+      placeholder: |
+        Example:
+        - main at commit <hash>
+        - or: specific release tag
+    validations:
+      required: true
+
+  - type: textarea
+    id: model_and_task
+    attributes:
+      label: Model and task
+      description: Describe the model(s) and the task or environment you are training on.
+      placeholder: |
+        Example:
+        - Model: Qwen2.5 0.5B instruct
+        - Task: CodeZero coding tasks
+        - Any custom changes to prompts or evaluation
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behaviour
+    attributes:
+      label: Expected behaviour
+      description: Explain what you expected to see from the training run.
+      placeholder: |
+        Example:
+        - Reward should gradually improve over N steps
+        - Loss should decrease over time
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual_behaviour
+    attributes:
+      label: Actual behaviour
+      description: Explain what actually happens (no improvement, divergence, crashes, etc.).
+      placeholder: |
+        Example:
+        - Rewards stay flat near zero
+        - Occasional spikes followed by divergence
+        - Training stops with an error after a few iterations
+    validations:
+      required: true
+
+  - type: textarea
+    id: run_configuration
+    attributes:
+      label: Run configuration
+      description: Summarize key configuration details (hyperparameters, number of peers, any overrides).
+      placeholder: |
+        Example:
+        - Number of peers
+        - Learning rate, batch size
+        - Custom flags or environment variables
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs_and_metrics
+    attributes:
+      label: Logs and metrics
+      description: Provide relevant log excerpts and, if possible, snapshots of metrics (text only).
+      placeholder: |
+        Include:
+        - Relevant sections of training logs
+        - Text summaries of metrics (no screenshots needed)
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Describe how someone else can reproduce the same behaviour from a fresh checkout.
+      placeholder: |
+        1. Set up RL Swarm at the specified commit
+        2. Configure model and task as described
+        3. Start training with the given configuration
+        4. Observe behaviour described above
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Any extra information that might help (previous runs, differences between CPU/GPU, etc.).
+      placeholder: "Optional extra context or links."
+    validations:
+      required: false
