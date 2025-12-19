@@ -178,10 +178,23 @@ To learn more, head to our [blog](https://blog.gensyn.ai/) and check out our [Ge
 
 ### Initial peering and training
 
-From this stage onward your device will begin training. You should see your peer register and vote on-chain [here](https://gensyn-testnet.explorer.alchemy.com/address/0x7745a8FE4b8D2D2c3BB103F8dCae822746F35Da0?tab=logs).
+From this stage onward your device will begin training. You should see your peer register and vote on-chain here.
 
 You can also track your training progress in real time:
-- On the Gensyn Testnet Dashboard: [dashboard.gensyn.ai](https://dashboard.gensyn.ai)
+
+  * On the Gensyn Testnet Dashboard: ...
+
+### Verifying that your node is running correctly
+
+After starting RL Swarm, you can use a few quick checks to confirm that everything is working:
+
+1. Check that the Docker container or process is running:
+
+# If you started RL Swarm via Docker
+docker ps | grep swarm
+
+# If you are using the shell script
+ps aux | grep run_rl_swarm.sh | grep -v grep
 
 ## Environment Overview (CodeZero)
 
