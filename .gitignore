@@ -15,6 +15,7 @@ unsloth_compiled_cache/
 node_modules/
 web/ui/dist/
 
+# Bazel and build directories
 /bazel-*
 /external
 /tmp
@@ -26,8 +27,11 @@ MODULE.bazel.lock
 .tmux.conf
 
 user/
-
 configs/
 genrl-swarm/
-
 result
+
+# Python build artifacts
+*.py[cod]
+*.egg-info/
+build/
