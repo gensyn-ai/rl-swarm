@@ -1,0 +1,87 @@
+name: Node setup / runtime issue
+description: Help us debug problems with running an RL Swarm node.
+title: "[Node] <short summary>"
+labels:
+  - bug
+  - node
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue with your RL Swarm node.
+        Please fill out the fields below so that maintainers can reproduce and
+        diagnose the problem more easily.
+
+  - type: dropdown
+    id: run-mode
+    attributes:
+      label: How are you running RL Swarm?
+      options:
+        - Docker (swarm-cpu)
+        - Docker (swarm-gpu)
+        - Shell script (run_rl_swarm.sh)
+        - Other / custom
+    validations:
+      required: true
+
+  - type: input
+    id: os-info
+    attributes:
+      label: Operating system
+      description: OS name and version.
+      placeholder: "Example: Ubuntu 22.04, macOS 15.0, WSL2 on Windows 11"
+    validations:
+      required: true
+
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware
+      description: CPU / RAM / GPU details.
+      placeholder: "Example: 32 GB RAM, RTX 3090, 16-core CPU"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: List the steps needed to reproduce the issue from a clean state.
+      placeholder: |
+        1. Clone the repo
+        2. Run ...
+        3. See error ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+      placeholder: "The node should start training and appear on the dashboard..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual behavior
+      description: What actually happened, including any error messages.
+      placeholder: "Instead, I see ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Paste relevant excerpts from logs (for example, logs/swarm.log, logs/yarn.log, launcher logs).
+      placeholder: |
+        Please remove any sensitive information before pasting logs.
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Any extra information that might be helpful (prediction market participation, dashboard links, etc.).
