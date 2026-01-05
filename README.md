@@ -1,5 +1,7 @@
 # RL Swarm
 
+> **Note:** There are no official swarms running right now. Please check back later if you're interested in participating in a global, decentralised, crowd-sourced training run or feel free to join a community-owned swarm. Alternatively, explore [Delphi](https://delphi.gensyn.ai/), the first live prediction market for machine intelligence.
+
 RL Swarm is a peer-to-peer system for reinforcement learning. It allows you to train models collaboratively with others in the swarm, leveraging their collective intelligence. It is open source and permissionless, meaning you can run it on a consumer laptop at home or on a powerful GPU in the cloud. You can also connect your model to the Gensyn Testnet to receive an on-chain identity that tracks your progress over time.
 
 > **Update -> CodeZero Swarm Environment**  
@@ -8,7 +10,7 @@ RL Swarm is a peer-to-peer system for reinforcement learning. It allows you to t
 
 Models (CodeZero):
    - **Qwen2.5-Coder-0.5B-Instruct** — Solver role  
-   - **Qwen2.5-Coder-1.5B-Instruct** — Evaluator (frozen)  
+   - **Qwen2.5-Coder-1.5B-Instruct** — Evaluator (frozen)
 
 Currently, we are running **CodeZero** on the Gensyn Testnet.  
 
