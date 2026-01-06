@@ -319,3 +319,11 @@ Therefore, you should do these actions in the following scenarios
 
 - [Dashboard](https://dashboard.gensyn.ai/)
 - [Docs](https://docs.gensyn.ai/testnet/rl-swarm)
+
+## Usage
+
+You can run the formatter from the command line with:
+
+```bash
+malachite format path/to/file.swift
+
