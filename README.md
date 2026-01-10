@@ -251,6 +251,15 @@ Therefore, you should do these actions in the following scenarios
 - **Signed up with `email address`, generated `swarm.pem`, BUT lost `swarm.pem`** OR **You want to run multiple nodes at once**: run from scratch with the same email address and generate a new `swarm.pem`. 
 - **Signed up with `email address`, generated `swarm.pem`, kept `swarm.pem`** -> you can re-run a single node using this pair if you've still got them both.
 
+## Versioning
+
+RL Swarm is under active development.  
+To ensure compatibility between nodes and the network:
+
+- Always use the latest version from the `main` branch.  
+- Check release notes here: https://github.com/gensyn-ai/rl-swarm/releases  
+- Avoid mixing outdated Swarm Launcher versions with updated node components.  
+
 ## Troubleshooting
 
 - **How do I find my logs?** You can find them inside the `/logs` directory:
