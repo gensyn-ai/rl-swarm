@@ -1,4 +1,4 @@
-# RL Swarm
+с# RL Swarm
 
 > **Note:** There are no official swarms running right now. Please check back later if you're interested in participating in a global, decentralised, crowd-sourced training run or feel free to join a community-owned swarm. Alternatively, explore [Delphi](https://delphi.gensyn.ai/), the first live prediction market for machine intelligence.
 
@@ -312,6 +312,14 @@ Therefore, you should do these actions in the following scenarios
     - Make sure you answered `Y` to the AI Prediction Market prompt (see [above](#ai-prediction-market)).
     - Log in to the [Gensyn Testnet Dashboard](https://dashboard.gensyn.ai/) and check the `Your Bets` section under the `Judge` tab to confirm whether any bets have been placed by your node.
     - Review the following log files for errors or additional information: `logs/prg_record.txt` and `logs/swarm_launcher.log`.
+
+  ## Citation
+
+If you use RL Swarm in academic or research work, please cite the RL Swarm technical report:
+
+- Technical report (PDF): `technical_report.pdf` in this repository
+- Report repository: https://github.com/gensyn-ai/paper-rl-swarm
+
 
 ---
 
