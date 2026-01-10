@@ -152,16 +152,22 @@ if [ "$CONNECT_TO_TESTNET" = true ]; then
     echo "Started server process: $SERVER_PID"
     sleep 5
 
-    # Try to open the URL in the default browser
-    if [ -z "$DOCKER" ]; then
-        if open http://localhost:3000 2> /dev/null; then
-            echo_green ">> Successfully opened http://localhost:3000 in your default browser."
+        # Try to open the UI in the default browser on different OSes.
+        if [ -z "$DOCKER" ]; then
+            success=false
+            if command -v xdg-open >/dev/null 2>&1; then
+                xdg-open http://localhost:3000 >/dev/null 2>&1 && success=true
+            elif command -v open >/dev/null 2>&1; then
+                open http://localhost:3000 >/dev/null 2>&1 && success=true
+            fi
+            if [ "$success" = true ]; then
+                echo_green ">> Successfully opened http://localhost:3000 in your default browser."
+            else
+                echo ">> Failed to automatically open http://localhost:3000. Please open it manually."
+            fi
         else
-            echo ">> Failed to open http://localhost:3000. Please open it manually."
+            echo_green ">> Please open http://localhost:3000 in your host browser."
         fi
-    else
-        echo_green ">> Please open http://localhost:3000 in your host browser."
-    fi
 
     cd ..
 
@@ -252,7 +258,7 @@ read -p ">> Would you like to push models you train in the RL swarm to the Huggi
 echo -en $RESET_TEXT
 yn=${yn:-N} # Default to "N" if the user presses Enter
 case $yn in
-    [Yy]*) read -p "Enter your Hugging Face access token: " HUGGINGFACE_ACCESS_TOKEN ;;
+    [Yy]*) read -s -p "Enter your Hugging Face access token: " HUGGINGFACE_ACCESS_TOKEN && echo ;;
     [Nn]*) HUGGINGFACE_ACCESS_TOKEN="None" ;;
     *) echo ">>> No answer was given, so NO models will be pushed to Hugging Face Hub" && HUGGINGFACE_ACCESS_TOKEN="None" ;;
 esac
