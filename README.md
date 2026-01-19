@@ -39,6 +39,23 @@ The **CodeZero** environment runs on the same RL Swarm + GenRL stack, extending 
 
 > **Note:** As of the CodeZero release, all RL Swarm nodes train on code-generation tasks rather than reasoning-gym problems. The setup process remains identical.
 
+## Quick Start
+
+Here is a minimal example to start using RL Swarm:
+
+```python
+from rl_swarm import Client
+
+client = Client()
+client.connect()
+
+# Example action loop
+for _ in range(10):
+    observation = client.get_observation()
+    action = client.sample_action(observation)
+    client.send_action(action)
+
+
 ## Requirements
 
 Your hardware requirements will vary depending on a number of factors including model size and the accelerator platform you use.  Users running a large NVIDIA GPU will be assigned a model from the large model pool, while users running less powerful hardware will be assigned a model from the small model pool. This design decision is intended to allow users to advance at a similar rate regardless of the hardware they use, maximizing their utility to the swarm.      
