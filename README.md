@@ -40,8 +40,15 @@ The **CodeZero** environment runs on the same RL Swarm + GenRL stack, extending 
 > **Note:** As of the CodeZero release, all RL Swarm nodes train on code-generation tasks rather than reasoning-gym problems. The setup process remains identical.
 
 ## Requirements
+- Rust v1.82+ ([rustup.rs](https://rustup.rs))
+- Quint v0.22+ ([github.com](https://github.com/informalsystems/quint))
 
-Your hardware requirements will vary depending on a number of factors including model size and the accelerator platform you use.  Users running a large NVIDIA GPU will be assigned a model from the large model pool, while users running less powerful hardware will be assigned a model from the small model pool. This design decision is intended to allow users to advance at a similar rate regardless of the hardware they use, maximizing their utility to the swarm.      
+## Support & Community
+
+- Join the [Telegram chat](https://t.me/MalachiteEngine) to ask questions and get help.
+- Read the [documentation](https://informalsystems.github.io/malachite/) for architecture and usage guides.
+- Use [GitHub Discussions](https://github.com/circlefin/malachite/discussions) for design questions and feedback.
+    
 
 **Supported Hardware**
 
