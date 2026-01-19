@@ -319,3 +319,12 @@ Therefore, you should do these actions in the following scenarios
 
 - [Dashboard](https://dashboard.gensyn.ai/)
 - [Docs](https://docs.gensyn.ai/testnet/rl-swarm)
+
+## Testing
+
+RL-Swarm includes a basic test suite.  
+To run all tests locally:
+
+```bash
+pytest -q
+
