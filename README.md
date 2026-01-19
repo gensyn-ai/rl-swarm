@@ -92,6 +92,16 @@ Existing nodes running the previous "reasoning-gym" Swarm can continue operating
 
 Then restart your swarm.
 
+### Common environment pitfalls
+
+A few common issues when setting up RL Swarm:
+
+- **Multiple Python versions** – make sure you are using the same Python version that you used to install dependencies (check with `python --version` or `python3 --version`).
+- **Insufficient RAM** – if your machine has less memory than recommended, the process may be killed by the OS; try closing other applications or using a smaller model configuration if available.
+- **Missing GPU drivers** – on GPU setups, ensure that your CUDA drivers and toolkit versions match the requirements in the documentation.
+
+Checking these points early can save time when diagnosing installation or runtime errors.
+
 ## Instructions
 
 ### Run the Swarm
