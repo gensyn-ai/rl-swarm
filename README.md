@@ -39,6 +39,17 @@ The **CodeZero** environment runs on the same RL Swarm + GenRL stack, extending 
 
 > **Note:** As of the CodeZero release, all RL Swarm nodes train on code-generation tasks rather than reasoning-gym problems. The setup process remains identical.
 
+## Project structure
+
+A quick overview of the main directories in this repository:
+
+- `rlswarm/` — core library modules for distributed RL execution.
+- `examples/` — sample scripts demonstrating how to use RL-Swarm in practice.
+- `tests/` — basic test suite for validating components.
+- `configs/` — configuration files for experiments and training runs.
+
+This overview helps new contributors navigate the codebase more easily.
+
 ## Requirements
 
 Your hardware requirements will vary depending on a number of factors including model size and the accelerator platform you use.  Users running a large NVIDIA GPU will be assigned a model from the large model pool, while users running less powerful hardware will be assigned a model from the small model pool. This design decision is intended to allow users to advance at a similar rate regardless of the hardware they use, maximizing their utility to the swarm.      
