@@ -250,7 +250,20 @@ Therefore, you should do these actions in the following scenarios
 
 - **Signed up with `email address`, generated `swarm.pem`, BUT lost `swarm.pem`** OR **You want to run multiple nodes at once**: run from scratch with the same email address and generate a new `swarm.pem`. 
 - **Signed up with `email address`, generated `swarm.pem`, kept `swarm.pem`** -> you can re-run a single node using this pair if you've still got them both.
+## Monitoring metrics
 
+RL Swarm exposes basic metrics (CPU, GPU and job status) that can be scraped and visualized by external tools.
+
+Typical ways to monitor your node include:
+
+* Exporting metrics to Prometheus and building dashboards in Grafana.
+* Shipping logs (stdout/stderr) to a centralized log store (e.g. Loki, Elastic, or any log aggregation).
+
+We recommend keeping an eye on:
+* Training job failures per hour.
+* Average GPU utilization.
+* Disk usage in the directory storing checkpoints.
+  
 ## Troubleshooting
 
 - **How do I find my logs?** You can find them inside the `/logs` directory:
