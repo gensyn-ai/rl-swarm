@@ -1,3 +1,5 @@
+15.07.2025 NEW rl-swarm NODE was born today by https://github.com/BarakObamus 
+
 # RL Swarm
 
 > **Note:** There are no official swarms running right now. Please check back later if you're interested in participating in a global, decentralised, crowd-sourced training run or feel free to join a community-owned swarm. Alternatively, explore [Delphi](https://delphi.gensyn.ai/), the first live prediction market for machine intelligence.
