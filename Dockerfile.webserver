@@ -12,6 +12,9 @@ COPY ./web/requirements.txt .
 
 # Install wheel and upgrade pip first
 RUN pip install --upgrade pip wheel setuptools
+# Constrain setuptools<75 in build-isolation envs (hivemind needs pkg_resources)
+ENV PIP_CONSTRAINT=/app/constraints.txt
+RUN echo 'setuptools<75.0' > /app/constraints.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN opentelemetry-bootstrap -a install
