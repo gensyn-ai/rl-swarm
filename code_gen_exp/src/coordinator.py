@@ -31,7 +31,7 @@ class ModalSwarmCoordinator(SwarmCoordinator):
                 err_data = http_err.response.json()
                 err_name = err_data["error"]
                 if err_name != "PeerIdAlreadyRegistered":
-                    get_logger().info(f"Registering peer failed with: f{err_name}")
+                    get_logger().info(f"Registering peer failed with: {err_name}")
                     raise
                 get_logger().info(f"Peer ID [{peer_id}] is already registered! Continuing.")
 
@@ -42,28 +42,22 @@ class ModalSwarmCoordinator(SwarmCoordinator):
                 raise http_err
 
     def submit_reward(self, round_num, stage_num, reward, peer_id):
-        try:
-            send_via_api(
-                self.org_id,
-                self.modal_proxy_url,
-                "submit-reward",
-                {
-                    "roundNumber": round_num,
-                    "stageNumber": stage_num,
-                    "reward": reward,
-                    "peerId": peer_id,
-                },
-            )
-        except requests.exceptions.HTTPError as e:
-            raise
+        send_via_api(
+            self.org_id,
+            self.modal_proxy_url,
+            "submit-reward",
+            {
+                "roundNumber": round_num,
+                "stageNumber": stage_num,
+                "reward": reward,
+                "peerId": peer_id,
+            },
+        )
 
     def submit_winners(self, round_num, winners, peer_id):
-        try:
-            send_via_api(
-                self.org_id,
-                self.modal_proxy_url,
-                "submit-winner",
-                {"roundNumber": round_num, "winners": winners, "peerId": peer_id},
-            )
-        except requests.exceptions.HTTPError as e:
-            raise
+        send_via_api(
+            self.org_id,
+            self.modal_proxy_url,
+            "submit-winner",
+            {"roundNumber": round_num, "winners": winners, "peerId": peer_id},
+        )
