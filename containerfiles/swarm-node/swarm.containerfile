@@ -6,6 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
 # Common libraries used by Python. These pre-requisited are recommended for the general Python
 RUN apt update -y && \
     apt install -y \
+    ca-certificates \
     sudo \
     make \
     gcc \
