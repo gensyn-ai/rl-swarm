@@ -145,7 +145,7 @@ If `docker-compose` does not work when running the above commands, please try `d
 
 ### Experimental (advanced) mode
 
-If you want to experiment with the [GenRL](https://github.com/gensyn-ai/genrl) library or the [configurable parameters](https://github.com/gensyn-ai/rl-swarm/blob/main/rgym_exp/config/rg-swarm.yaml ), we recommend you run RL Swarm via shell script:
+If you want to experiment with the [GenRL](https://github.com/gensyn-ai/genrl) library or the [configurable parameters](https://github.com/gensyn-ai/rl-swarm/blob/4aa8da531507d7d2b7575ea93a7bee1a17bfeda0/code_gen_exp/config/code-gen-swarm.yaml), we recommend you run RL Swarm via shell script:
 
 ```sh
 python3 -m venv .venv
