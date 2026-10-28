@@ -27,7 +27,7 @@ If you previously ran RL Swarm during the reasoning-gym phase, your node will au
 ```sh
 git pull
 rm -rf .venv
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 
@@ -86,7 +86,7 @@ Existing nodes running the previous "reasoning-gym" Swarm can continue operating
   ```sh
   git pull
   rm -rf .venv
-  python -m venv .venv
+  python3 -m venv .venv
   source .venv/bin/activate
   ```
 
@@ -109,7 +109,7 @@ git clone https://github.com/gensyn-ai/rl-swarm
 ```sh
 git pull
 rm -rf .venv
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 
@@ -211,7 +211,7 @@ Users will run **Solver** nodes.
   ```sh
   git pull
   rm -rf .venv
-  python -m venv .venv
+  python3 -m venv .venv
   source .venv/bin/activate
   ```
 
