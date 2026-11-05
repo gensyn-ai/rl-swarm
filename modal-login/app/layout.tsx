@@ -13,16 +13,17 @@ export const metadata: Metadata = {
   description: "Modal sign in for Gensyn Testnet",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Persist state across pages
-  // https://accountkit.alchemy.com/react/ssr#persisting-the-account-state
+  // Wait a headers
+  const headerData = await headers();
+
   const initialState = cookieToInitialState(
     config,
-    headers().get("cookie") ?? undefined,
+    headerData.get("cookie") ?? undefined,
   );
 
   return (
