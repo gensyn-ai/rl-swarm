@@ -176,14 +176,11 @@ This is an experiment we're running in which:
 - The Judge evaluates the final evidence and issues a decision, determining which bets succeed. 
 
 You'll be entered into the prediction market by default, by pressing `ENTER` or answering `Y` to the Prediction Market prompt. If you'd like to opt out, just answer `N`.
-To learn more, head to our [blog](https://blog.gensyn.ai/) and check out our [Gensyn Testnet Dashboard](https://dashboard.gensyn.ai/).
+To learn more, see our [blog](https://blog.gensyn.ai/).
 
 ### Initial peering and training
 
 From this stage onward your device will begin training. You should see your peer register and vote on-chain [here](https://gensyn-testnet.explorer.alchemy.com/address/0x7745a8FE4b8D2D2c3BB103F8dCae822746F35Da0?tab=logs).
-
-You can also track your training progress in real time:
-- On the Gensyn Testnet Dashboard: [dashboard.gensyn.ai](https://dashboard.gensyn.ai)
 
 ## Environment Overview (CodeZero)
 
@@ -308,14 +305,8 @@ Therefore, you should do these actions in the following scenarios
 - **I am running a model in the swarm on my CPU, have received a python `RuntimeError`, and my training progress seems to have stopped.**: There are several possible causes for this, but before trying anything please wait long enough to be sure your training actually is frozen and not just slow (e.g., wait longer than a single training iteration has previously taken on your machine). If you're sure training is actually frozen, then some things to try are:
     - Set this (experimental) fix: `export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && ./run_rl_swarm.sh`
 
-- **I am running a node but I'm not seeing any Prediction Market bets on the dashboard**: 
-    - Make sure you answered `Y` to the AI Prediction Market prompt (see [above](#ai-prediction-market)).
-    - Log in to the [Gensyn Testnet Dashboard](https://dashboard.gensyn.ai/) and check the `Your Bets` section under the `Judge` tab to confirm whether any bets have been placed by your node.
-    - Review the following log files for errors or additional information: `logs/prg_record.txt` and `logs/swarm_launcher.log`.
-
 ---
 
 ### Learn More
 
-- [Dashboard](https://dashboard.gensyn.ai/)
 - [Docs](https://docs.gensyn.ai/testnet/rl-swarm)
